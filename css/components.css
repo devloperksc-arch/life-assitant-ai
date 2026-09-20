@@ -747,3 +747,219 @@ select.form-input { cursor: pointer; }
 }
 .tab.active { background: var(--bg-elevated); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
 
+/* ── Voice & Audio Mode ── */
+.chat-mic-btn {
+  width: 42px; height: 42px; border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glass);
+  color: var(--accent-cyan); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+.chat-mic-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+  transform: translateY(-1px);
+}
+.chat-mic-btn.listening {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--accent-red);
+  color: #fff;
+  animation: micPulse 1.2s infinite ease-in-out;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+}
+
+@keyframes micPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.chat-listening-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px; margin-bottom: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 11px; color: #ff8888;
+  animation: slideIn 0.2s ease;
+}
+
+.chat-speak-btn {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 11px;
+  cursor: pointer; padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.chat-speak-btn:hover {
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.1);
+}
+.chat-speak-btn.speaking {
+  color: var(--accent-green);
+  font-weight: 600;
+  animation: speechActive 1s infinite alternate;
+}
+@keyframes speechActive {
+  from { opacity: 0.6; }
+  to { opacity: 1; text-shadow: 0 0 8px var(--accent-green); }
+}
+
+/* ── Holographic Voice Call Overlay ── */
+.voice-call-overlay {
+  position: fixed; inset: 0;
+  background: rgba(6, 9, 18, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 1000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  padding: 40px 24px 32px;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voice-call-header {
+  text-align: center;
+  max-width: 600px;
+}
+
+.voice-orb-container {
+  position: relative;
+  width: 200px; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 20px 0;
+}
+
+.voice-orb-ring {
+  position: absolute; border-radius: 50%;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.voice-orb-ring-1 {
+  width: 240px; height: 240px;
+  border: 1px dashed rgba(0, 212, 255, 0.25);
+  animation: orbRotate 20s linear infinite;
+}
+
+.voice-orb-ring-2 {
+  width: 280px; height: 280px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  animation: orbRotateRev 26s linear infinite;
+}
+
+.voice-orb-core {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #00f0ff, #7000ff 65%, #05051a);
+  box-shadow: 0 0 40px rgba(0, 240, 255, 0.45), 0 0 80px rgba(112, 0, 255, 0.3);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  transition: all 0.3s ease;
+  animation: orbFloat 4s ease-in-out infinite;
+}
+
+.voice-call-overlay.listening .voice-orb-core {
+  background: radial-gradient(circle at 35% 35%, #ff4b4b, #7000ff 70%, #150505);
+  box-shadow: 0 0 50px rgba(255, 75, 75, 0.6), 0 0 90px rgba(255, 75, 75, 0.3);
+  transform: scale(1.1);
+}
+
+.voice-call-overlay.speaking .voice-orb-core {
+  background: radial-gradient(circle at 35% 35%, #00ffc4, #0099ff 70%, #03141f);
+  box-shadow: 0 0 55px rgba(0, 255, 196, 0.6), 0 0 100px rgba(0, 153, 255, 0.35);
+  transform: scale(1.06);
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes orbRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbRotateRev {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.voice-wave-bars {
+  display: flex; align-items: center; gap: 4px; height: 28px;
+  margin: 12px 0;
+}
+.voice-wave-bar {
+  width: 4px; height: 8px; border-radius: 2px;
+  background: var(--accent-cyan);
+  transition: height 0.15s ease;
+}
+.voice-call-overlay.listening .voice-wave-bar {
+  background: #ff5555;
+  animation: waveDance 0.6s infinite ease-in-out alternate;
+}
+.voice-call-overlay.speaking .voice-wave-bar {
+  background: var(--accent-cyan);
+  animation: waveDance 0.5s infinite ease-in-out alternate;
+}
+.voice-wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.voice-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.voice-wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.voice-wave-bar:nth-child(5) { animation-delay: 0.15s; }
+.voice-wave-bar:nth-child(6) { animation-delay: 0.25s; }
+.voice-wave-bar:nth-child(7) { animation-delay: 0.05s; }
+
+@keyframes waveDance {
+  0% { height: 6px; }
+  100% { height: 26px; }
+}
+
+.voice-call-transcript {
+  max-width: 680px; width: 100%;
+  min-height: 90px; max-height: 160px;
+  overflow-y: auto;
+  text-align: center;
+  font-size: 15px; line-height: 1.6;
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+}
+
+.voice-call-controls {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 16px;
+}
+
+.voice-control-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary); font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.voice-control-btn:hover {
+  transform: scale(1.08);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.3);
+}
+
+.voice-control-btn.end-call {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff; border: none;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  width: 58px; height: 58px;
+}
+.voice-control-btn.end-call:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 28px rgba(239, 68, 68, 0.8);
+}
+

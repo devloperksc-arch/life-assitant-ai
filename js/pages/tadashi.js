@@ -20,8 +20,17 @@ Router.register('tadashi', () => {
         <div class="status-dot green"></div>
         <span style="font-size:11px;color:var(--accent-green);font-weight:600">Active</span>
         <span style="font-size:10px;color:var(--text-muted)">• Life State loaded • ${DATA.tasks.filter(t=>t.status!=='done').length} tasks • ${DATA.calendarEvents.length} events</span>
+        ${AI.hasKey()
+          ? `<span class="badge badge-green" style="margin-left:4px" title="${AI.getModel()}">🤖 Gemini connected</span>`
+          : `<span class="badge badge-amber" style="margin-left:4px;cursor:pointer" onclick="Router.navigate('settings')" title="Click to connect a free Gemini API key">⚡ Local mode — connect AI</span>`}
       </div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <button id="tadashi-voice-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleVoiceOutputMode()" title="Toggle voice audio output">
+          ${Voice.isVoiceOutputEnabled() ? '🔊 Voice ON' : '🔇 Voice OFF'}
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openVoiceCallModal()" title="Start hands-free voice call with TADASHI" style="background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));border:none">
+          📞 Live Talk
+        </button>
         <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
         <button class="btn btn-secondary btn-sm" onclick="tadashiBriefing()">📋 Briefing</button>
       </div>
@@ -39,11 +48,19 @@ Router.register('tadashi', () => {
           `<button class="chat-quick-cmd" onclick="processTADASHICommand('${cmd}')">${cmd}</button>`
         ).join('')}
       </div>
+      <div id="tadashi-listening-banner" style="display:none" class="chat-listening-banner">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="status-dot red" style="animation:micPulse 1s infinite"></span>
+          <span id="tadashi-listening-text">Listening... Speak now</span>
+        </div>
+        <button onclick="toggleTADASHIMic()" style="background:none;border:none;color:#ffaaaa;cursor:pointer;font-size:11px;font-weight:600">Cancel ✕</button>
+      </div>
       <div class="chat-input-wrapper">
-        <textarea id="tadashi-input" placeholder="Ask TADASHI anything... Plan my week. What am I falling behind on? Schedule a study block." rows="1"></textarea>
+        <textarea id="tadashi-input" placeholder="Ask TADASHI anything, or click the mic to speak..." rows="1"></textarea>
+        <button id="tadashi-mic-btn" class="chat-mic-btn" onclick="toggleTADASHIMic()" title="Talk to TADASHI (Voice Input)">🎙️</button>
         <button class="chat-send-btn" onclick="sendTADASHIMessage()" title="Send">➤</button>
       </div>
-      <div style="font-size:10px;color:var(--text-muted);text-align:center">TADASHI has access to your Calendar, Tasks, Goals, Fitness, Finance, Study, and all Life modules</div>
+      <div style="font-size:10px;color:var(--text-muted);text-align:center">TADASHI Voice Link Active • Tap 🎙️ to talk or 📞 for Hands-free Voice Call</div>
     </div>
   `;
 
@@ -67,13 +84,20 @@ Router.register('tadashi', () => {
 function renderChatMessages() {
   const container = document.getElementById('chat-messages');
   if (!container) return;
-  container.innerHTML = chatMessages.map(msg => `
+  container.innerHTML = chatMessages.map((msg, idx) => `
     <div class="chat-msg ${msg.role}">
       <div class="chat-avatar ${msg.role==='tadashi'?'tadashi-av':'user-av'}">${msg.role==='tadashi'?'🧠':DATA.user.initials}</div>
       <div>
         <div class="chat-bubble">${Utils.md(msg.content)}</div>
         ${msg.action ? renderActionCard(msg.action) : ''}
-        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;padding:0 4px">${msg.time||''}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;padding:0 4px;display:flex;align-items:center;justify-content:space-between">
+          <span>${msg.time||''}</span>
+          ${msg.role === 'tadashi' ? `
+            <button class="chat-speak-btn" id="msg-speak-btn-${idx}" onclick="toggleSpeakMessage(this, ${idx})" title="Listen to TADASHI speak this">
+              🔊 Listen
+            </button>
+          ` : ''}
+        </div>
       </div>
     </div>
   `).join('');
@@ -159,15 +183,23 @@ function processTADASHICommand(cmd) {
     container.scrollTop = container.scrollHeight;
   }
 
-  setTimeout(() => {
+  const minDelay = new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+
+  Promise.all([generateTADASHIResponse(cmd), minDelay]).then(([response]) => {
     document.getElementById('typing-indicator')?.remove();
-    const response = generateTADASHIResponse(cmd);
     chatMessages.push({ role:'tadashi', ...response, time: Utils.timeNow() });
     renderChatMessages();
-  }, 1200 + Math.random() * 800);
+
+    // Auto-speak response if Voice Output is enabled and voice call modal isn't active
+    if (Voice.isVoiceOutputEnabled() && !voiceCallActive && response && response.content) {
+      Voice.speak(response.content);
+    }
+  });
 }
 
-function generateTADASHIResponse(cmd) {
+// NOTE: async — the specific quick-command branches below resolve instantly,
+// but anything that falls through to Gemini needs to await a network call.
+async function generateTADASHIResponse(cmd) {
   const lower = cmd.toLowerCase();
 
   if (lower.includes('plan tomorrow') || lower.includes('tomorrow')) {
@@ -278,15 +310,57 @@ function generateTADASHIResponse(cmd) {
     };
   }
 
-  // Default response
-  return {
-    content: `I understand you want to: **"${cmd}"**\n\nI'm processing your Life State to give you the best response...\n\n${generateContextualResponse(cmd)}\n\nWould you like me to:\n• Create a detailed plan?\n• Replan affected areas?\n• Run a what-if simulation?\n• Just give recommendations?`
-  };
+  // Nothing matched one of TADASHI's built-in commands above — this is the
+  // part that used to just echo the message back. Now it either asks Gemini
+  // (if connected) or, failing that, at least handles basic small talk
+  // locally so a plain "hi" doesn't fall into a canned non-answer.
+  return await generateOpenEndedResponse(cmd);
 }
 
-function generateContextualResponse(cmd) {
-  const tasks = DATA.tasks.filter(t=>t.status!=='done').length;
-  return `**Current context:** ${tasks} pending tasks, ${DATA.lifeState.activeRisks} risks active, next deadline in 3 days (OS Assignment).\n\nYour schedule today has 2.5 free hours. Energy score: ${DATA.user.energyScore}%.`;
+// Cheap local pattern match for small talk — works even with zero AI connected,
+// so greetings/thanks/goodbyes always feel human even before you set up Gemini.
+function matchSmallTalk(lower) {
+  const trimmed = lower.trim().replace(/[!.?]+$/, '');
+  const name = DATA.user.name.split(' ')[0];
+  const pendingCount = DATA.tasks.filter(t => t.status !== 'done').length;
+
+  if (/^(hi|hello|hey|hey there|yo|sup|hiya|good morning|good evening|good afternoon)$/.test(trimmed)) {
+    return { content: `Hey ${name}! 👋 I'm here — ${pendingCount} tasks pending and your energy score is ${DATA.user.energyScore}%. What do you want to tackle?` };
+  }
+  if (/(thanks|thank you|thx|ty)\b/.test(trimmed)) {
+    return { content: `Anytime! 🙌 I'll keep watching your Life State — just ask if anything changes.` };
+  }
+  if (/^(bye|goodbye|see you|later|gtg|cya)$/.test(trimmed)) {
+    return { content: `Catch you later, ${name}! I'll keep an eye on your schedule and risks. 👋` };
+  }
+  if (/how are you|how's it going|hows it going|what's up|whats up/.test(trimmed)) {
+    return { content: `Running smoothly! Your Life Score is ${DATA.user.lifeScore}/100 right now. More importantly — how are *you* doing today?` };
+  }
+  return null;
+}
+
+async function generateOpenEndedResponse(cmd) {
+  const lower = cmd.toLowerCase();
+  const smalltalk = matchSmallTalk(lower);
+
+  if (AI.hasKey()) {
+    try {
+      const text = await AI.chat(cmd, chatMessages);
+      return { content: text };
+    } catch (err) {
+      return {
+        content: `⚠️ Couldn't reach Gemini: **${err.message}**\n\n${smalltalk ? smalltalk.content + '\n\n' : ''}Double-check your API key in **Settings → TADASHI AI Connection**.`
+      };
+    }
+  }
+
+  if (smalltalk) return smalltalk;
+
+  // No AI connected and not recognizable small talk — be honest about it
+  // instead of pretending to understand, and point at the actual fix.
+  return {
+    content: `I don't have a real AI brain connected yet, so I can only run the commands below in **Local mode**:\n\n${['Plan tomorrow','Fix my week','What should I do now?','Show my risks','Study plan for OS exam','Show commitment debt'].map(c=>`• ${c}`).join('\n')}\n\n💡 Click **"⚡ Local mode — connect AI"** above (or go to **Settings**) and add a free Gemini API key — then I'll actually understand anything you type, including **"${cmd}"**.`
+  };
 }
 
 function clearChat() {
@@ -296,4 +370,293 @@ function clearChat() {
 
 function tadashiBriefing() {
   processTADASHICommand('Give me my morning briefing');
+}
+
+// ============================================================
+// TADASHI Voice Interaction & Live Call System
+// ============================================================
+
+let voiceCallActive = false;
+let voiceCallMuted = false;
+
+function toggleVoiceOutputMode() {
+  const current = Voice.isVoiceOutputEnabled();
+  Voice.setVoiceOutputEnabled(!current);
+  const btn = document.getElementById('tadashi-voice-toggle-btn');
+  if (btn) {
+    btn.innerHTML = !current ? '🔊 Voice ON' : '🔇 Voice OFF';
+  }
+  if (current) {
+    Voice.stopSpeaking();
+  } else {
+    Voice.speak('Voice output enabled. Ready when you are.');
+  }
+}
+
+function toggleTADASHIMic() {
+  if (Voice.isListening()) {
+    Voice.stopListening();
+    return;
+  }
+
+  const micBtn = document.getElementById('tadashi-mic-btn');
+  const banner = document.getElementById('tadashi-listening-banner');
+  const input = document.getElementById('tadashi-input');
+
+  const ok = Voice.startListening({
+    onInterim: (interim) => {
+      if (input) {
+        input.value = interim;
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+      }
+    },
+    onResult: (finalText) => {
+      if (input) {
+        input.value = finalText;
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+      }
+      sendTADASHIMessage();
+    },
+    onError: (err) => {
+      if (banner) {
+        banner.style.display = 'flex';
+        banner.innerHTML = `<span>⚠️ ${err}</span><button onclick="document.getElementById('tadashi-listening-banner').style.display='none'" style="background:none;border:none;color:#fff;cursor:pointer">✕</button>`;
+      }
+    }
+  });
+
+  if (ok) {
+    if (micBtn) micBtn.classList.add('listening');
+    if (banner) banner.style.display = 'flex';
+  }
+}
+
+Voice._onListeningChange = (isListening) => {
+  const micBtn = document.getElementById('tadashi-mic-btn');
+  const banner = document.getElementById('tadashi-listening-banner');
+  if (micBtn) {
+    if (isListening) micBtn.classList.add('listening');
+    else micBtn.classList.remove('listening');
+  }
+  if (banner && !isListening) {
+    banner.style.display = 'none';
+  }
+};
+
+function toggleSpeakMessage(btn, msgIndex) {
+  const msg = chatMessages[msgIndex];
+  if (!msg || !msg.content) return;
+
+  if (Voice.isSpeaking()) {
+    Voice.stopSpeaking();
+    document.querySelectorAll('.chat-speak-btn').forEach(b => {
+      b.classList.remove('speaking');
+      b.innerHTML = '🔊 Listen';
+    });
+    return;
+  }
+
+  btn.classList.add('speaking');
+  btn.innerHTML = '⏹ Stop';
+  Voice.speak(msg.content, {
+    onEnd: () => {
+      btn.classList.remove('speaking');
+      btn.innerHTML = '🔊 Listen';
+    },
+    onError: () => {
+      btn.classList.remove('speaking');
+      btn.innerHTML = '🔊 Listen';
+    }
+  });
+}
+
+// --- Live Voice Call Modal ---
+
+function openVoiceCallModal() {
+  voiceCallActive = true;
+  voiceCallMuted = false;
+  Voice.stopSpeaking();
+  Voice.stopListening();
+
+  let modal = document.getElementById('voice-call-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'voice-call-modal';
+    document.body.appendChild(modal);
+  }
+
+  modal.className = 'voice-call-overlay';
+  modal.style.display = 'flex';
+  modal.innerHTML = `
+    <div class="voice-call-header">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-cyan);font-weight:700">TADASHI Live Voice Call</div>
+      <div id="voice-call-status" style="font-size:20px;font-weight:800;margin-top:6px">Starting voice link...</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Hands-free Conversational Link</div>
+    </div>
+
+    <div class="voice-orb-container">
+      <div class="voice-orb-ring voice-orb-ring-1"></div>
+      <div class="voice-orb-ring voice-orb-ring-2"></div>
+      <div class="voice-orb-core" id="voice-call-orb">🧠</div>
+    </div>
+
+    <div class="voice-wave-bars">
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+      <div class="voice-wave-bar"></div>
+    </div>
+
+    <div class="voice-call-transcript" id="voice-call-transcript">
+      <span style="color:var(--text-muted)">Speak naturally. TADASHI is listening...</span>
+    </div>
+
+    <div class="voice-call-controls">
+      <button class="voice-control-btn" id="voice-mute-btn" onclick="toggleVoiceCallMute()" title="Mute/Unmute Mic">🎙️</button>
+      <button class="voice-control-btn end-call" onclick="closeVoiceCallModal()" title="End Voice Call">✕</button>
+      <button class="voice-control-btn" id="voice-speaker-btn" onclick="toggleVoiceCallSpeaker()" title="Toggle Speaker">🔊</button>
+    </div>
+  `;
+
+  // Escape key closes voice call
+  const onKey = (e) => {
+    if (e.key === 'Escape' && voiceCallActive) {
+      closeVoiceCallModal();
+      document.removeEventListener('keydown', onKey);
+    }
+  };
+  document.addEventListener('keydown', onKey);
+
+  // Play subtle opening speech
+  Voice.speak('TADASHI voice link active. I am listening.', {
+    onEnd: () => {
+      if (voiceCallActive) runVoiceCallCycle();
+    }
+  });
+}
+
+function runVoiceCallCycle() {
+  if (!voiceCallActive) return;
+
+  const overlay = document.getElementById('voice-call-modal');
+  const statusEl = document.getElementById('voice-call-status');
+  const transcriptEl = document.getElementById('voice-call-transcript');
+
+  if (voiceCallMuted) {
+    if (overlay) overlay.className = 'voice-call-overlay';
+    if (statusEl) statusEl.textContent = 'Microphone Muted';
+    return;
+  }
+
+  if (overlay) overlay.className = 'voice-call-overlay listening';
+  if (statusEl) statusEl.innerHTML = '<span style="color:#ff6b6b">Listening...</span> Speak now';
+
+  let hasSpoken = false;
+
+  Voice.startListening({
+    onInterim: (text) => {
+      hasSpoken = true;
+      if (transcriptEl) transcriptEl.innerHTML = `<span style="color:var(--text-muted)">You: </span><strong>${text}</strong>`;
+    },
+    onResult: (finalText) => {
+      hasSpoken = true;
+      if (!voiceCallActive) return;
+      if (transcriptEl) transcriptEl.innerHTML = `<span style="color:var(--text-muted)">You: </span><strong>${finalText}</strong>`;
+      handleVoiceCallUserUtterance(finalText);
+    },
+    onEnd: (finalText) => {
+      if (!voiceCallActive) return;
+      if (!hasSpoken && !Voice.isSpeaking()) {
+        // If silence detected without input, smoothly restart listening loop
+        setTimeout(() => { if (voiceCallActive && !Voice.isSpeaking()) runVoiceCallCycle(); }, 500);
+      }
+    },
+    onError: (err) => {
+      console.warn('Voice call STT error:', err);
+      if (!voiceCallActive) return;
+      if (statusEl) statusEl.textContent = 'Listening paused';
+      setTimeout(() => { if (voiceCallActive && !Voice.isSpeaking()) runVoiceCallCycle(); }, 1200);
+    }
+  });
+}
+
+async function handleVoiceCallUserUtterance(userText) {
+  if (!userText || !voiceCallActive) return;
+
+  const overlay = document.getElementById('voice-call-modal');
+  const statusEl = document.getElementById('voice-call-status');
+  const transcriptEl = document.getElementById('voice-call-transcript');
+
+  Voice.stopListening();
+
+  if (overlay) overlay.className = 'voice-call-overlay';
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--accent-cyan)">TADASHI thinking...</span>';
+
+  // Add to main chat
+  chatMessages.push({ role:'user', content: userText, time: Utils.timeNow() });
+  renderChatMessages();
+
+  try {
+    const response = await generateTADASHIResponse(userText);
+    chatMessages.push({ role:'tadashi', ...response, time: Utils.timeNow() });
+    renderChatMessages();
+
+    if (!voiceCallActive) return;
+
+    if (overlay) overlay.className = 'voice-call-overlay speaking';
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--accent-green)">TADASHI speaking...</span>';
+    if (transcriptEl) transcriptEl.innerHTML = `<span style="color:var(--accent-cyan)">TADASHI: </span>${Utils.md(response.content)}`;
+
+    Voice.speak(response.content, {
+      onEnd: () => {
+        if (!voiceCallActive) return;
+        // When TADASHI finishes speaking, seamlessly cycle back to listening!
+        setTimeout(() => {
+          if (voiceCallActive) runVoiceCallCycle();
+        }, 600);
+      },
+      onError: () => {
+        if (voiceCallActive) setTimeout(() => runVoiceCallCycle(), 600);
+      }
+    });
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error processing request';
+    setTimeout(() => { if (voiceCallActive) runVoiceCallCycle(); }, 1500);
+  }
+}
+
+function closeVoiceCallModal() {
+  voiceCallActive = false;
+  Voice.stopSpeaking();
+  Voice.stopListening();
+  const modal = document.getElementById('voice-call-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function toggleVoiceCallMute() {
+  voiceCallMuted = !voiceCallMuted;
+  const btn = document.getElementById('voice-mute-btn');
+  if (btn) btn.textContent = voiceCallMuted ? '🔇' : '🎙️';
+  if (voiceCallMuted) {
+    Voice.stopListening();
+    const statusEl = document.getElementById('voice-call-status');
+    if (statusEl) statusEl.textContent = 'Microphone Muted';
+    const overlay = document.getElementById('voice-call-modal');
+    if (overlay) overlay.className = 'voice-call-overlay';
+  } else {
+    runVoiceCallCycle();
+  }
+}
+
+function toggleVoiceCallSpeaker() {
+  const enabled = !Voice.isVoiceOutputEnabled();
+  Voice.setVoiceOutputEnabled(enabled);
+  const btn = document.getElementById('voice-speaker-btn');
+  if (btn) btn.textContent = enabled ? '🔊' : '🔈';
+  if (!enabled) Voice.stopSpeaking();
 }

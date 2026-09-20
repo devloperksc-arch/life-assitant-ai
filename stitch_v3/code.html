@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>TADASHI LifeOS — Mobile</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            void: '#06080F',
+            surface: {
+              card: 'rgba(15, 23, 42, 0.75)',
+              border: 'rgba(56, 189, 248, 0.15)',
+              island: 'rgba(11, 17, 33, 0.88)'
+            },
+            neon: {
+              cyan: '#00F0FF',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+              purple: '#A855F7',
+              rose: '#F43F5E'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          },
+          boxShadow: {
+            glowCyan: '0 0 20px -3px rgba(0, 240, 255, 0.25)',
+            glowAmber: '0 0 20px -3px rgba(245, 158, 11, 0.25)',
+            glowPurple: '0 0 20px -3px rgba(168, 85, 247, 0.25)',
+            glowEmerald: '0 0 20px -3px rgba(16, 185, 129, 0.25)',
+            islandGlow: '0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08)'
+          }
+        }
+      }
+    };
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="custom-scrollbars">
+    /* Subtle custom scrollbar for horizontal swipe matrix */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style data-purpose="glass-effects">
+    .glass-panel {
+      background: rgba(13, 19, 36, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .glass-island {
+      background: rgba(10, 14, 26, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="bg-void text-slate-100 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200 min-h-screen pb-32">
+<!-- BEGIN: Mobile Dynamic Island Top Bar -->
+<header class="sticky top-0 z-40 px-3 pt-2 pb-3 bg-void/80 backdrop-blur-md border-b border-slate-800/60" data-purpose="dynamic-island-header">
+<div class="max-w-md mx-auto flex items-center justify-between">
+<!-- Brand & Status Pill -->
+<div class="flex items-center space-x-2">
+<div class="flex items-center space-x-1.5">
+<span class="text-base font-black tracking-tight text-white flex items-center">
+            TADASHI <span class="text-cyan-400 font-semibold ml-1 text-sm tracking-normal">LifeOS</span>
+</span>
+<span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/40 tracking-wider">
+            Operational
+          </span>
+</div>
+</div>
+<!-- Sync Status & LifeScore Capsule -->
+<div class="flex items-center space-x-2">
+<div class="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-[11px] font-mono">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-slate-300 font-medium text-[10px]">Optimal</span>
+<span class="text-slate-600">|</span>
+<span class="text-cyan-400 font-bold text-[10px]">84<span class="text-slate-500 font-normal">/100</span></span>
+</div>
+<!-- Quick Settings Icon -->
+<button aria-label="System Settings" class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: Mobile Dynamic Island Top Bar -->
+<!-- BEGIN: Main Content Area -->
+<main class="max-w-md mx-auto px-4 pt-3 space-y-5">
+<!-- Sub-status Cognitive Environment Micro-pill -->
+<div class="flex items-center justify-between text-[11px] text-slate-400 px-1 font-mono" data-purpose="neural-sync-indicator">
+<div class="flex items-center space-x-1.5 truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+<span class="truncate">Cognitive environment calibrated. Neural sync sustained.</span>
+</div>
+<span class="text-slate-500 shrink-0 ml-2">22:45 IST</span>
+</div>
+<!-- BEGIN: Synthesis Priority Banner -->
+<section class="relative rounded-2xl overflow-hidden glass-panel border border-cyan-500/20 p-4 shadow-glowCyan" data-purpose="synthesis-priority-banner">
+<!-- Gradient ambient light -->
+<div class="absolute -top-16 -right-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Tag line -->
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-mono tracking-widest font-semibold text-cyan-400 uppercase">
+          SYNTHESIS UPDATE / OCTOBER 24
+        </span>
+<span class="flex items-center space-x-1 text-[10px] text-slate-400 font-mono">
+<span class="w-1 h-1 rounded-full bg-cyan-400"></span>
+<span>LIVE</span>
+</span>
+</div>
+<!-- Headline -->
+<h1 class="text-lg font-bold text-white tracking-tight leading-snug">
+        Good evening Krishna — <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300">2 urgent priorities detected</span>
+</h1>
+<!-- Subtext -->
+<p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
+        OS Deep Study wrap-up scheduled for 23:15, followed by family call and evening neuro-reset before 23:30.
+      </p>
+<!-- Action Buttons -->
+<div class="mt-4 flex items-center space-x-2.5">
+<!-- Live Audio Briefing CTA -->
+<button class="flex-1 flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-950 font-semibold text-xs shadow-md shadow-cyan-500/20 active:scale-[0.98] transition-transform">
+<!-- Audio Waveform Icon -->
+<svg class="w-4 h-4 text-slate-950" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 3a1 1 0 0 1 1 1v16a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1zm-5 4a1 1 0 0 1 1 1v8a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1zm10 0a1 1 0 0 1 1 1v8a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1zM2 10a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zm20 0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z"></path>
+</svg>
+<span class="tracking-wide">Live Audio Briefing</span>
+</button>
+<!-- Adjust Schedule Button -->
+<button class="flex items-center space-x-1.5 py-2.5 px-3 rounded-xl bg-slate-900/80 border border-slate-700/70 text-slate-200 font-medium text-xs hover:border-slate-600 active:scale-[0.98] transition-transform">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Adjust Schedule</span>
+</button>
+</div>
+</section>
+<!-- END: Synthesis Priority Banner -->
+<!-- BEGIN: Urgent Priority Matrix Section -->
+<section class="space-y-2.5" data-purpose="priority-cards-matrix">
+<div class="flex items-center justify-between px-1">
+<h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+<span>Priority Matrix</span>
+</h2>
+<span class="text-[11px] text-slate-500 font-mono">4 items</span>
+</div>
+<!-- Scrollable / Stackable Priority Cards -->
+<div class="grid grid-cols-1 gap-2.5">
+<!-- Card 1: CURRENT FOCUS (Study Domain) -->
+<article class="p-3.5 rounded-xl glass-panel border border-cyan-500/50 bg-gradient-to-br from-cyan-950/20 to-slate-900/90 shadow-glowCyan relative" data-purpose="current-focus-card">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+<span class="text-cyan-300 font-bold flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+<span>CURRENT FOCUS</span>
+</span>
+<span class="text-slate-400">Study Domain</span>
+</div>
+<h3 class="text-sm font-bold text-white mt-1.5">OS Memory Deep Study</h3>
+<p class="text-xs text-slate-300 mt-0.5">Virtual memory paging &amp; TLBs.</p>
+<div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+<span class="text-slate-400 font-mono text-[11px] flex items-center space-x-1">
+<span>⏳</span>
+<span>30m remaining</span>
+</span>
+<a class="inline-flex items-center space-x-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300" href="#">
+<span>Resume</span>
+<span>→</span>
+</a>
+</div>
+</article>
+<!-- Card 2: PENDING CALL (Family) -->
+<article class="p-3.5 rounded-xl glass-panel border border-amber-500/40 bg-gradient-to-br from-amber-950/15 to-slate-900/90 shadow-glowAmber" data-purpose="pending-call-card">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+<span class="text-amber-400 font-bold">PENDING CALL</span>
+<span class="text-slate-400 font-mono">23:15 IST</span>
+</div>
+<h3 class="text-sm font-bold text-white mt-1.5">Mom's Birthday Call</h3>
+<p class="text-xs text-slate-300 mt-0.5">Scheduled call slot before midnight.</p>
+<div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+<span class="text-amber-400 font-mono text-[11px] font-medium flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+<span>High priority</span>
+</span>
+<button class="inline-flex items-center space-x-1 text-xs font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 px-2.5 py-1 rounded-md border border-amber-600/40">
+<svg class="w-3 h-3 mr-0.5" fill="currentColor" viewbox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"></path></svg>
+<span>Dial / Open</span>
+</button>
+</div>
+</article>
+<!-- Card 3: DUE TOMORROW (Academics) -->
+<article class="p-3.5 rounded-xl glass-panel border border-purple-500/30 bg-gradient-to-br from-purple-950/15 to-slate-900/90 shadow-glowPurple" data-purpose="due-tomorrow-card">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+<span class="text-purple-400 font-bold">DUE TOMORROW</span>
+<span class="text-slate-400">Academics</span>
+</div>
+<h3 class="text-sm font-bold text-white mt-1.5">Submit OS Assignment 3</h3>
+<p class="text-xs text-slate-300 mt-0.5">Draft ready in GitHub repo; verify tests.</p>
+<div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+<span class="text-slate-400 font-mono text-[11px]">Due 14:00</span>
+<a class="inline-flex items-center space-x-1 text-xs font-semibold text-purple-300 hover:text-purple-200" href="#">
+<span>Review Code</span>
+<span>→</span>
+</a>
+</div>
+</article>
+<!-- Card 4: COMPLETED (Fitness) -->
+<article class="p-3.5 rounded-xl glass-panel border border-emerald-500/30 bg-gradient-to-br from-emerald-950/15 to-slate-900/90" data-purpose="completed-card">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+<span class="text-emerald-400 font-bold">COMPLETED</span>
+<span class="text-slate-400">Fitness</span>
+</div>
+<h3 class="text-sm font-bold text-white mt-1.5">Zone 2 Aerobic Conditioning</h3>
+<p class="text-xs text-slate-300 mt-0.5">45 min run logged · HRV 68ms.</p>
+<div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+<span class="text-emerald-400 font-mono text-[11px]">Logged 20:30</span>
+<div class="w-5 h-5 rounded-full bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-emerald-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Urgent Priority Matrix Section -->
+<!-- BEGIN: Daily Flow Timeline Section -->
+<section class="space-y-3 pt-2" data-purpose="daily-flow-timeline">
+<!-- Section Header -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center space-x-2">
+<!-- Pulse wave icon -->
+<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h2 class="text-sm font-bold text-white tracking-wide">Daily Flow</h2>
+</div>
+<span class="text-xs text-slate-400 font-mono">Oct 24, Today</span>
+</div>
+<!-- Timeline Container -->
+<div class="relative pl-5 border-l-2 border-slate-800/80 space-y-4 ml-2">
+<!-- Timeline Item 1: Completed past event -->
+<div class="relative group" data-purpose="timeline-event-completed">
+<!-- Timeline Node Bullet -->
+<span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-slate-900 flex items-center justify-center"></span>
+<div class="flex items-baseline justify-between text-[11px] font-mono">
+<span class="text-slate-400">19:30 — 20:30</span>
+<span class="text-emerald-400 font-medium">Completed</span>
+</div>
+<h4 class="text-xs font-semibold text-slate-300 mt-0.5">Zone 2 Aerobic Conditioning</h4>
+<p class="text-[11px] text-slate-400 mt-0.5">Hydration target hit; HRV stabilizing.</p>
+</div>
+<!-- Timeline Item 2: Active Current Event (Prominent Glow Box) -->
+<div class="relative" data-purpose="timeline-event-current">
+<!-- Glowing Target Node Bullet -->
+<span class="absolute -left-[29px] top-3 w-4 h-4 rounded-full border-2 border-cyan-400 bg-void shadow-glowCyan flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</span>
+<div class="p-3.5 rounded-xl glass-panel border border-cyan-500/40 bg-cyan-950/15 shadow-glowCyan space-y-2">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase">
+<span class="text-cyan-400 font-semibold tracking-wider flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+<span>CURRENT ACTIVE EVENT</span>
+</span>
+<span class="text-slate-400">22:00 — 23:15</span>
+</div>
+<h4 class="text-sm font-bold text-white">OS Memory Deep Study</h4>
+<p class="text-xs text-slate-300 leading-relaxed">
+              Virtual memory paging, translation lookaside buffers, and memory mapping mechanics.
+            </p>
+<div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+<div class="flex items-center space-x-1.5 text-slate-400 font-mono text-[11px]">
+<svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>30m remaining</span>
+</div>
+<button class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors">
+<span>Resume Direct</span>
+<span>→</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3: Up Next -->
+<div class="relative group" data-purpose="timeline-event-upnext">
+<span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full border-2 border-amber-500/60 bg-slate-900"></span>
+<div class="flex items-baseline justify-between text-[11px] font-mono">
+<span class="text-slate-400">23:15 — 23:30</span>
+<span class="text-amber-400 font-semibold">Up Next</span>
+</div>
+<h4 class="text-xs font-semibold text-slate-200 mt-0.5">Mom's Birthday Call</h4>
+<p class="text-[11px] text-slate-400 mt-0.5">Family check-in &amp; celebration wishes.</p>
+</div>
+<!-- Timeline Item 4: Routine -->
+<div class="relative group" data-purpose="timeline-event-routine">
+<span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-slate-900"></span>
+<div class="flex items-baseline justify-between text-[11px] font-mono">
+<span class="text-slate-400">23:30 — 00:00</span>
+<span class="text-slate-500 font-medium">Routine</span>
+</div>
+<h4 class="text-xs font-semibold text-slate-200 mt-0.5">Wind-Down &amp; Neuro-Reset</h4>
+<p class="text-[11px] text-slate-400 mt-0.5">Blue-light elimination, magnesium intake &amp; journal.</p>
+</div>
+</div>
+</section>
+<!-- END: Daily Flow Timeline Section -->
+<!-- BEGIN: Pending Domain Updates & Actions Section -->
+<section class="space-y-3 pt-3 pb-8" data-purpose="domain-updates-section">
+<!-- Section Header with View All -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center space-x-1.5">
+<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h2 class="text-sm font-bold text-white tracking-wide">Pending Domain Updates</h2>
+</div>
+<a class="text-[11px] text-cyan-400 font-medium hover:underline flex items-center space-x-0.5 font-mono" href="#">
+<span>View All 22</span>
+<span>→</span>
+</a>
+</div>
+<!-- Domain Cards Grid -->
+<div class="grid grid-cols-1 gap-2.5">
+<!-- Domain Card 1: Study & Cognition -->
+<article class="p-3.5 rounded-xl glass-panel border border-slate-800 space-y-2 hover:border-slate-700 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-cyan-400 text-sm">📖</span>
+<h3 class="text-xs font-bold text-slate-200">Study &amp; Cognition</h3>
+</div>
+<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/50">
+              1 IN PROGRESS
+            </span>
+</div>
+<p class="text-xs text-slate-400">
+            Operating Systems Exam prep &amp; Virtual Memory problem set.
+          </p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 font-mono">
+<span class="text-slate-400 text-[11px]">Target: <strong class="text-slate-200">24.5 / 30h</strong></span>
+<a class="text-cyan-400 font-semibold text-xs hover:underline flex items-center" href="#">
+<span>Ask TADASHI</span>
+<span class="ml-0.5">→</span>
+</a>
+</div>
+</article>
+<!-- Domain Card 2: Fitness & Vitality -->
+<article class="p-3.5 rounded-xl glass-panel border border-slate-800 space-y-2 hover:border-slate-700 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-emerald-400 text-sm">🏃</span>
+<h3 class="text-xs font-bold text-slate-200">Fitness &amp; Vitality</h3>
+</div>
+<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50">
+              DONE TODAY
+            </span>
+</div>
+<p class="text-xs text-slate-400">
+            Cardio recovery completed. Hydration logs up to date.
+          </p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 font-mono">
+<span class="text-slate-400 text-[11px]">Weekly: <strong class="text-slate-200">4 of 5 sessions</strong></span>
+<a class="text-slate-300 hover:text-white font-semibold text-xs" href="#">Details</a>
+</div>
+</article>
+<!-- Domain Card 3: Capital & Reserves -->
+<article class="p-3.5 rounded-xl glass-panel border border-slate-800 space-y-2 hover:border-slate-700 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-amber-400 text-sm">💳</span>
+<h3 class="text-xs font-bold text-slate-200">Capital &amp; Reserves</h3>
+</div>
+<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/50">
+              ACTION REQUIRED
+            </span>
+</div>
+<p class="text-xs text-slate-400">
+            Verify monthly hosting invoice (₹1,450) and approve SIP auto-debit.
+          </p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 font-mono">
+<span class="text-slate-400 text-[11px]">Runway: <strong class="text-slate-200">42 days</strong></span>
+<a class="text-amber-400 font-semibold text-xs hover:underline flex items-center" href="#">
+<span>Manage</span>
+<span class="ml-0.5">→</span>
+</a>
+</div>
+</article>
+<!-- Domain Card 4: Neural Wellness -->
+<article class="p-3.5 rounded-xl glass-panel border border-slate-800 space-y-2 hover:border-slate-700 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-purple-400 text-sm">🧘</span>
+<h3 class="text-xs font-bold text-slate-200">Neural Wellness</h3>
+</div>
+<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800/50">
+              23:30 QUEUED
+            </span>
+</div>
+<p class="text-xs text-slate-400">
+            Screen-off protocol activates in 45m. Sleep latency goal &lt;15m.
+          </p>
+<div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 font-mono">
+<span class="text-slate-400 text-[11px]">Target: <strong class="text-slate-200">8.2 hrs rest</strong></span>
+<a class="text-purple-400 font-semibold text-xs hover:underline" href="#">Check Protocol</a>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Pending Domain Updates & Actions Section -->
+</main>
+<!-- END: Main Content Area -->
+<!-- BEGIN: Mobile Floating Island Navigation Bar -->
+<nav aria-label="Bottom Navigation" class="fixed bottom-4 inset-x-3 z-50 max-w-md mx-auto" data-purpose="floating-island-nav">
+<div class="glass-island px-3 py-2 rounded-2xl border border-slate-700/60 shadow-islandGlow flex items-center justify-between">
+<!-- Nav Item: Workspace (Active) -->
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl bg-cyan-950/70 text-cyan-400 border border-cyan-800/50 shadow-glowCyan min-w-[56px] min-h-[44px]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-semibold mt-0.5 tracking-tight">Focus</span>
+</button>
+<!-- Nav Item: Domains / Manage with badge -->
+<button class="relative flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-400 hover:text-slate-200 min-w-[56px] min-h-[44px]">
+<div class="relative">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute -top-1 -right-2 px-1 text-[8px] font-mono font-bold rounded-full bg-cyan-500 text-slate-950">22</span>
+</div>
+<span class="text-[10px] font-medium mt-0.5">Domains</span>
+</button>
+<!-- Center Feature: TADASHI AI Copilot Button -->
+<button aria-label="TADASHI Neural Assistant" class="relative -top-2 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-300 text-slate-950 shadow-lg shadow-cyan-500/40 active:scale-95 transition-transform">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Nav Item: Audio Briefings -->
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-400 hover:text-slate-200 min-w-[56px] min-h-[44px]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium mt-0.5">Briefing</span>
+</button>
+<!-- Nav Item: Schedule -->
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-400 hover:text-slate-200 min-w-[56px] min-h-[44px]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium mt-0.5">Flow</span>
+</button>
+</div>
+</nav>
+<!-- END: Mobile Floating Island Navigation Bar -->
+<!-- BEGIN: Interactive Haptics & Mock Triggers -->
+<script data-purpose="mobile-interaction-handler">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Optional subtle tap feedback for quick mobile CTA responsiveness
+      const actionButtons = document.querySelectorAll('button');
+      actionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if ('vibrate' in navigator) {
+            navigator.vibrate(10); // Light haptic feedback
+          }
+        });
+      });
+    });
+  </script>
+<!-- END: Interactive Haptics & Mock Triggers -->
+</body></html>

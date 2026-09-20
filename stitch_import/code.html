@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TADASHI LifeOS — Autonomous Neural Intelligence System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            void: '#060812',
+            base: '#0a0d1a',
+            surface: '#0f1328',
+            elevated: '#141830',
+            overlay: '#1a1f3a',
+            cyan: {
+              DEFAULT: '#00d4ff',
+              dim: '#00a8cc',
+              glow: 'rgba(0, 212, 255, 0.15)',
+            },
+            violet: {
+              DEFAULT: '#7c3aed',
+              bright: '#9f67f5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #060812;
+      color: #f0f4ff;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(10, 13, 26, 0.5);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.4);
+    }
+    .glass-panel {
+      background: rgba(15, 19, 40, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .glass-panel-hover {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-panel-hover:hover {
+      background: rgba(20, 24, 48, 0.85);
+      border-color: rgba(0, 212, 255, 0.25);
+      box-shadow: 0 8px 32px -4px rgba(0, 212, 255, 0.08);
+    }
+    .neon-border {
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      box-shadow: 0 0 15px -3px rgba(0, 212, 255, 0.2);
+    }
+    .neon-text-glow {
+      text-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-animation {
+      animation: pulse-ring 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#060812] text-[#f0f4ff] antialiased selection:bg-[#00d4ff]/30 selection:text-[#00d4ff]">
+
+  <!-- App Shell -->
+  <div class="flex h-screen w-screen overflow-hidden">
+    
+    <!-- FIXED SIDEBAR -->
+    <aside class="w-64 bg-[#0a0d1a]/95 backdrop-blur-2xl border-r border-white/[0.07] flex flex-col flex-shrink-0 z-40">
+      
+      <!-- Brand Logo & Life Score Header -->
+      <div class="p-4 border-b border-white/[0.07]">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00d4ff] to-[#7c3aed] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+              <span class="material-symbols-outlined text-lg">neurology</span>
+              <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d4ff] opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00d4ff]"></span>
+              </span>
+            </div>
+            <div>
+              <div class="text-sm font-bold tracking-wider text-white flex items-center gap-1.5">
+                TADASHI
+                <span class="px-1.5 py-0.2 text-[9px] font-mono font-semibold bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/30 rounded">v1.0</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono">Neural LifeOS</div>
+            </div>
+          </div>
+          <button onclick="toggleVoiceModal()" title="Voice Interface" class="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-[#00d4ff]/10 text-slate-300 hover:text-[#00d4ff] border border-white/[0.08] hover:border-[#00d4ff]/30 flex items-center justify-center transition-all">
+            <span class="material-symbols-outlined text-base">graphic_eq</span>
+          </button>
+        </div>
+
+        <!-- User Quick Card -->
+        <div class="mt-4 p-2.5 rounded-xl bg-[#0f1328]/70 border border-white/[0.06] flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">KC</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-semibold text-white truncate">Krishna Singh</div>
+            <div class="text-[10px] text-slate-400 truncate">Computer Science · Dev</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-mono font-bold text-[#00d4ff]">84</div>
+            <div class="text-[9px] text-slate-500 uppercase tracking-wider">Score</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Section Label -->
+      <div class="px-4 pt-3 pb-1 flex items-center justify-between">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500">22 Life Domains</span>
+        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.05] text-slate-400">All Modules</span>
+      </div>
+
+      <!-- Nav Items Scrollable List -->
+      <nav id="nav-list" class="flex-1 overflow-y-auto px-2 py-1 space-y-0.5 custom-scrollbar">
+        <!-- Injected via JavaScript for clean code structure -->
+      </nav>
+
+      <!-- System Status Footer -->
+      <div class="p-3 border-t border-white/[0.07] bg-[#080b16]">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+          <span class="flex items-center gap-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Gemini Flash 2.0
+          </span>
+          <span class="font-mono text-[#00d4ff]">14ms Latency</span>
+        </div>
+        <div class="w-full bg-slate-800/80 rounded-full h-1 overflow-hidden">
+          <div class="bg-gradient-to-r from-[#00d4ff] to-emerald-400 h-1 rounded-full w-[84%]"></div>
+        </div>
+        <div class="flex justify-between text-[9px] text-slate-500 font-mono mt-1">
+          <span>Life Sync 84%</span>
+          <span>Synced 2m ago</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN INTERFACE AREA -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-radial from-[#0e1330]/40 via-[#060812] to-[#060812]">
+      
+      <!-- TOP STATUS & TELEMETRY BAR -->
+      <header class="h-14 border-b border-white/[0.07] bg-[#0a0d1a]/80 backdrop-blur-xl px-6 flex items-center justify-between flex-shrink-0 z-30">
+        
+        <!-- Left Title + Breadcrumb -->
+        <div class="flex items-center gap-3">
+          <div id="topbar-icon" class="w-8 h-8 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/20 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-lg">dashboard</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="topbar-domain" class="text-xs text-slate-400 font-mono">TADASHI // LifeOS</span>
+              <span class="text-slate-600 text-xs">/</span>
+              <h1 id="topbar-title" class="text-sm font-semibold text-white tracking-wide">Home Dashboard</h1>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Search / Omnibar -->
+        <div class="relative w-96 max-w-md hidden md:block">
+          <div class="flex items-center bg-[#0f1328]/80 border border-white/[0.08] hover:border-[#00d4ff]/40 rounded-lg px-3 py-1.5 text-xs text-slate-400 transition-all cursor-pointer" onclick="document.getElementById('search-input').focus()">
+            <span class="material-symbols-outlined text-base text-slate-500 mr-2">search</span>
+            <input id="search-input" type="text" placeholder="Search across all 22 modules or ask TADASHI..." class="bg-transparent border-none outline-none text-slate-200 placeholder-slate-500 w-full text-xs" />
+            <kbd class="font-mono text-[10px] bg-white/[0.06] text-slate-400 px-1.5 py-0.5 rounded border border-white/[0.06] ml-2">⌘K</kbd>
+          </div>
+        </div>
+
+        <!-- Top Right Action Controls -->
+        <div class="flex items-center gap-3">
+          <!-- Real-time Life Score Pill -->
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium">
+            <span class="material-symbols-outlined text-sm">bolt</span>
+            <span>LifeScore 84/100</span>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <button onclick="switchView('tadashi')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-black font-semibold text-xs shadow-[0_0_15px_rgba(0,212,255,0.3)] hover:opacity-95 transition-all">
+            <span class="material-symbols-outlined text-sm">neurology</span>
+            <span class="text-slate-950 font-bold">Ask AI</span>
+          </button>
+
+          <button onclick="toggleContextDrawer()" class="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-300 flex items-center justify-center transition-colors relative" title="Toggle System Context">
+            <span class="material-symbols-outlined text-base">view_sidebar</span>
+            <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 22-PAGE DYNAMIC TAB STRIP (STICKY) -->
+      <div class="bg-[#080b16] border-b border-white/[0.07] px-6 py-2 flex items-center gap-1.5 overflow-x-auto custom-scrollbar flex-shrink-0 z-20">
+        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mr-2 flex-shrink-0">Modules:</span>
+        <div id="module-tabs" class="flex items-center gap-1.5">
+          <!-- Dynamically populated page switch buttons -->
+        </div>
+      </div>
+
+      <!-- MAIN WORKSPACE & PAGE VIEWPORT -->
+      <div class="flex-1 flex overflow-hidden">
+        
+        <!-- SCROLLABLE PAGE CONTAINER -->
+        <main id="main-content" class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+          
+          <!-- ==================== VIEW 1: HOME DASHBOARD ==================== -->
+          <div id="view-home" class="page-view space-y-6">
+            
+            <!-- Tadashi Neural Briefing Banner -->
+            <div class="relative rounded-2xl glass-panel p-5 overflow-hidden border border-[#00d4ff]/30 bg-gradient-to-r from-[#00d4ff]/10 via-[#7c3aed]/5 to-transparent">
+              <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-[#00d4ff]/10 rounded-full blur-3xl pointer-events-none"></div>
+              <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-white text-2xl shadow-[0_0_20px_rgba(0,212,255,0.4)] flex-shrink-0">
+                    <span class="material-symbols-outlined">neurology</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#00d4ff]/20 text-[#00d4ff] border border-[#00d4ff]/30">TADASHI Synthesis • 22:45 IST</span>
+                      <span class="text-xs text-slate-400">Autonomous Schedule Guard</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-white tracking-tight">Good evening, Krishna. You have <span class="text-amber-400">2 priority risk flags</span> and <span class="text-[#00d4ff]">1 optimized study window</span>.</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Recommended action: Initiate OS Exam revision block at 23:00 to close the 42% concept gap.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="switchView('tadashi')" class="px-3 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-semibold text-white flex items-center gap-1.5 transition-all">
+                    <span>Re-plan Tomorrow</span>
+                    <span class="material-symbols-outlined text-sm">auto_mode</span>
+                  </button>
+                  <button onclick="toggleVoiceModal()" class="px-4 py-2 rounded-xl bg-[#00d4ff] text-slate-950 text-xs font-bold hover:bg-[#00d4ff]/90 flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,212,255,0.3)] transition-all">
+                    <span class="material-symbols-outlined text-sm">call</span>
+                    <span>Live Voice Call</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Real-time Life Signals Strip -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/[0.06]">
+                <div class="flex items-center gap-2.5 text-xs">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span class="text-slate-300 font-medium truncate">OS Exam in 6 days — 42% gap</span>
+                  <span class="text-[10px] font-mono text-amber-400 ml-auto font-semibold">URGENT</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="text-slate-300 font-medium truncate">Push Day workout finished (4/5 done)</span>
+                  <span class="text-[10px] font-mono text-emerald-400 ml-auto font-semibold">+80 XP</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs">
+                  <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                  <span class="text-slate-300 font-medium truncate">Mom's Birthday reminder (Tonight)</span>
+                  <span class="text-[10px] font-mono text-pink-400 ml-auto font-semibold">FAMILY</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Metric Tiles -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <!-- Card 1: Life Score -->
+              <div class="glass-panel glass-panel-hover rounded-2xl p-4">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                  <span class="text-xs font-medium uppercase tracking-wider font-mono">Life Score</span>
+                  <span class="p-1.5 rounded-lg bg-emerald-400/10 text-emerald-400">
+                    <span class="material-symbols-outlined text-base">vital_signs</span>
+                  </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-3xl font-extrabold text-white font-mono tracking-tight">84</span>
+                  <span class="text-xs font-semibold text-emerald-400 flex items-center">↑ 3.2 pts</span>
+                </div>
+                <div class="w-full bg-slate-800/80 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div class="bg-gradient-to-r from-[#00d4ff] to-emerald-400 h-1.5 rounded-full w-[84%]"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1.5">
+                  <span>Target: 90+</span>
+                  <span>Top 4% tier</span>
+                </div>
+              </div>
+
+              <!-- Card 2: Energy & Focus -->
+              <div class="glass-panel glass-panel-hover rounded-2xl p-4">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                  <span class="text-xs font-medium uppercase tracking-wider font-mono">Energy Reservoir</span>
+                  <span class="p-1.5 rounded-lg bg-amber-400/10 text-amber-400">
+                    <span class="material-symbols-outlined text-base">battery_charging_full</span>
+                  </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-3xl font-extrabold text-white font-mono tracking-tight">76%</span>
+                  <span class="text-xs font-semibold text-amber-400">Optimal Focus</span>
+                </div>
+                <div class="w-full bg-slate-800/80 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div class="bg-amber-400 h-1.5 rounded-full w-[76%]"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1.5">
+                  <span>Sleep: 7.4h</span>
+                  <span>Peak till 01:00</span>
+                </div>
+              </div>
+
+              <!-- Card 3: Priority Tasks -->
+              <div class="glass-panel glass-panel-hover rounded-2xl p-4">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                  <span class="text-xs font-medium uppercase tracking-wider font-mono">Commitments Today</span>
+                  <span class="p-1.5 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff]">
+                    <span class="material-symbols-outlined text-base">check_circle</span>
+                  </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-3xl font-extrabold text-white font-mono tracking-tight">5/8</span>
+                  <span class="text-xs font-semibold text-[#00d4ff]">62% Completed</span>
+                </div>
+                <div class="w-full bg-slate-800/80 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div class="bg-[#00d4ff] h-1.5 rounded-full w-[62%]"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1.5">
+                  <span>3 Pending High-Pri</span>
+                  <span>Debt: Low (2.1)</span>
+                </div>
+              </div>
+
+              <!-- Card 4: Monthly Budget State -->
+              <div class="glass-panel glass-panel-hover rounded-2xl p-4">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                  <span class="text-xs font-medium uppercase tracking-wider font-mono">Monthly Budget</span>
+                  <span class="p-1.5 rounded-lg bg-purple-400/10 text-purple-400">
+                    <span class="material-symbols-outlined text-base">account_balance_wallet</span>
+                  </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-3xl font-extrabold text-white font-mono tracking-tight">₹36.8k</span>
+                  <span class="text-xs font-semibold text-slate-400">of ₹50.0k</span>
+                </div>
+                <div class="w-full bg-slate-800/80 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div class="bg-gradient-to-r from-purple-500 to-[#00d4ff] h-1.5 rounded-full w-[73.6%]"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1.5">
+                  <span>₹13,200 remaining</span>
+                  <span>10 days left</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Two-Column Primary View: Timeline & Priority Queue -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              <!-- Left 2 Cols: Schedule Timeline & Active Interventions -->
+              <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Today's Dynamic Schedule Timeline -->
+                <div class="glass-panel rounded-2xl p-5">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">calendar_today</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white">Dynamic Schedule Flow</h3>
+                      <span class="text-xs text-slate-400 font-mono">Sunday, Sep 20</span>
+                    </div>
+                    <button onclick="switchView('calendar')" class="text-xs font-mono text-[#00d4ff] hover:underline flex items-center gap-1">
+                      Expand Calendar →
+                    </button>
+                  </div>
+
+                  <div class="space-y-3 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+                    
+                    <div class="flex items-start gap-4 pl-2 relative">
+                      <div class="w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-[#0a0d1a] mt-1.5 flex-shrink-0 z-10"></div>
+                      <div class="flex-1 p-3 rounded-xl bg-[#141830]/80 border border-white/[0.06] flex items-center justify-between">
+                        <div>
+                          <div class="text-xs font-semibold text-white">Push Workout: Chest & Triceps</div>
+                          <div class="text-[11px] text-slate-400 font-mono mt-0.5">17:30 - 18:45 • Gold's Gym • 520 kcal</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Completed</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 pl-2 relative">
+                      <div class="w-3 h-3 rounded-full bg-[#00d4ff] ring-4 ring-[#0a0d1a] mt-1.5 flex-shrink-0 z-10 animate-pulse"></div>
+                      <div class="flex-1 p-3 rounded-xl bg-gradient-to-r from-[#00d4ff]/10 to-transparent border border-[#00d4ff]/30 flex items-center justify-between">
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">Deep Study Block: OS Memory Management</span>
+                            <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#00d4ff]/20 text-[#00d4ff]">NOW ACTIVE</span>
+                          </div>
+                          <div class="text-[11px] text-slate-300 font-mono mt-0.5">22:00 - 23:45 • Paging & TLB Hit Rate Formulas</div>
+                        </div>
+                        <button onclick="switchView('study')" class="px-2.5 py-1 rounded bg-[#00d4ff] text-black text-[11px] font-bold hover:bg-[#00d4ff]/90 transition-all">Launch Notes</button>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 pl-2 relative">
+                      <div class="w-3 h-3 rounded-full bg-purple-400 ring-4 ring-[#0a0d1a] mt-1.5 flex-shrink-0 z-10"></div>
+                      <div class="flex-1 p-3 rounded-xl bg-[#141830]/50 border border-white/[0.04] flex items-center justify-between">
+                        <div>
+                          <div class="text-xs font-medium text-slate-300">Wind-down & Night Habit Loop</div>
+                          <div class="text-[11px] text-slate-500 font-mono mt-0.5">00:00 - 00:30 • Sleep Target: 7.5 hrs</div>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-500">Upcoming</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Priority Execution Queue -->
+                <div class="glass-panel rounded-2xl p-5">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-amber-400/10 text-amber-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">format_list_bulleted</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white">TADASHI Prioritized Queue</h3>
+                      <span class="text-xs font-mono text-slate-400">(Auto-ranked by urgency & impact)</span>
+                    </div>
+                    <button onclick="switchView('tasks')" class="text-xs font-mono text-[#00d4ff] hover:underline">View All Tasks →</button>
+                  </div>
+
+                  <div class="space-y-2">
+                    <div class="p-3 rounded-xl bg-[#141830]/70 border border-white/[0.06] flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <input type="checkbox" class="rounded bg-slate-800 border-slate-700 text-[#00d4ff] focus:ring-0 w-4 h-4 cursor-pointer" />
+                        <div>
+                          <div class="text-xs font-semibold text-white">Solve OS Deadlock Bankers Algorithm Problem Set</div>
+                          <div class="text-[10px] text-slate-400 font-mono">Academic • Due Sep 22 • High Confidence</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 text-[9px] font-mono font-semibold rounded bg-red-500/10 text-red-400 border border-red-500/20">Critical</span>
+                        <span class="text-xs text-slate-400 font-mono">#1</span>
+                      </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-[#141830]/70 border border-white/[0.06] flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <input type="checkbox" class="rounded bg-slate-800 border-slate-700 text-[#00d4ff] focus:ring-0 w-4 h-4 cursor-pointer" />
+                        <div>
+                          <div class="text-xs font-semibold text-white">Pay Fiber Broadband Bill (Airtel)</div>
+                          <div class="text-[10px] text-slate-400 font-mono">Utilities • Due Sep 25 • ₹1,179</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 text-[9px] font-mono font-semibold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Medium</span>
+                        <span class="text-xs text-slate-400 font-mono">#2</span>
+                      </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-[#141830]/70 border border-white/[0.06] flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <input type="checkbox" class="rounded bg-slate-800 border-slate-700 text-[#00d4ff] focus:ring-0 w-4 h-4 cursor-pointer" />
+                        <div>
+                          <div class="text-xs font-semibold text-white">Inspect Motorcycle Engine Oil & Chain Slack</div>
+                          <div class="text-[10px] text-slate-400 font-mono">Vehicle Care • Due Sunday • KTM Duke 390</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 text-[9px] font-mono font-semibold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Maintenance</span>
+                        <span class="text-xs text-slate-400 font-mono">#3</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right 1 Col: Life Score Breakdown & AI Directives -->
+              <div class="space-y-6">
+                
+                <!-- Domain Radar / Health Bars -->
+                <div class="glass-panel rounded-2xl p-5">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-white">Domain Health Index</h3>
+                    <span class="text-xs font-mono text-[#00d4ff]">22 Trackers Active</span>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300">Nutrition & Hydration</span>
+                        <span class="font-mono text-emerald-400 font-bold">84%</span>
+                      </div>
+                      <div class="w-full bg-slate-800/80 rounded-full h-1.5">
+                        <div class="bg-emerald-400 h-1.5 rounded-full w-[84%]"></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300">Fitness & Recovery</span>
+                        <span class="font-mono text-[#00d4ff] font-bold">80%</span>
+                      </div>
+                      <div class="w-full bg-slate-800/80 rounded-full h-1.5">
+                        <div class="bg-[#00d4ff] h-1.5 rounded-full w-[80%]"></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300">Finance & Wealth Allocation</span>
+                        <span class="font-mono text-purple-400 font-bold">78%</span>
+                      </div>
+                      <div class="w-full bg-slate-800/80 rounded-full h-1.5">
+                        <div class="bg-purple-400 h-1.5 rounded-full w-[78%]"></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300">Academic & Skills Mastery</span>
+                        <span class="font-mono text-amber-400 font-bold">58%</span>
+                      </div>
+                      <div class="w-full bg-slate-800/80 rounded-full h-1.5">
+                        <div class="bg-amber-400 h-1.5 rounded-full w-[58%]"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 pt-3 border-t border-white/[0.06] text-center">
+                    <button onclick="switchView('analytics')" class="text-xs text-[#00d4ff] font-mono hover:underline">View Deep System Analytics →</button>
+                  </div>
+                </div>
+
+                <!-- Autonomous AI Interventions Card -->
+                <div class="glass-panel rounded-2xl p-5 border border-purple-500/20 bg-gradient-to-b from-purple-500/5 to-transparent">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <span class="material-symbols-outlined text-purple-400 text-lg">psychology</span>
+                    <h3 class="text-sm font-bold text-white">AI Real-time Insights</h3>
+                  </div>
+                  <div class="space-y-3">
+                    <div class="p-3 rounded-xl bg-[#141830]/80 border border-white/[0.06] hover:border-purple-500/40 transition-all cursor-pointer" onclick="switchView('study')">
+                      <div class="flex items-center justify-between text-[11px] font-bold text-purple-300 mb-1">
+                        <span>Study Acceleration</span>
+                        <span>94% Conf.</span>
+                      </div>
+                      <p class="text-xs text-slate-300">Exam countdown algorithm found 2-hour latency buffer tonight between 23:00 - 01:00.</p>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-[#141830]/80 border border-white/[0.06] hover:border-[#00d4ff]/40 transition-all cursor-pointer" onclick="switchView('finance')">
+                      <div class="flex items-center justify-between text-[11px] font-bold text-[#00d4ff] mb-1">
+                        <span>Budget Anomaly</span>
+                        <span>82% Conf.</span>
+                      </div>
+                      <p class="text-xs text-slate-300">Dining expenses trending 18% higher this week. Recommends home meal plan for next 4 days.</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- ==================== VIEW 2: TADASHI AI & VOICE CHAT ==================== -->
+          <div id="view-tadashi" class="page-view hidden space-y-4 h-full flex flex-col">
+            <!-- AI Header -->
+            <div class="glass-panel rounded-2xl p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-white shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+                  <span class="material-symbols-outlined">neurology</span>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-white flex items-center gap-2">
+                    TADASHI Autonomous Co-Pilot
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Gemini Neural Link Active</span>
+                  </div>
+                  <div class="text-xs text-slate-400 font-mono">Full Memory Context Loaded • 22 Domains In-Memory</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="toggleVoiceModal()" class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 text-xs font-bold hover:bg-[#00d4ff]/90 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm">mic</span>
+                  <span>Voice Mode</span>
+                </button>
+                <button class="p-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-300" title="Clear Context" onclick="clearMessages()">
+                  <span class="material-symbols-outlined text-base">refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat Scroll Area -->
+            <div id="chat-stream" class="flex-1 glass-panel rounded-2xl p-5 overflow-y-auto space-y-4 custom-scrollbar min-h-[420px]">
+              
+              <!-- AI Message -->
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/30 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                  AI
+                </div>
+                <div class="max-w-2xl bg-[#141830] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-xs leading-relaxed text-slate-200">
+                  <p class="font-medium text-white mb-1.5">Greetings Krishna. I've analyzed your full 22-domain state for Sunday evening.</p>
+                  <p class="text-slate-300 mb-2">Your <strong>Operating Systems (OS)</strong> end-term examination is in 6 days. Current readiness benchmark is at 58% against a 90% target threshold. You have a 2.5-hour open focus block available right now.</p>
+                  <div class="p-3 rounded-xl bg-[#0a0d1a] border border-white/[0.06] text-xs font-mono space-y-1">
+                    <div class="text-[#00d4ff]">⚡ Proposed Schedule Intervention:</div>
+                    <div class="text-slate-300">22:00 - 23:15: Virtual Memory & Page Replacement (LRU, FIFO, Optimal)</div>
+                    <div class="text-slate-300">23:15 - 23:45: Deadlock Avoidance Algorithm simulation test</div>
+                    <div class="text-emerald-400">Projected delta: +14% syllabus mastery</div>
+                  </div>
+                  <div class="flex gap-2 mt-3">
+                    <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff]/20 text-[#00d4ff] border border-[#00d4ff]/30 hover:bg-[#00d4ff]/30 font-semibold text-[11px] transition-all">Accept & Lock Calendar</button>
+                    <button class="px-3 py-1.5 rounded-lg bg-white/[0.06] text-slate-300 hover:bg-white/[0.1] text-[11px] transition-all">Modify Plan</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User Message -->
+              <div class="flex items-start gap-3 justify-end">
+                <div class="max-w-xl bg-gradient-to-r from-[#00d4ff]/20 to-[#7c3aed]/20 border border-[#00d4ff]/30 rounded-2xl rounded-tr-none p-3.5 text-xs text-white">
+                  Can you check my monthly grocery budget and remind me what I need to restock before tomorrow morning?
+                </div>
+                <div class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                  KC
+                </div>
+              </div>
+
+              <!-- AI Response -->
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/30 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                  AI
+                </div>
+                <div class="max-w-2xl bg-[#141830] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-xs leading-relaxed text-slate-200">
+                  <p class="mb-2">Cross-referencing <strong>Shopping & Inventory</strong> against <strong>Nutrition</strong>:</p>
+                  <ul class="list-disc pl-4 space-y-1 text-slate-300">
+                    <li><strong>Low Inventory Items:</strong> Rolled oats (1 day remaining), Eggs (4 left), Whey Protein isolate (3 scoops).</li>
+                    <li><strong>Budget Status:</strong> Grocery category has ₹2,840 allocated out of ₹7,500 total food allowance. Restocking these 3 items is estimated at ₹1,120, well within your safe threshold.</li>
+                  </ul>
+                  <p class="mt-2 text-slate-400 font-mono text-[11px]">I've pre-compiled your quick shopping cart in module #10.</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Quick Command Prompt Bar -->
+            <div class="flex items-center gap-2 overflow-x-auto py-1 custom-scrollbar text-xs">
+              <button onclick="sendQuickPrompt('What are my top 3 risks right now?')" class="px-3 py-1 rounded-full bg-white/[0.04] hover:bg-[#00d4ff]/10 text-slate-300 hover:text-[#00d4ff] border border-white/[0.06] hover:border-[#00d4ff]/30 whitespace-nowrap transition-all">Show Active Risks ⚠️</button>
+              <button onclick="sendQuickPrompt('Optimize my study plan for the OS Exam')" class="px-3 py-1 rounded-full bg-white/[0.04] hover:bg-[#00d4ff]/10 text-slate-300 hover:text-[#00d4ff] border border-white/[0.06] hover:border-[#00d4ff]/30 whitespace-nowrap transition-all">Re-optimize OS Exam Plan 📚</button>
+              <button onclick="sendQuickPrompt('Check my vehicle insurance expiry and fuel status')" class="px-3 py-1 rounded-full bg-white/[0.04] hover:bg-[#00d4ff]/10 text-slate-300 hover:text-[#00d4ff] border border-white/[0.06] hover:border-[#00d4ff]/30 whitespace-nowrap transition-all">Vehicle Health & Fuel 🏍️</button>
+              <button onclick="sendQuickPrompt('Review my monthly budget and investments')" class="px-3 py-1 rounded-full bg-white/[0.04] hover:bg-[#00d4ff]/10 text-slate-300 hover:text-[#00d4ff] border border-white/[0.06] hover:border-[#00d4ff]/30 whitespace-nowrap transition-all">Review Finances 💰</button>
+            </div>
+
+            <!-- Chat Input Wrapper -->
+            <div class="glass-panel rounded-2xl p-2 flex items-center gap-2 border border-white/[0.1] focus-within:border-[#00d4ff]/50 transition-all">
+              <button onclick="toggleVoiceModal()" class="w-9 h-9 rounded-xl bg-white/[0.05] hover:bg-[#00d4ff]/20 text-slate-400 hover:text-[#00d4ff] flex items-center justify-center transition-colors">
+                <span class="material-symbols-outlined text-lg">mic</span>
+              </button>
+              <input id="tadashi-msg-input" type="text" placeholder="Direct query to TADASHI (Voice or Text)..." class="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 px-2" onkeydown="if(event.key==='Enter') sendUserMessage()" />
+              <button onclick="sendUserMessage()" class="w-9 h-9 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-black font-bold flex items-center justify-center hover:opacity-90 transition-all shadow-[0_0_12px_rgba(0,212,255,0.3)]">
+                <span class="material-symbols-outlined text-base">send</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 3: SCHEDULE & CALENDAR ==================== -->
+          <div id="view-calendar" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Dynamic AI Schedule & Time Engine</h2>
+                <p class="text-xs text-slate-400">Autonomous conflict resolution and calendar blocks</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-xs font-semibold text-white border border-white/[0.08]">Sync Google Calendar</button>
+                <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 font-bold text-xs hover:bg-[#00d4ff]/90">+ New Event Block</button>
+              </div>
+            </div>
+
+            <!-- Calendar Month & Grid -->
+            <div class="glass-panel rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold font-mono text-[#00d4ff]">SEPTEMBER 2026</div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#00d4ff]"></span> Study</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Fitness</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-400"></span> Tasks</span>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-7 gap-2 text-center text-xs font-mono text-slate-400 border-b border-white/[0.06] pb-2 mb-2">
+                <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div><div>SUN</div>
+              </div>
+
+              <div class="grid grid-cols-7 gap-2">
+                <!-- Days grid representation -->
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">14</div>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">15</div>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">16</div>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">17</div>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">18</div>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] min-h-[70px] text-left text-xs opacity-50">19</div>
+                <div class="p-2 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/40 min-h-[70px] text-left text-xs relative shadow-[0_0_15px_rgba(0,212,255,0.15)]">
+                  <div class="font-bold text-[#00d4ff] flex justify-between">20 <span class="text-[9px] uppercase font-mono">Today</span></div>
+                  <div class="mt-1 p-1 bg-[#00d4ff]/20 text-[#00d4ff] rounded text-[10px] truncate font-medium">OS Study 22:00</div>
+                  <div class="mt-1 p-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] truncate font-medium">Push Day ✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 4: TASKS & PROJECTS ==================== -->
+          <div id="view-tasks" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Tasks & Engineering Projects</h2>
+                <p class="text-xs text-slate-400">Autonomous priority indexing and backlog control</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 font-bold text-xs hover:bg-[#00d4ff]/90">+ Create Task</button>
+            </div>
+
+            <!-- Kanban Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Todo -->
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-3">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Backlog Queue</span>
+                  <span class="font-mono text-slate-500">4</span>
+                </div>
+                <div class="space-y-2.5">
+                  <div class="p-3 rounded-xl bg-[#141830] border border-white/[0.06] text-xs space-y-1.5">
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-red-500/10 text-red-400 font-semibold">Priority 1</span>
+                    <div class="font-medium text-white">Solve Deadlock Bankers Algorithm Set</div>
+                    <div class="text-[10px] text-slate-400 font-mono">Academic • 6 days left</div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-[#141830] border border-white/[0.06] text-xs space-y-1.5">
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#00d4ff]/10 text-[#00d4ff] font-semibold">Dev</span>
+                    <div class="font-medium text-white">Refactor LifeOS Gemini API Streaming Hooks</div>
+                    <div class="text-[10px] text-slate-400 font-mono">TADASHI Core</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- In Progress -->
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-3">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse"></span> Executing Today</span>
+                  <span class="font-mono text-[#00d4ff]">2</span>
+                </div>
+                <div class="space-y-2.5">
+                  <div class="p-3 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/30 text-xs space-y-1.5">
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#00d4ff]/20 text-[#00d4ff] font-semibold">Now Active</span>
+                    <div class="font-bold text-white">OS Virtual Memory & Paging Review</div>
+                    <div class="text-[10px] text-slate-300 font-mono">Target: 2 hours tonight</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Completed -->
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-3">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Verified Done</span>
+                  <span class="font-mono text-emerald-400">5</span>
+                </div>
+                <div class="space-y-2.5 opacity-75">
+                  <div class="p-3 rounded-xl bg-[#141830] border border-white/[0.04] text-xs space-y-1 line-through text-slate-400">
+                    <div>Gym Push Day Routine: 4x8 Incline DB Press</div>
+                    <div class="text-[10px] text-slate-500 font-mono">Done at 18:45</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 5: GOALS & OKRS ==================== -->
+          <div id="view-goals" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Long-term Objectives & Key Results (OKRs)</h2>
+                <p class="text-xs text-slate-400">Yearly & semester milestone tracking</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 font-bold text-xs hover:bg-[#00d4ff]/90">+ New Milestone</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="glass-panel rounded-2xl p-5 border border-purple-500/20">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-mono text-purple-400 font-bold uppercase">Academic OKR 1</span>
+                  <span class="text-xs font-mono font-bold text-white">78% Complete</span>
+                </div>
+                <h3 class="text-sm font-bold text-white mb-1">Achieve 9.0+ Semester GPA & Grade A in Operating Systems</h3>
+                <p class="text-xs text-slate-400 mb-3">Target deadline: Dec 2026. 4/5 assignments submitted with 94% average.</p>
+                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div class="bg-gradient-to-r from-purple-500 to-[#00d4ff] h-2 rounded-full w-[78%]"></div>
+                </div>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-5 border border-emerald-500/20">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Health OKR 2</span>
+                  <span class="text-xs font-mono font-bold text-white">82% Complete</span>
+                </div>
+                <h3 class="text-sm font-bold text-white mb-1">Reach 74kg Lean Bodyweight at 12% Bodyfat</h3>
+                <p class="text-xs text-slate-400 mb-3">Current: 75.8kg @ 14.1% body fat. Consistent 5-day training streak.</p>
+                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div class="bg-gradient-to-r from-emerald-500 to-[#00d4ff] h-2 rounded-full w-[82%]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 6: STUDY & LEARNING ==================== -->
+          <div id="view-study" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Academic Curriculum & Cognitive Index</h2>
+                <p class="text-xs text-slate-400">Exam preparations, flashcards and syllabus tracking</p>
+              </div>
+              <button onclick="switchView('tadashi')" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] text-black font-bold text-xs">AI Study Tutor →</button>
+            </div>
+
+            <!-- Subject Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="glass-panel rounded-2xl p-4 border border-amber-500/30">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-400 font-bold">Exam in 6 Days</span>
+                  <span class="text-xs font-mono text-slate-400 font-semibold">CS-301</span>
+                </div>
+                <h3 class="text-sm font-bold text-white">Operating Systems</h3>
+                <p class="text-xs text-slate-400 mt-1 mb-3">Topics: Memory Management, Deadlocks, File Systems, Virtual Paging.</p>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-slate-400">Readiness</span>
+                  <span class="text-amber-400 font-bold">58%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-amber-400 h-1.5 w-[58%]"></div>
+                </div>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-4 border border-[#00d4ff]/20">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#00d4ff]/10 text-[#00d4ff] font-bold">Exam in 10 Days</span>
+                  <span class="text-xs font-mono text-slate-400 font-semibold">CS-304</span>
+                </div>
+                <h3 class="text-sm font-bold text-white">Database Management Systems</h3>
+                <p class="text-xs text-slate-400 mt-1 mb-3">Topics: Normalization (3NF/BCNF), Query Optimization, ACID transactions.</p>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-slate-400">Readiness</span>
+                  <span class="text-[#00d4ff] font-bold">72%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-[#00d4ff] h-1.5 w-[72%]"></div>
+                </div>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-4 border border-emerald-500/20">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 font-bold">Exam in 18 Days</span>
+                  <span class="text-xs font-mono text-slate-400 font-semibold">CS-308</span>
+                </div>
+                <h3 class="text-sm font-bold text-white">Computer Networks</h3>
+                <p class="text-xs text-slate-400 mt-1 mb-3">Topics: TCP/IP Congestion Control, Routing Protocols (OSPF/BGP), Sockets.</p>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-slate-400">Readiness</span>
+                  <span class="text-emerald-400 font-bold">81%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-emerald-400 h-1.5 w-[81%]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 7: FITNESS & HEALTH ==================== -->
+          <div id="view-fitness" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Physical Training & Bio-Metrics</h2>
+                <p class="text-xs text-slate-400">Volume tracking, workout logs and personal records</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-emerald-400 text-slate-950 font-bold text-xs">+ Log Set / Workout</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Streak</div>
+                <div class="text-2xl font-extrabold text-amber-400 font-mono mt-1">4 Days 🔥</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Week Sessions</div>
+                <div class="text-2xl font-extrabold text-[#00d4ff] font-mono mt-1">4 / 5 Done</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Weight</div>
+                <div class="text-2xl font-extrabold text-white font-mono mt-1">75.8 kg</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Body Fat</div>
+                <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">14.1%</div>
+              </div>
+            </div>
+
+            <!-- Workout Log Table -->
+            <div class="glass-panel rounded-2xl p-5">
+              <h3 class="text-sm font-bold text-white mb-3">Today's Push Log (Sep 20)</h3>
+              <div class="space-y-2">
+                <div class="p-2.5 rounded-xl bg-[#141830] border border-white/[0.04] flex items-center justify-between text-xs">
+                  <span class="font-semibold text-white">Incline Dumbbell Press</span>
+                  <span class="font-mono text-slate-300">4 sets × 10 reps (32kg)</span>
+                  <span class="font-mono text-emerald-400">1,280 kg vol</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[#141830] border border-white/[0.04] flex items-center justify-between text-xs">
+                  <span class="font-semibold text-white">Weighted Dips</span>
+                  <span class="font-mono text-slate-300">3 sets × 12 reps (+15kg)</span>
+                  <span class="font-mono text-emerald-400">Done</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 8: NUTRITION & DIET ==================== -->
+          <div id="view-nutrition" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Macronutrients & Hydration Engine</h2>
+                <p class="text-xs text-slate-400">Daily calorie targets and meal logging</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 font-bold text-xs">+ Log Meal</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Calories</div>
+                <div class="text-xl font-bold text-white font-mono mt-1">1,940 <span class="text-xs text-slate-400">/ 2,400 kcal</span></div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-[#00d4ff] h-1.5 w-[80%]"></div></div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Protein</div>
+                <div class="text-xl font-bold text-purple-400 font-mono mt-1">142g <span class="text-xs text-slate-400">/ 160g</span></div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-purple-400 h-1.5 w-[88%]"></div></div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Carbs</div>
+                <div class="text-xl font-bold text-amber-400 font-mono mt-1">210g <span class="text-xs text-slate-400">/ 270g</span></div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-amber-400 h-1.5 w-[77%]"></div></div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Water</div>
+                <div class="text-xl font-bold text-cyan-400 font-mono mt-1">3.1L <span class="text-xs text-slate-400">/ 3.5L</span></div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-cyan-400 h-1.5 w-[88%]"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 9: FINANCE & WEALTH ==================== -->
+          <div id="view-finance" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Finance & Net Worth Telemetry</h2>
+                <p class="text-xs text-slate-400">Cashflow, recurring expenses, and investments</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-emerald-400 text-slate-950 font-bold text-xs">+ Add Expense</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="glass-panel rounded-2xl p-5">
+                <div class="text-xs text-slate-400 font-mono">Current Liquid Balance</div>
+                <div class="text-3xl font-extrabold text-[#00d4ff] font-mono mt-2">₹42,850</div>
+                <div class="text-[11px] text-slate-400 mt-1">HDFC Core + Zerodha Cash</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-5">
+                <div class="text-xs text-slate-400 font-mono">Sep Spent / Budget</div>
+                <div class="text-3xl font-extrabold text-amber-400 font-mono mt-2">₹36,800</div>
+                <div class="text-[11px] text-slate-400 mt-1">73.6% of ₹50k limit utilized</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-5">
+                <div class="text-xs text-slate-400 font-mono">Emergency Savings Vault</div>
+                <div class="text-3xl font-extrabold text-emerald-400 font-mono mt-2">₹1,40,000</div>
+                <div class="text-[11px] text-slate-400 mt-1">Target: ₹2,00,000 (70% reached)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 10: SHOPPING & INVENTORY ==================== -->
+          <div id="view-shopping" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Shopping Lists & Household Inventory</h2>
+            <div class="glass-panel rounded-2xl p-5">
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-white">Grocery Restock Queue</span>
+                <span class="text-xs font-mono text-[#00d4ff]">Auto-populated by TADASHI</span>
+              </div>
+              <div class="space-y-2">
+                <div class="p-2.5 rounded-xl bg-[#141830] flex items-center justify-between text-xs">
+                  <span class="text-white">Rolled Oats (1kg pack)</span>
+                  <span class="text-slate-400 font-mono">₹190</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[#141830] flex items-center justify-between text-xs">
+                  <span class="text-white">Farm Fresh Eggs (30 pack tray)</span>
+                  <span class="text-slate-400 font-mono">₹210</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 11: RELATIONSHIPS ==================== -->
+          <div id="view-relationships" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Relationships & Social Commitments</h2>
+            <div class="glass-panel rounded-2xl p-4 border border-pink-500/30">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">🎂</div>
+                  <div>
+                    <div class="text-sm font-bold text-white">Mom's Birthday</div>
+                    <div class="text-xs text-slate-400">Scheduled call at 20:00 • Gift dispatched</div>
+                  </div>
+                </div>
+                <button class="px-3 py-1.5 rounded-lg bg-pink-500 text-white font-bold text-xs">Mark Call Complete</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 12: HOME CARE ==================== -->
+          <div id="view-home-module" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Home Care, Maintenance & Chores</h2>
+            <div class="glass-panel rounded-2xl p-5 space-y-3">
+              <div class="p-3 rounded-xl bg-[#141830] flex items-center justify-between text-xs">
+                <span class="text-white">Clean Air Conditioner Filters</span>
+                <span class="font-mono text-amber-400">Due in 2 days</span>
+              </div>
+              <div class="p-3 rounded-xl bg-[#141830] flex items-center justify-between text-xs">
+                <span class="text-white">Pay Water & Society Maintenance</span>
+                <span class="font-mono text-emerald-400">Paid Sep 10</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 13: VEHICLE CARE ==================== -->
+          <div id="view-vehicle" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Vehicle Diagnostics (KTM Duke 390)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Odometer</div>
+                <div class="text-2xl font-bold font-mono text-white mt-1">12,480 km</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Fuel Level</div>
+                <div class="text-2xl font-bold font-mono text-emerald-400 mt-1">75% (10.2L)</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs text-slate-400 font-mono">Next Oil Service</div>
+                <div class="text-2xl font-bold font-mono text-amber-400 mt-1">In 28 days</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 14: TRAVEL & TRIPS ==================== -->
+          <div id="view-travel" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Travel Planner & Itineraries</h2>
+            <div class="glass-panel rounded-2xl p-5">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-bold text-white">Himachal Winter Hackathon Trip</span>
+                <span class="font-mono text-xs text-[#00d4ff]">Dec 12 - 18</span>
+              </div>
+              <p class="text-xs text-slate-400">Packing list, train tickets and resort reservations synced with Document Vault.</p>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 15: DOCUMENT VAULT ==================== -->
+          <div id="view-documents" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Secure Document Vault (Encrypted)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-mono text-purple-400">ID & Citizenship</div>
+                <div class="text-sm font-semibold text-white mt-1">Passport & Driver's License</div>
+                <div class="text-[10px] text-slate-500 mt-1 font-mono">Verified OCR Active</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-mono text-[#00d4ff]">Insurance</div>
+                <div class="text-sm font-semibold text-white mt-1">Motor & Health Policies</div>
+                <div class="text-[10px] text-slate-500 mt-1 font-mono">Valid till Aug 2027</div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-mono text-emerald-400">Academics</div>
+                <div class="text-sm font-semibold text-white mt-1">Semester Grade Transcripts</div>
+                <div class="text-[10px] text-slate-500 mt-1 font-mono">3 Documents</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 16: KNOWLEDGE BASE ==================== -->
+          <div id="view-knowledge" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Semantic Knowledge Base (RAG Ready)</h2>
+            <div class="glass-panel rounded-2xl p-4">
+              <div class="text-xs font-bold text-[#00d4ff] mb-2 font-mono">142 Markdown Notes & Research Papers Indexed</div>
+              <p class="text-xs text-slate-300">Natural language embeddings active for deep search across study notes, systems architecture, and engineering snippets.</p>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 17: ROUTINES & HABITS ==================== -->
+          <div id="view-routines" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Circadian Routines & Habits</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="glass-panel rounded-2xl p-4">
+                <h3 class="text-xs font-mono font-bold text-amber-400 mb-2">Morning Protocol (07:00 - 08:30)</h3>
+                <div class="space-y-1.5 text-xs text-slate-300">
+                  <div>✓ 500ml water + electrolytes</div>
+                  <div>✓ 15-min sunlight exposure</div>
+                  <div>✓ High-protein breakfast</div>
+                </div>
+              </div>
+              <div class="glass-panel rounded-2xl p-4">
+                <h3 class="text-xs font-mono font-bold text-purple-400 mb-2">Night Shutdown (23:45 - 00:30)</h3>
+                <div class="space-y-1.5 text-xs text-slate-300">
+                  <div>• Screen blue-light cutoff</div>
+                  <div>• LifeOS daily log review</div>
+                  <div>• 10-min mobility stretch</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 18: WELLBEING & MOOD ==================== -->
+          <div id="view-wellbeing" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Wellbeing & Cognitive Stress Monitor</h2>
+            <div class="glass-panel rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-white">Daily Mood Log: Peak Focus (😁 Great)</span>
+                <span class="text-xs font-mono text-emerald-400">Stress Index: Low (1.8/5)</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-400 to-[#00d4ff] h-2 w-[85%]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 19: DIGITAL LIFE ==================== -->
+          <div id="view-digital-life" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Digital Subscriptions & Cloud Accounts</h2>
+            <div class="glass-panel rounded-2xl p-4 space-y-2">
+              <div class="p-2.5 rounded-xl bg-[#141830] flex justify-between items-center text-xs">
+                <span class="text-white">GitHub Pro & Copilot</span>
+                <span class="font-mono text-slate-400">₹830/mo • Renews Oct 02</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#141830] flex justify-between items-center text-xs">
+                <span class="text-white">Google Cloud & Gemini API</span>
+                <span class="font-mono text-emerald-400">Free Tier Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 20: ENTERTAINMENT ==================== -->
+          <div id="view-entertainment" class="page-view hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Media, Books & Leisure Queue</h2>
+            <div class="glass-panel rounded-2xl p-4">
+              <div class="text-xs font-semibold text-white">Currently Reading: "Designing Data-Intensive Applications"</div>
+              <div class="text-[11px] text-slate-400 mt-1 font-mono">Martin Kleppmann • 64% complete</div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 21: SYSTEM ANALYTICS ==================== -->
+          <div id="view-analytics" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Cross-Domain Telemetry & Predictive Analytics</h2>
+                <p class="text-xs text-slate-400">Correlation models across sleep, gym, study scores, and financial habits</p>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-[#00d4ff] text-slate-950 font-bold text-xs">Export Telemetry Log</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="glass-panel rounded-2xl p-5">
+                <h3 class="text-xs font-mono font-bold text-[#00d4ff] mb-2">Sleep vs Focus Correlation</h3>
+                <p class="text-xs text-slate-300">Data indicates that 7.2+ hours of sleep directly yields +28% higher problem-solving retention on CS coursework.</p>
+              </div>
+              <div class="glass-panel rounded-2xl p-5">
+                <h3 class="text-xs font-mono font-bold text-emerald-400 mb-2">Workout Discipline Impact</h3>
+                <p class="text-xs text-slate-300">Days with morning or afternoon gym sessions show 34% lower late-night stress scores.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== VIEW 22: SETTINGS & VOICE ==================== -->
+          <div id="view-settings" class="page-view hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">TADASHI AI Engine Settings & LLM Keys</h2>
+                <p class="text-xs text-slate-400">Gemini model selection, voice synthesis rates, and privacy rules</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#00d4ff] text-base">key</span>
+                  Gemini API Connection
+                </h3>
+                <div>
+                  <label class="block text-xs font-mono text-slate-400 mb-1">Google Gemini API Key</label>
+                  <input type="password" value="AIzaSyCore-Engine-LifeOS-EncryptedKey" class="w-full bg-[#0a0d1a] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-[#00d4ff]" />
+                </div>
+                <div>
+                  <label class="block text-xs font-mono text-slate-400 mb-1">Primary Neural Model</label>
+                  <select class="w-full bg-[#0a0d1a] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-200 outline-none">
+                    <option>gemini-2.0-flash (Ultra-fast, lowest latency)</option>
+                    <option>gemini-1.5-pro (Deep reasoning & scheduling)</option>
+                  </select>
+                </div>
+                <button class="px-4 py-2 rounded-xl bg-[#00d4ff] text-slate-950 font-bold text-xs hover:bg-[#00d4ff]/90">Save & Validate Key</button>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <span class="material-symbols-outlined text-purple-400 text-base">record_voice_over</span>
+                  Voice Synthesis & Speech Parameters
+                </h3>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-300">Auto-read AI Responses aloud</span>
+                  <input type="checkbox" checked class="w-4 h-4 rounded text-[#00d4ff] bg-slate-800 border-slate-700" />
+                </div>
+                <div>
+                  <label class="block text-xs font-mono text-slate-400 mb-1">Voice Rate (Speed): 1.1x</label>
+                  <input type="range" min="0.8" max="1.4" step="0.05" value="1.1" class="w-full accent-[#00d4ff]" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+
+        <!-- RIGHT SLIDEOUT CONTEXT DRAWER -->
+        <aside id="context-drawer" class="w-80 border-l border-white/[0.07] bg-[#0a0d1a]/95 backdrop-blur-2xl p-5 flex flex-col flex-shrink-0 z-30 transition-all duration-300 overflow-y-auto custom-scrollbar">
+          <div class="flex items-center justify-between pb-3 border-b border-white/[0.07] mb-4">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#00d4ff] text-base">sensors</span>
+              <span class="text-xs font-bold text-white uppercase tracking-wider font-mono">Live Telemetry</span>
+            </div>
+            <button onclick="toggleContextDrawer()" class="text-slate-500 hover:text-white text-xs">✕</button>
+          </div>
+
+          <!-- Real-time Agent Health -->
+          <div class="space-y-4">
+            <div>
+              <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Autonomous Agent State</div>
+              <div class="p-3 rounded-xl bg-[#0f1328] border border-white/[0.06]">
+                <div class="flex items-center justify-between text-xs font-semibold text-white mb-1">
+                  <span>TADASHI Guard</span>
+                  <span class="text-emerald-400 font-mono text-[10px]">Active Loop</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Monitoring 22 domain invariants and calendar deadline proximity.</div>
+              </div>
+            </div>
+
+            <!-- Priority Alerts -->
+            <div>
+              <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Urgent Risk Signals (2)</div>
+              <div class="space-y-2">
+                <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+                  <div class="font-bold text-amber-300 mb-0.5">Syllabus Deficit: OS Exam</div>
+                  <div class="text-[11px] text-slate-300">6 days until testing. 3 core modules remaining to cover.</div>
+                </div>
+                <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs">
+                  <div class="font-bold text-purple-300 mb-0.5">Monthly Dining Out Limit</div>
+                  <div class="text-[11px] text-slate-300">Spend reached 82% of allowance with 10 days remaining in cycle.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Life Score Summary -->
+            <div class="p-4 rounded-xl bg-gradient-to-br from-[#00d4ff]/10 to-[#7c3aed]/10 border border-[#00d4ff]/20 text-center">
+              <div class="text-4xl font-extrabold text-[#00d4ff] font-mono">84.2</div>
+              <div class="text-xs font-bold text-white mt-1">Composite Life Quality Index</div>
+              <div class="text-[10px] text-slate-400 mt-0.5 font-mono">Calculated across 22 interconnected domains</div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE CALL OVERLAY MODAL -->
+  <div id="voice-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+    <div class="max-w-md w-full glass-panel border border-[#00d4ff]/40 rounded-3xl p-8 text-center relative shadow-[0_0_50px_rgba(0,212,255,0.2)]">
+      <button onclick="toggleVoiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">✕</button>
+      
+      <div class="text-[11px] font-mono text-[#00d4ff] uppercase tracking-widest font-bold mb-2">TADASHI Live Speech Link</div>
+      <h3 class="text-xl font-bold text-white mb-6">Listening... Speak naturally</h3>
+
+      <!-- Holographic Audio Wave Orb -->
+      <div class="relative w-36 h-36 mx-auto mb-8 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border border-[#00d4ff]/30 pulse-animation"></div>
+        <div class="absolute inset-2 rounded-full border border-purple-500/30 pulse-animation" style="animation-delay: 0.8s;"></div>
+        <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-3xl text-white shadow-[0_0_30px_rgba(0,212,255,0.5)]">
+          <span class="material-symbols-outlined text-4xl">graphic_eq</span>
+        </div>
+      </div>
+
+      <!-- Live Transcript simulation -->
+      <div class="p-3.5 rounded-2xl bg-[#0a0d1a] border border-white/[0.08] text-xs text-slate-300 font-mono mb-6">
+        <span class="text-slate-500">Transcript:</span> "TADASHI, adjust my night study schedule so I get 8 hours of sleep before tomorrow's lab."
+      </div>
+
+      <div class="flex items-center justify-center gap-4">
+        <button class="w-12 h-12 rounded-2xl bg-white/[0.08] text-white flex items-center justify-center hover:bg-white/[0.15] transition-all">
+          <span class="material-symbols-outlined">mic</span>
+        </button>
+        <button onclick="toggleVoiceModal()" class="px-6 py-3 rounded-2xl bg-red-500/80 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-sm">call_end</span>
+          <span>End Voice Call</span>
+        </button>
+        <button class="w-12 h-12 rounded-2xl bg-white/[0.08] text-white flex items-center justify-center hover:bg-white/[0.15] transition-all">
+          <span class="material-symbols-outlined">volume_up</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: NAVIGATION & SWITCHING LOGIC -->
+  <script>
+    const DOMAINS = [
+      { id: 'home', name: 'Home Dashboard', icon: 'dashboard', emoji: '🏠' },
+      { id: 'tadashi', name: 'TADASHI AI & Voice', icon: 'neurology', emoji: '🧠' },
+      { id: 'calendar', name: 'Schedule & Calendar', icon: 'calendar_today', emoji: '📅' },
+      { id: 'tasks', name: 'Tasks & Projects', icon: 'check_circle', emoji: '✅' },
+      { id: 'goals', name: 'Goals & OKRs', icon: 'flag', emoji: '🎯' },
+      { id: 'study', name: 'Study & Learning', icon: 'school', emoji: '📚' },
+      { id: 'fitness', name: 'Fitness & Health', icon: 'fitness_center', emoji: '💪' },
+      { id: 'nutrition', name: 'Nutrition & Diet', icon: 'restaurant', emoji: '🥗' },
+      { id: 'finance', name: 'Finance & Wealth', icon: 'payments', emoji: '💰' },
+      { id: 'shopping', name: 'Shopping & Inventory', icon: 'shopping_bag', emoji: '🛒' },
+      { id: 'relationships', name: 'Relationships', icon: 'group', emoji: '👥' },
+      { id: 'home-module', name: 'Home Care', icon: 'cottage', emoji: '🏡' },
+      { id: 'vehicle', name: 'Vehicle Care', icon: 'two_wheeler', emoji: '🏍️' },
+      { id: 'travel', name: 'Travel & Trips', icon: 'flight', emoji: '✈️' },
+      { id: 'documents', name: 'Document Vault', icon: 'folder_shared', emoji: '📁' },
+      { id: 'knowledge', name: 'Knowledge Base', icon: 'lightbulb', emoji: '💡' },
+      { id: 'routines', name: 'Routines & Habits', icon: 'bedtime', emoji: '🌅' },
+      { id: 'wellbeing', name: 'Wellbeing & Mood', icon: 'self_improvement', emoji: '🧘' },
+      { id: 'digital-life', name: 'Digital Life', icon: 'laptop', emoji: '💻' },
+      { id: 'entertainment', name: 'Entertainment', icon: 'theater_comedy', emoji: '🎭' },
+      { id: 'analytics', name: 'System Analytics', icon: 'query_stats', emoji: '📊' },
+      { id: 'settings', name: 'Settings & Voice', icon: 'settings', emoji: '⚙️' },
+    ];
+
+    let currentView = 'home';
+
+    function initNavigation() {
+      const navList = document.getElementById('nav-list');
+      const moduleTabs = document.getElementById('module-tabs');
+      
+      navList.innerHTML = '';
+      moduleTabs.innerHTML = '';
+
+      DOMAINS.forEach((domain, idx) => {
+        // Sidebar item
+        const navBtn = document.createElement('button');
+        navBtn.id = `nav-btn-${domain.id}`;
+        navBtn.className = `w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all text-left ${
+          domain.id === currentView 
+            ? 'bg-[#00d4ff]/15 text-[#00d4ff] border border-[#00d4ff]/30 font-semibold shadow-[0_0_12px_rgba(0,212,255,0.1)]' 
+            : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+        }`;
+        navBtn.onclick = () => switchView(domain.id);
+        navBtn.innerHTML = `
+          <span class="text-sm">${domain.emoji}</span>
+          <span class="truncate flex-1">${domain.name}</span>
+          <span class="text-[9px] font-mono text-slate-600">${String(idx + 1).padStart(2, '0')}</span>
+        `;
+        navList.appendChild(navBtn);
+
+        // Sticky Top Tab
+        const tabBtn = document.createElement('button');
+        tabBtn.id = `tab-btn-${domain.id}`;
+        tabBtn.className = `px-2.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
+          domain.id === currentView
+            ? 'bg-[#00d4ff] text-slate-950 font-bold shadow-[0_0_10px_rgba(0,212,255,0.3)]'
+            : 'bg-white/[0.04] text-slate-400 hover:text-white border border-white/[0.06] hover:border-white/[0.15]'
+        }`;
+        tabBtn.onclick = () => switchView(domain.id);
+        tabBtn.innerHTML = `<span>${domain.emoji}</span><span>${domain.name}</span>`;
+        moduleTabs.appendChild(tabBtn);
+      });
+    }
+
+    function switchView(viewId) {
+      currentView = viewId;
+      
+      // Toggle views visibility
+      document.querySelectorAll('.page-view').forEach(view => {
+        view.classList.add('hidden');
+      });
+      const targetView = document.getElementById(`view-${viewId}`);
+      if (targetView) {
+        targetView.classList.remove('hidden');
+      }
+
+      // Update Topbar
+      const currentDomain = DOMAINS.find(d => d.id === viewId);
+      if (currentDomain) {
+        document.getElementById('topbar-title').textContent = currentDomain.name;
+        document.getElementById('topbar-icon').innerHTML = `<span class="material-symbols-outlined text-lg">${currentDomain.icon}</span>`;
+      }
+
+      // Re-render sidebar & tabs active styling
+      DOMAINS.forEach(d => {
+        const navBtn = document.getElementById(`nav-btn-${d.id}`);
+        const tabBtn = document.getElementById(`tab-btn-${d.id}`);
+        
+        if (d.id === viewId) {
+          if (navBtn) {
+            navBtn.className = 'w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#00d4ff]/15 text-[#00d4ff] border border-[#00d4ff]/30 shadow-[0_0_12px_rgba(0,212,255,0.1)]';
+          }
+          if (tabBtn) {
+            tabBtn.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-[#00d4ff] text-slate-950 shadow-[0_0_10px_rgba(0,212,255,0.3)] whitespace-nowrap flex items-center gap-1.5';
+          }
+        } else {
+          if (navBtn) {
+            navBtn.className = 'w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-white/[0.04] transition-all';
+          }
+          if (tabBtn) {
+            tabBtn.className = 'px-2.5 py-1 rounded-full text-xs font-medium bg-white/[0.04] text-slate-400 hover:text-white border border-white/[0.06] hover:border-white/[0.15] whitespace-nowrap flex items-center gap-1.5 transition-all';
+          }
+        }
+      });
+    }
+
+    function toggleContextDrawer() {
+      const drawer = document.getElementById('context-drawer');
+      drawer.classList.toggle('hidden');
+    }
+
+    function toggleVoiceModal() {
+      const modal = document.getElementById('voice-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function sendQuickPrompt(text) {
+      const input = document.getElementById('tadashi-msg-input');
+      if (input) {
+        input.value = text;
+        sendUserMessage();
+      }
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('tadashi-msg-input');
+      const stream = document.getElementById('chat-stream');
+      if (!input || !input.value.trim()) return;
+
+      const userText = input.value.trim();
+      input.value = '';
+
+      // Append User message
+      const userDiv = document.createElement('div');
+      userDiv.className = 'flex items-start gap-3 justify-end';
+      userDiv.innerHTML = `
+        <div class="max-w-xl bg-gradient-to-r from-[#00d4ff]/20 to-[#7c3aed]/20 border border-[#00d4ff]/30 rounded-2xl rounded-tr-none p-3.5 text-xs text-white">
+          ${userText}
+        </div>
+        <div class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">
+          KC
+        </div>
+      `;
+      stream.appendChild(userDiv);
+
+      // Append simulated AI response
+      setTimeout(() => {
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'flex items-start gap-3';
+        aiDiv.innerHTML = `
+          <div class="w-8 h-8 rounded-lg bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/30 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+            AI
+          </div>
+          <div class="max-w-2xl bg-[#141830] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-xs leading-relaxed text-slate-200">
+            <p class="font-medium text-white mb-1">Acknowledged, Krishna. Context updated across LifeOS core memory.</p>
+            <p class="text-slate-300">I have reconciled your prompt against the live state of all active modules. Your schedule, commitment debt, and priority queue have been harmonized.</p>
+            <div class="mt-2 text-[10px] font-mono text-emerald-400">✓ Invariants verified: Zero calendar overlaps • Energy curve respected</div>
+          </div>
+        `;
+        stream.appendChild(aiDiv);
+        stream.scrollTop = stream.scrollHeight;
+      }, 500);
+
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function clearMessages() {
+      const stream = document.getElementById('chat-stream');
+      stream.innerHTML = '<div class="text-center text-xs font-mono text-slate-500 py-8">Chat session cleared. LifeOS context remains active.</div>';
+    }
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const search = document.getElementById('search-input');
+        if (search) search.focus();
+      }
+    });
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initNavigation);
+    initNavigation();
+  </script>
+</body>
+</html>

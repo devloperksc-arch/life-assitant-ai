@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TADASHI LifeOS — Complete All-22-Pages Master Skeleton for Stitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    /* Skeleton Page Switcher Styling */
+    .skeleton-nav-strip {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 13, 26, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 10px 16px;
+      margin: -24px -24px 20px -24px;
+      border-bottom: 1px solid var(--border-glass);
+      display: flex; gap: 8px; overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .page-tab-btn {
+      padding: 6px 14px; border-radius: var(--radius-full);
+      background: var(--bg-elevated); border: 1px solid var(--border-glass);
+      color: var(--text-secondary); font-size: 12px; font-weight: 600;
+      white-space: nowrap; cursor: pointer; transition: all 0.15s;
+    }
+    .page-tab-btn:hover {
+      border-color: var(--accent-cyan); color: var(--text-primary);
+    }
+    .page-tab-btn.active {
+      background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+      border-color: var(--accent-cyan); color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0,212,255,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== APP ROOT SHELL ==================== -->
+  <div id="app-root">
+
+    <!-- ──────────────── SIDEBAR ──────────────── -->
+    <aside id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-avatar">🧠</div>
+        <div class="brand-text">
+          <span class="brand-title">TADASHI</span>
+          <span class="brand-sub">LifeOS v1.0</span>
+        </div>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar">KC</div>
+        <div class="user-meta">
+          <span class="user-name">Krishna Singh</span>
+          <span class="user-role">Student · Dev</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">ALL 22 DOMAIN MODULES</div>
+        <a class="nav-item" onclick="switchSkeletonPage('home', document.getElementById('tab-btn-home'))"><span class="nav-icon">🏠</span><span class="nav-text">Home Dashboard</span></a><a class="nav-item" onclick="switchSkeletonPage('tadashi', document.getElementById('tab-btn-tadashi'))"><span class="nav-icon">🧠</span><span class="nav-text">TADASHI AI & Voice</span></a><a class="nav-item" onclick="switchSkeletonPage('calendar', document.getElementById('tab-btn-calendar'))"><span class="nav-icon">📅</span><span class="nav-text">Schedule & Calendar</span></a><a class="nav-item" onclick="switchSkeletonPage('tasks', document.getElementById('tab-btn-tasks'))"><span class="nav-icon">✅</span><span class="nav-text">Tasks & Projects</span></a><a class="nav-item" onclick="switchSkeletonPage('goals', document.getElementById('tab-btn-goals'))"><span class="nav-icon">🎯</span><span class="nav-text">Goals & OKRs</span></a><a class="nav-item" onclick="switchSkeletonPage('study', document.getElementById('tab-btn-study'))"><span class="nav-icon">📚</span><span class="nav-text">Study & Skills</span></a><a class="nav-item" onclick="switchSkeletonPage('fitness', document.getElementById('tab-btn-fitness'))"><span class="nav-icon">💪</span><span class="nav-text">Fitness & Health</span></a><a class="nav-item" onclick="switchSkeletonPage('nutrition', document.getElementById('tab-btn-nutrition'))"><span class="nav-icon">🥗</span><span class="nav-text">Nutrition & Diet</span></a><a class="nav-item" onclick="switchSkeletonPage('finance', document.getElementById('tab-btn-finance'))"><span class="nav-icon">💰</span><span class="nav-text">Finance & Wealth</span></a><a class="nav-item" onclick="switchSkeletonPage('shopping', document.getElementById('tab-btn-shopping'))"><span class="nav-icon">🛒</span><span class="nav-text">Shopping & Inventory</span></a><a class="nav-item" onclick="switchSkeletonPage('relationships', document.getElementById('tab-btn-relationships'))"><span class="nav-icon">👥</span><span class="nav-text">Relationships</span></a><a class="nav-item" onclick="switchSkeletonPage('home-module', document.getElementById('tab-btn-home-module'))"><span class="nav-icon">🏡</span><span class="nav-text">Home Care</span></a><a class="nav-item" onclick="switchSkeletonPage('vehicle', document.getElementById('tab-btn-vehicle'))"><span class="nav-icon">🏍️</span><span class="nav-text">Vehicle Care</span></a><a class="nav-item" onclick="switchSkeletonPage('travel', document.getElementById('tab-btn-travel'))"><span class="nav-icon">✈️</span><span class="nav-text">Travel & Trips</span></a><a class="nav-item" onclick="switchSkeletonPage('documents', document.getElementById('tab-btn-documents'))"><span class="nav-icon">📁</span><span class="nav-text">Document Vault</span></a><a class="nav-item" onclick="switchSkeletonPage('knowledge', document.getElementById('tab-btn-knowledge'))"><span class="nav-icon">💡</span><span class="nav-text">Knowledge Base</span></a><a class="nav-item" onclick="switchSkeletonPage('routines', document.getElementById('tab-btn-routines'))"><span class="nav-icon">🌅</span><span class="nav-text">Routines & Habits</span></a><a class="nav-item" onclick="switchSkeletonPage('wellbeing', document.getElementById('tab-btn-wellbeing'))"><span class="nav-icon">🧘</span><span class="nav-text">Wellbeing & Mood</span></a><a class="nav-item" onclick="switchSkeletonPage('digital-life', document.getElementById('tab-btn-digital-life'))"><span class="nav-icon">💻</span><span class="nav-text">Digital Life</span></a><a class="nav-item" onclick="switchSkeletonPage('entertainment', document.getElementById('tab-btn-entertainment'))"><span class="nav-icon">🎭</span><span class="nav-text">Entertainment</span></a><a class="nav-item" onclick="switchSkeletonPage('analytics', document.getElementById('tab-btn-analytics'))"><span class="nav-icon">📊</span><span class="nav-text">System Analytics</span></a><a class="nav-item" onclick="switchSkeletonPage('settings', document.getElementById('tab-btn-settings'))"><span class="nav-icon">⚙️</span><span class="nav-text">Settings & Voice</span></a>
+      </nav>
+    </aside>
+
+    <!-- ──────────────── MAIN APPLICATION AREA ──────────────── -->
+    <div id="main-area">
+      <!-- Topbar Header -->
+      <header id="topbar">
+        <span id="topbar-page-title" class="topbar-title">Master Skeleton Preview (All 22 Pages)</span>
+        <div class="topbar-search">
+          <span>🔍</span>
+          <span>Search or ask TADASHI...</span>
+          <kbd>Ctrl+K</kbd>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-life-score">
+            <span class="score-label">Life Score</span>
+            <span class="score-value">84</span>
+          </div>
+          <span class="topbar-date">Sunday, September 20, 2026</span>
+          <button class="topbar-btn">🔔<span class="badge badge-red">3</span></button>
+          <button class="topbar-btn" onclick="document.getElementById('context-drawer').classList.toggle('open')">◨</button>
+        </div>
+      </header>
+
+      <!-- Main Workspace Scrollable Container -->
+      <div style="display:flex;flex:1;overflow:hidden">
+        
+        <!-- Page Content View -->
+        <main id="page-content" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:24px">
+          
+          <!-- Sticky Switcher Strip -->
+          <div class="skeleton-nav-strip">
+            
+      <button class="page-tab-btn active" onclick="switchSkeletonPage('home', this)" id="tab-btn-home">
+        🏠 Home Dashboard
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('tadashi', this)" id="tab-btn-tadashi">
+        🧠 TADASHI AI & Voice
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('calendar', this)" id="tab-btn-calendar">
+        📅 Schedule & Calendar
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('tasks', this)" id="tab-btn-tasks">
+        ✅ Tasks & Projects
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('goals', this)" id="tab-btn-goals">
+        🎯 Goals & OKRs
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('study', this)" id="tab-btn-study">
+        📚 Study & Skills
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('fitness', this)" id="tab-btn-fitness">
+        💪 Fitness & Health
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('nutrition', this)" id="tab-btn-nutrition">
+        🥗 Nutrition & Diet
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('finance', this)" id="tab-btn-finance">
+        💰 Finance & Wealth
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('shopping', this)" id="tab-btn-shopping">
+        🛒 Shopping & Inventory
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('relationships', this)" id="tab-btn-relationships">
+        👥 Relationships
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('home-module', this)" id="tab-btn-home-module">
+        🏡 Home Care
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('vehicle', this)" id="tab-btn-vehicle">
+        🏍️ Vehicle Care
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('travel', this)" id="tab-btn-travel">
+        ✈️ Travel & Trips
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('documents', this)" id="tab-btn-documents">
+        📁 Document Vault
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('knowledge', this)" id="tab-btn-knowledge">
+        💡 Knowledge Base
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('routines', this)" id="tab-btn-routines">
+        🌅 Routines & Habits
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('wellbeing', this)" id="tab-btn-wellbeing">
+        🧘 Wellbeing & Mood
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('digital-life', this)" id="tab-btn-digital-life">
+        💻 Digital Life
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('entertainment', this)" id="tab-btn-entertainment">
+        🎭 Entertainment
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('analytics', this)" id="tab-btn-analytics">
+        📊 System Analytics
+      </button>
+      <button class="page-tab-btn " onclick="switchSkeletonPage('settings', this)" id="tab-btn-settings">
+        ⚙️ Settings & Voice
+      </button>
+          </div>
+
+          <!-- All 22 Page Views -->
+          
+    <!-- ==================== PAGE: 🏠 HOME DASHBOARD (home) ==================== -->
+    <section id="view-home" class="skeleton-page-view" style="display:block">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🏠 Home Dashboard (Route: #home)
+      </div>
+      
+    <!-- TADASHI Briefing Banner -->
+    <div class="card glow-cyan" style="margin-bottom:20px;padding:0;overflow:hidden">
+      <div style="background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(124,58,237,0.08));padding:18px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:var(--glow-cyan);flex-shrink:0">🧠</div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent-cyan);margin-bottom:3px">TADASHI BRIEFING • 22:45</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-primary)">Good evening, Krishna! You have <span style="color:var(--accent-amber)">3 risks</span> and <span style="color:var(--accent-cyan)">2 pending approvals</span> today.</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="Router.navigate('tadashi')">Open TADASHI →</button>
+      </div>
+      <div style="display:flex;gap:0;padding:0">
+        ${[
+          {icon:'⚠️', text:'OS Exam in 6 days — 42% syllabus gap', color:'var(--accent-amber)'},
+          {icon:'💪', text:'Push Day at 5:30 PM scheduled', color:'var(--accent-green)'},
+          {icon:'🎂', text:'Mom\'s birthday today — call at 8 PM', color:'var(--accent-pink)'},
+        ].map((r,i) => `
+          <div style="flex:1;padding:10px 14px;display:flex;align-items:center;gap:6px;font-size:11px;${i>0?'border-left:1px solid var(--border-subtle)':''}">
+            <span>${r.icon}</span>
+            <span style="color:${r.color}">${r.text}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid-4" style="margin-bottom:20px">
+      ${[
+        {label:'Life Score', val:DATA.user.lifeScore, unit:'/100', delta:'↑ 3 this week', up:true, color:'linear-gradient(135deg,var(--accent-cyan),var(--accent-green))', icon:'⚡'},
+        {label:'Energy Score', val:DATA.user.energyScore, unit:'%', delta:'Moderate', up:null, color:'linear-gradient(135deg,var(--accent-amber),var(--accent-orange))', icon:'🔋'},
+        {label:'Tasks Today', val:topTasks.length, unit:' pending', delta:`${DATA.tasks.filter(t=>t.status==='done').length} done`, up:true, color:'linear-gradient(135deg,var(--accent-violet),var(--accent-indigo))', icon:'✅'},
+        {label:'Active Risks', val:DATA.lifeState.activeRisks, unit:'', delta:'Needs attention', up:false, color:'linear-gradient(135deg,var(--accent-red),var(--accent-orange))', icon:'⚠️'},
+      ].map(s => `
+        <div class="card glow-cyan">
+          <div class="stat-widget">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="width:36px;height:36px;border-radius:var(--radius-md);background:${s.color};display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.9">${s.icon}</div>
+            </div>
+            <div class="stat-value" style="background:${s.color};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${s.val}<span style="font-size:14px;font-weight:500">${s.unit}</span></div>
+            <div class="stat-label">${s.label}</div>
+            <div class="stat-delta ${s.up===true?'up':s.up===false?'down':'neutral'}">${s.delta}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Main 3-column grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 320px;gap:20px;margin-bottom:20px">
+      <!-- Today Timeline -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(0,212,255,0.1)">📅</div>
+          <div>
+            <div class="card-title">Today's Timeline</div>
+            <div class="card-subtitle">${Utils.formatDate(Utils.today())}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="Router.navigate('calendar')">View all →</button>
+        </div>
+        <div class="card-body">
+          <div class="timeline">
+            ${todayEvents.length ? todayEvents.map(ev => `
+              <div class="timeline-item">
+                <div class="timeline-dot" style="border-color:var(--accent-${ev.color||'cyan'});color:var(--accent-${ev.color||'cyan'})">${{class:'📚',fitness:'💪',exam:'📝',deadline:'⏰',personal:'👤',work:'💼'}[ev.type]||'📅'}</div>
+                <div class="timeline-content">
+                  <div class="timeline-title">${ev.title}</div>
+                  <div class="timeline-meta">${ev.time}${ev.duration?` • ${ev.duration} min`:''}</div>
+                </div>
+              </div>
+            `).join('') : '<div class="empty-state" style="padding:24px"><div class="empty-state-icon">🗓️</div><div class="empty-state-desc">No events today</div></div>'}
+            <!-- Free block -->
+            <div class="timeline-item">
+              <div class="timeline-dot" style="border-color:var(--accent-green);color:var(--accent-green)">✦</div>
+              <div class="timeline-content">
+                <div class="timeline-title" style="color:var(--accent-green)">Free time: ~2.5 hours</div>
+                <div class="timeline-meta">Available for study or focus work</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Queue -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,158,11,0.1)">🎯</div>
+          <div>
+            <div class="card-title">Priority Queue</div>
+            <div class="card-subtitle">TADASHI-ranked tasks</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="Router.navigate('tasks')">All tasks →</button>
+        </div>
+        <div class="card-body">
+          ${topTasks.map((t, i) => `
+            <div class="pq-item">
+              <div class="pq-rank">#${i+1}</div>
+              <div class="pq-urgency" style="background:${t.priority==='high'?'var(--accent-red)':t.priority==='medium'?'var(--accent-amber)':'var(--accent-green)'}"></div>
+              <div class="pq-content">
+                <div class="pq-title">${t.title}</div>
+                <div class="pq-meta">
+                  <span class="badge badge-${Utils.priorityColor(t.priority)}">${t.priority}</span>
+                  ${t.deadline ? `<span class="pq-deadline" style="color:${Utils.deadlineColor(t.deadline)}">Due ${Utils.formatDateShort(t.deadline)} (${Utils.daysUntil(t.deadline)}d)</span>` : ''}
+                  <span style="font-size:10px;color:var(--text-muted)">${t.project}</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Right column: Life Score + Risks + Recommendations -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Life Score Ring -->
+        <div class="card glow-cyan">
+          <div class="card-body" style="display:flex;align-items:center;gap:16px">
+            <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+              ${Utils.arc(DATA.user.lifeScore, 80, 6, 'url(#grad1)')}
+              <svg width="0" height="0"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:var(--accent-cyan)"/><stop offset="100%" style="stop-color:var(--accent-green)"/></linearGradient></defs></svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">84</div>
+                <div style="font-size:8px;color:var(--text-muted);font-weight:600;letter-spacing:0.5px">LIFE</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:6px">Life Score</div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                ${[
+                  {label:'Productivity', val:78, color:'cyan'},
+                  {label:'Health', val:72, color:'green'},
+                  {label:'Finance', val:80, color:'amber'},
+                  {label:'Study', val:58, color:'violet'},
+                ].map(d => `
+                  <div style="display:flex;align-items:center;gap:6px;font-size:10px">
+                    <span style="width:60px;color:var(--text-muted)">${d.label}</span>
+                    <div class="progress-track" style="flex:1;height:3px"><div class="progress-fill ${d.color}" style="width:${d.val}%"></div></div>
+                    <span style="width:24px;text-align:right;font-weight:600">${d.val}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TADASHI Recommendations -->
+        <div class="card" style="flex:1">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(124,58,237,0.15)">💡</div>
+            <div><div class="card-title">Recommendations</div></div>
+          </div>
+          <div class="card-body">
+            <div class="rec-card" onclick="Router.navigate('tadashi')">
+              <span class="rec-icon">📚</span>
+              <div class="rec-body">
+                <div class="rec-title">Study DBMS tonight</div>
+                <div class="rec-desc">2hr gap found 7–9 PM. Exam in 10 days, normalization pending.</div>
+                <div class="rec-confidence">High confidence • 94%</div>
+              </div>
+            </div>
+            <div class="rec-card" onclick="Router.navigate('fitness')">
+              <span class="rec-icon">💪</span>
+              <div class="rec-body">
+                <div class="rec-title">Don't skip gym today</div>
+                <div class="rec-desc">4-day streak. Missing today drops weekly goal to 4/5.</div>
+                <div class="rec-confidence">High confidence • 98%</div>
+              </div>
+            </div>
+            <div class="rec-card" onclick="Router.navigate('finance')">
+              <span class="rec-icon">💰</span>
+              <div class="rec-body">
+                <div class="rec-title">Food budget at 62%</div>
+                <div class="rec-desc">₹760 remaining for 11 more days. Cook at home 3x this week.</div>
+                <div class="rec-confidence">Medium confidence • 76%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Upcoming + Progress Snapshots -->
+    <div class="grid-2">
+      <!-- Upcoming Deadlines -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(239,68,68,0.1)">⏰</div>
+          <div><div class="card-title">Upcoming Deadlines</div><div class="card-subtitle">Next 14 days</div></div>
+        </div>
+        <div class="card-body">
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>Module</th><th>Due</th><th>Status</th></tr></thead>
+            <tbody>
+              ${[
+                {name:'OS Assignment', mod:'Study', due:'Sep 22', days:3, status:'pending', priority:'high'},
+                {name:'OS Exam', mod:'Study', due:'Sep 26', days:7, status:'upcoming', priority:'high'},
+                {name:'WiFi Bill', mod:'Finance', due:'Sep 25', days:6, status:'upcoming', priority:'medium'},
+                {name:'DBMS Exam', mod:'Study', due:'Sep 29', days:10, status:'upcoming', priority:'high'},
+              ].map(d => `
+                <tr>
+                  <td style="font-weight:500">${d.name}</td>
+                  <td><span class="badge badge-cyan">${d.mod}</span></td>
+                  <td style="font-size:12px;color:${d.days<=3?'var(--accent-red)':d.days<=7?'var(--accent-amber)':'var(--text-muted)'}">${d.due} <span style="font-size:10px">(${d.days}d)</span></td>
+                  <td><span class="badge badge-${d.priority==='high'?'red':'amber'}">${d.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Progress Snapshots -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(16,185,129,0.1)">📈</div>
+          <div><div class="card-title">Progress Snapshots</div><div class="card-subtitle">This week</div></div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            ${[
+              {label:'OS Syllabus', val:58, color:'cyan', detail:'3/5 topics done', icon:'📚'},
+              {label:'Savings Goal', val:72, color:'green', detail:'₹36,800 / ₹50,000', icon:'💰'},
+              {label:'Fitness Weekly', val:80, color:'amber', detail:'4/5 sessions done', icon:'💪'},
+              {label:'Nutrition', val:84, color:'violet', detail:'1,840 / 2,200 kcal today', icon:'🥗'},
+              {label:'DBMS Syllabus', val:42, color:'red', detail:'2/5 topics done', icon:'📖'},
+            ].map(p => `
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                  <span style="font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px">${p.icon} ${p.label}</span>
+                  <span style="font-size:11px;color:var(--text-muted)">${p.detail}</span>
+                  <span style="font-size:12px;font-weight:700;margin-left:8px">${p.val}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill ${p.color}" style="width:${p.val}%"></div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🧠 TADASHI AI & VOICE (tadashi) ==================== -->
+    <section id="view-tadashi" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🧠 TADASHI AI & Voice (Route: #tadashi)
+      </div>
+      
+    <!-- TADASHI Header -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle)">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--glow-cyan)">🧠</div>
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet-bright));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">TADASHI</div>
+        <div style="font-size:12px;color:var(--text-muted)">Total AI for Dynamic Assistance, Scheduling and Human Intelligence</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="status-dot green"></div>
+        <span style="font-size:11px;color:var(--accent-green);font-weight:600">Active</span>
+        <span style="font-size:10px;color:var(--text-muted)">• Life State loaded • ${DATA.tasks.filter(t=>t.status!=='done').length} tasks • ${DATA.calendarEvents.length} events</span>
+        ${AI.hasKey()
+          ? `<span class="badge badge-green" style="margin-left:4px" title="${AI.getModel()}">🤖 Gemini connected</span>`
+          : `<span class="badge badge-amber" style="margin-left:4px;cursor:pointer" onclick="Router.navigate('settings')" title="Click to connect a free Gemini API key">⚡ Local mode — connect AI</span>`}
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button id="tadashi-voice-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleVoiceOutputMode()" title="Toggle voice audio output">
+          ${Voice.isVoiceOutputEnabled() ? '🔊 Voice ON' : '🔇 Voice OFF'}
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openVoiceCallModal()" title="Start hands-free voice call with TADASHI" style="background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));border:none">
+          📞 Live Talk
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
+        <button class="btn btn-secondary btn-sm" onclick="tadashiBriefing()">📋 Briefing</button>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div id="chat-messages" class="chat-messages" style="flex:1">
+      <!-- Messages rendered by renderChatMessages() -->
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <div class="chat-quick-cmds">
+        ${['Plan tomorrow','Fix my week 🔄','What should I do now?','Show my risks','I skipped gym today','Study plan for OS exam','What if I start gym at 6 AM?','Show commitment debt'].map(cmd =>
+          `<button class="chat-quick-cmd" onclick="processTADASHICommand('${cmd}')">${cmd}</button>`
+        ).join('')}
+      </div>
+      <div id="tadashi-listening-banner" style="display:none" class="chat-listening-banner">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="status-dot red" style="animation:micPulse 1s infinite"></span>
+          <span id="tadashi-listening-text">Listening... Speak now</span>
+        </div>
+        <button onclick="toggleTADASHIMic()" style="background:none;border:none;color:#ffaaaa;cursor:pointer;font-size:11px;font-weight:600">Cancel ✕</button>
+      </div>
+      <div class="chat-input-wrapper">
+        <textarea id="tadashi-input" placeholder="Ask TADASHI anything, or click the mic to speak..." rows="1"></textarea>
+        <button id="tadashi-mic-btn" class="chat-mic-btn" onclick="toggleTADASHIMic()" title="Talk to TADASHI (Voice Input)">🎙️</button>
+        <button class="chat-send-btn" onclick="sendTADASHIMessage()" title="Send">➤</button>
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);text-align:center">TADASHI Voice Link Active • Tap 🎙️ to talk or 📞 for Hands-free Voice Call</div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 📅 SCHEDULE & CALENDAR (calendar) ==================== -->
+    <section id="view-calendar" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 📅 Schedule & Calendar (Route: #calendar)
+      </div>
+      
+    <div class="page-header">
+      <div>
+        <div class="page-title">📅 Calendar</div>
+        <div class="page-subtitle">Schedule, time blocks, and TADASHI replanning</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="Router.navigate('tadashi')">🔄 Ask TADASHI to replan</button>
+        <button class="btn btn-primary btn-sm">+ Add Event</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+      <!-- Calendar grid -->
+      <div>
+        <!-- Month nav -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <button class="btn btn-secondary btn-sm">◀ Prev</button>
+          <span style="font-size:16px;font-weight:700">${monthNames[month]} ${year}</span>
+          <button class="btn btn-secondary btn-sm">Next ▶</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">
+          ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:6px">${d}</div>`).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+          ${calCells.map(cell => {
+            const isToday = cell.current && cell.day === today.getDate();
+            const events = cell.current ? getEventsForDay(cell.day) : [];
+            return `
+              <div class="cal-day ${isToday?'today':''} ${!cell.current?'other-month':''}">
+                <div class="cal-day-num">${isToday ? `<div style="width:22px;height:22px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff">${cell.day}</div>` : cell.day}</div>
+                ${events.slice(0,2).map(e => `<div class="cal-event ${e.color||'cyan'}">${e.title}</div>`).join('')}
+                ${events.length>2 ? `<div style="font-size:9px;color:var(--text-muted)">+${events.length-2} more</div>` : ''}
+              </div>
+            
+    </section>
+    <!-- ==================== PAGE: ✅ TASKS & PROJECTS (tasks) ==================== -->
+    <section id="view-tasks" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: ✅ Tasks & Projects (Route: #tasks)
+      </div>
+      
+    <div class="page-header">
+      <div>
+        <div class="page-title">✅ Tasks</div>
+        <div class="page-subtitle">${DATA.tasks.filter(t=>t.status!=='done').length} pending · ${DATA.tasks.filter(t=>t.status==='done').length} completed</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="display:flex;background:var(--bg-surface);border-radius:var(--radius-md);padding:4px;border:1px solid var(--border-subtle)">
+          <button class="tab ${tasksView==='kanban'?'active':''}" id="view-kanban" onclick="switchTaskView('kanban')" style="flex:0 0 auto;width:auto;padding:5px 12px">Kanban</button>
+          <button class="tab ${tasksView==='list'?'active':''}" id="view-list" onclick="switchTaskView('list')" style="flex:0 0 auto;width:auto;padding:5px 12px">List</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('Show commitment debt')">📊 Debt</button>
+        <button class="btn btn-primary btn-sm" onclick="showAddTaskModal()">+ Add Task</button>
+      </div>
+    </div>
+
+    <!-- Commitment debt bar -->
+    <div class="card" style="margin-bottom:20px;padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:12px;font-weight:700;color:var(--text-muted)">COMMITMENT DEBT</span>
+        <div style="flex:1"><div class="progress-track"><div class="progress-fill amber" style="width:42%"></div></div></div>
+        <span style="font-size:13px;font-weight:700;color:var(--accent-amber)">4.2/10 Moderate</span>
+        <button class="btn btn-ghost btn-sm" onclick="processTADASHICommand('Show commitment debt')">Details →</button>
+      </div>
+    </div>
+
+    <div id="tasks-board"></div>
+
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="add-task-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">New Task</span>
+          <button class="modal-close" onclick="closeModal('add-task-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title</label>
+            <input type="text" class="form-input" placeholder="What needs to be done?" id="new-task-title">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select class="form-input" id="new-task-priority">
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Deadline</label>
+              <input type="date" class="form-input" id="new-task-deadline">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project</label>
+            <input type="text" class="form-input" placeholder="Study, Finance, Personal..." id="new-task-project">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('add-task-modal')">Cancel</button>
+          <button class="btn btn-primary" onclick="addNewTask()">Add Task</button>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🎯 GOALS & OKRS (goals) ==================== -->
+    <section id="view-goals" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🎯 Goals & OKRs (Route: #goals)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">🎯 Goals</div><div class="page-subtitle">Your life objectives and milestones</div></div>
+      <button class="btn btn-primary btn-sm">+ New Goal</button>
+    </div>
+    <div class="grid-2">
+      ${DATA.goals.map(g => `
+        <div class="card goal-card glow-cyan">
+          <div class="goal-header">
+            <span class="goal-emoji">${g.emoji}</span>
+            <div class="goal-info">
+              <div class="goal-title">${g.title}</div>
+              <div class="goal-due">Target: ${Utils.formatDate(g.target)} · ${g.category}</div>
+            </div>
+            <span class="badge badge-${Utils.statusColor(g.status)}">${g.status}</span>
+          </div>
+          <div class="goal-progress-label">
+            <span style="font-size:12px;color:var(--text-muted)">Progress</span>
+            <span style="font-size:12px;font-weight:700">${g.progress}%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill ${g.progress>70?'green':g.progress>40?'cyan':'red'}" style="width:${g.progress}%"></div></div>
+          <div class="goal-milestones">
+            ${g.milestones.map(m => `
+              <div class="milestone-item">
+                <div class="milestone-check ${m.done?'done':''}">${m.done?'✓':''}</div>
+                <span style="${m.done?'text-decoration:line-through;color:var(--text-muted)':''}${!m.done?';color:var(--text-secondary)':''};font-size:12px">${m.title}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top:12px;display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm">View Details</button>
+            <button class="btn btn-ghost btn-sm" onclick="processTADASHICommand('Help me with goal: ${g.title}')">Ask TADASHI</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Life Goals Overview -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">📊</div><div class="card-title">Goals Overview</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+          ${[
+            {label:'Active Goals', val:DATA.goals.filter(g=>g.status==='active').length, color:'cyan'},
+            {label:'On Hold', val:DATA.goals.filter(g=>g.status==='on-hold').length, color:'amber'},
+            {label:'Avg Progress', val: Math.round(DATA.goals.reduce((s,g)=>s+g.progress,0)/DATA.goals.length)+'%', color:'green'},
+            {label:'Completed', val:DATA.goals.filter(g=>g.status==='done').length, color:'violet'},
+          ].map(s => `
+            <div style="text-align:center">
+              <div style="font-size:28px;font-weight:800;color:var(--accent-${s.color})">${s.val}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${s.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 📚 STUDY & SKILLS (study) ==================== -->
+    <section id="view-study" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 📚 Study & Skills (Route: #study)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">📚 Study & Learning</div><div class="page-subtitle">Subjects, exams, assignments, and study sessions</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('Create a study plan for my exams')">🧠 TADASHI Study Plan</button>
+        <button class="btn btn-primary btn-sm">+ Add Subject</button>
+      </div>
+    </div>
+
+    <!-- Exam countdown -->
+    <div class="card" style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(239,68,68,0.06),rgba(245,158,11,0.06));border-color:rgba(239,68,68,0.2)">
+      <div style="display:flex;gap:16px;overflow-x:auto">
+        ${DATA.study.subjects.map(s => `
+          <div style="flex:1;min-width:160px;text-align:center;padding:12px;background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+            <div style="font-size:28px;font-weight:900;color:${Utils.daysUntil(s.examDate)<=5?'var(--accent-red)':Utils.daysUntil(s.examDate)<=10?'var(--accent-amber)':'var(--accent-cyan)'}">${Utils.daysUntil(s.examDate)}</div>
+            <div style="font-size:10px;color:var(--text-muted)">days until</div>
+            <div style="font-size:12px;font-weight:700;margin-top:4px">${s.name}</div>
+            <div style="font-size:10px;color:var(--text-muted)">${s.code} · ${Utils.formatDateShort(s.examDate)}</div>
+            <div class="progress-track" style="margin-top:8px"><div class="progress-fill ${s.progress>70?'green':s.progress>40?'cyan':'red'}" style="width:${s.progress}%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${s.progress}% ready</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="grid-3" style="margin-bottom:20px">
+      ${DATA.study.subjects.map(s => `
+        <div class="card study-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="study-subject">${s.name}</div>
+            <span class="badge badge-${Utils.daysUntil(s.examDate)<=5?'red':Utils.daysUntil(s.examDate)<=10?'amber':'cyan'}">${Utils.daysUntil(s.examDate)}d left</span>
+          </div>
+          <div class="study-meta">
+            <span>${s.code}</span>
+            <span>Exam: ${Utils.formatDateShort(s.examDate)}</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+              <span style="color:var(--text-muted)">Syllabus</span><span style="font-weight:700">${s.progress}%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill ${s.progress>70?'green':s.progress>40?'cyan':'red'}" style="width:${s.progress}%"></div></div>
+          </div>
+          <div class="study-topics">
+            ${s.topics.map(t => `
+              <div class="study-topic">
+                <div class="topic-status ${t.status}"></div>
+                <span style="${t.status==='done'?'text-decoration:line-through;color:var(--text-muted);font-size:12px':'font-size:12px'}">${t.name}</span>
+                <span class="badge badge-${t.status==='done'?'green':t.status==='partial'?'amber':'violet'}" style="margin-left:auto;font-size:8px">${t.status}</span>
+              </div>
+            `).join('')}
+          </div>
+          ${s.assignments.length ? `
+            <div style="margin-top:12px;padding:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);border-radius:var(--radius-sm)">
+              ${s.assignments.map(a => `
+                <div style="font-size:11px;display:flex;align-items:center;gap:6px">
+                  <span>📝</span>
+                  <span style="flex:1">${a.name}</span>
+                  <span style="color:var(--accent-red);font-weight:600">Due ${Utils.formatDateShort(a.due)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          <div style="margin-top:10px;display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm" style="flex:1">Study Now</button>
+            <button class="btn btn-ghost btn-sm" onclick="processTADASHICommand('Create study plan for ${s.name}')">🧠</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Flashcards + Notes placeholder -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">🗂️</div><div class="card-title">Flashcards</div></div>
+        <div class="card-body">
+          <div class="empty-state" style="padding:32px">
+            <div class="empty-state-icon">🃏</div>
+            <div class="empty-state-title">No flashcards yet</div>
+            <div class="empty-state-desc">Create flashcards for active revision</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px">+ Create Flashcard</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(0,212,255,0.1)">📝</div><div class="card-title">Study Sessions</div></div>
+        <div class="card-body">
+          <div style="text-align:center;padding:12px;margin-bottom:12px">
+            <div style="font-size:32px;font-weight:900;color:var(--accent-cyan)">12.5</div>
+            <div style="font-size:12px;color:var(--text-muted)">study hours this week</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${[
+              {subject:'OS', hours:4.5, date:'Sep 18–19'},
+              {subject:'DBMS', hours:3.5, date:'Sep 17–18'},
+              {subject:'CN', hours:2.0, date:'Sep 16'},
+              {subject:'OS', hours:2.5, date:'Sep 15'},
+            ].map(s => `
+              <div style="display:flex;align-items:center;gap:10px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+                <span class="badge badge-cyan">${s.subject}</span>
+                <span style="flex:1;color:var(--text-secondary)">${s.hours} hrs</span>
+                <span style="color:var(--text-muted)">${s.date}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 💪 FITNESS & HEALTH (fitness) ==================== -->
+    <section id="view-fitness" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 💪 Fitness & Health (Route: #fitness)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">💪 Fitness</div><div class="page-subtitle">Workouts, progress, and analytics</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('I skipped gym today')">I skipped today</button>
+        <button class="btn btn-primary btn-sm">+ Log Workout</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:20px">
+      ${[
+        {label:'Current Streak', val:w.currentStreak, unit:' days 🔥', color:'amber'},
+        {label:'Weekly Goal', val:`${w.weekDone}/${w.weeklyGoal}`, unit:' sessions', color:'cyan'},
+        {label:'Weight', val:w.measurements.weight, unit:' kg', color:'violet'},
+        {label:'Body Fat', val:w.measurements.bodyFat, unit:'%', color:'green'},
+      ].map(s => `
+        <div class="card">
+          <div class="stat-widget">
+            <div class="stat-value" style="color:var(--accent-${s.color})">${s.val}<span style="font-size:14px;font-weight:500">${s.unit}</span></div>
+            <div class="stat-label">${s.label}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+      <!-- Today's workout -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(245,158,11,0.15)">🏋️</div>
+            <div>
+              <div class="card-title">${today.name}</div>
+              <div class="card-subtitle">${Utils.formatDate(today.date)} · ${today.duration} min · <span class="badge badge-${today.status==='done'?'green':'cyan'}">${today.status}</span></div>
+            </div>
+            ${today.status!=='done' ? `<button class="btn btn-success btn-sm" style="margin-left:auto" onclick="alert('Workout logged! Great job 💪')">Mark Done</button>` : ''}
+          </div>
+          <div class="card-body">
+            ${today.exercises.map(ex => `
+              <div style="margin-bottom:16px">
+                <div style="font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+                  <span>${ex.name}</span>
+                  ${ex.sets.length ? `<span style="font-size:10px;color:var(--text-muted)">${ex.sets.length} sets</span>` : ''}
+                </div>
+                <div style="background:var(--bg-surface);border-radius:var(--radius-sm);overflow:hidden">
+                  <div class="set-row" style="background:var(--bg-elevated);font-size:10px;font-weight:700;color:var(--text-muted)">
+                    <span>#</span><span>Reps</span><span>Weight</span><span>Volume</span>
+                  </div>
+                  ${ex.sets.map((s,i) => `
+                    <div class="set-row">
+                      <span class="set-num">${i+1}</span>
+                      <span>${s.reps}</span>
+                      <span>${s.weight?s.weight+'kg':'BW'}</span>
+                      <span style="color:var(--text-muted)">${s.weight?s.reps*s.weight+'kg·rep':'—'}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- PRs -->
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(239,68,68,0.1)">🏆</div><div class="card-title">Personal Records</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              ${w.prs.map(pr => `
+                <div style="text-align:center;padding:12px;background:var(--bg-elevated);border-radius:var(--radius-md);border:1px solid var(--border-subtle)">
+                  <div style="font-size:16px;font-weight:800;color:var(--accent-amber)">${pr.value}</div>
+                  <div style="font-size:11px;font-weight:600;margin-top:2px">${pr.exercise}</div>
+                  <div style="font-size:10px;color:var(--text-muted)">${Utils.formatDateShort(pr.date)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Weekly rings + History -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Weekly progress rings -->
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">🎯</div><div class="card-title">Weekly Rings</div></div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-around">
+              ${[
+                {label:'Sessions', val:w.weekDone, max:w.weeklyGoal, color:'#00d4ff', pct:w.weekDone/w.weeklyGoal*100},
+                {label:'Calories', val:'2,240', max:'est.', color:'#10b981', pct:75},
+                {label:'Volume', val:'8.4t', max:'est.', color:'#f59e0b', pct:82},
+              ].map(r => `
+                <div style="text-align:center">
+                  <div style="position:relative;width:70px;height:70px;margin:0 auto">
+                    ${Utils.arc(r.pct, 70, 7, r.color)}
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <span style="font-size:14px;font-weight:800;color:${r.color}">${r.val}</span>
+                    </div>
+                  </div>
+                  <div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-weight:600">${r.label}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Week calendar -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">This Week</div></div>
+          <div class="card-body">
+            <div style="display:flex;gap:4px;justify-content:space-between">
+              ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day,i) => {
+                const done = i < w.weekDone;
+                return `
+                  <div style="flex:1;text-align:center">
+                    <div style="width:32px;height:32px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;background:${done?'linear-gradient(135deg,var(--accent-green),#059669)':'var(--bg-elevated)'};border:1px solid ${done?'transparent':'var(--border-subtle)'}">
+                      ${done?'✓':''}
+                    </div>
+                    <div style="font-size:9px;color:var(--text-muted);margin-top:4px">${day}</div>
+                  </div>
+                
+    </section>
+    <!-- ==================== PAGE: 🥗 NUTRITION & DIET (nutrition) ==================== -->
+    <section id="view-nutrition" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🥗 Nutrition & Diet (Route: #nutrition)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">🥗 Nutrition</div><div class="page-subtitle">Meals, macros, calories and hydration</div></div>
+      <button class="btn btn-primary btn-sm">+ Log Meal</button>
+    </div>
+
+    <!-- Today summary -->
+    <div class="grid-4" style="margin-bottom:20px">
+      ${[
+        {label:'Calories', val:n.today.calories, total:n.today.target, unit:'kcal', color:'cyan', pct:Utils.pct(n.today.calories,n.today.target)},
+        {label:'Protein', val:n.today.protein, total:n.today.proteinTarget, unit:'g', color:'violet', pct:Utils.pct(n.today.protein,n.today.proteinTarget)},
+        {label:'Carbs', val:n.today.carbs, total:260, unit:'g', color:'amber', pct:Utils.pct(n.today.carbs,260)},
+        {label:'Fat', val:n.today.fat, total:80, unit:'g', color:'green', pct:Utils.pct(n.today.fat,80)},
+      ].map(m => `
+        <div class="card">
+          <div class="stat-widget">
+            <div style="position:relative;width:60px;height:60px;margin-bottom:4px">
+              ${Utils.arc(m.pct, 60, 6, `var(--accent-${m.color})`)}
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent-${m.color})">${m.pct}%</div>
+            </div>
+            <div class="stat-value" style="font-size:20px">${m.val}<span style="font-size:12px;font-weight:400;color:var(--text-muted)">/${m.total}${m.unit}</span></div>
+            <div class="stat-label">${m.label}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+      <!-- Meals -->
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">🍽️</div><div class="card-title">Today's Meals</div></div>
+          <div class="card-body">
+            ${n.meals.map(meal => `
+              <div style="padding:12px;margin-bottom:12px;background:var(--bg-elevated);border-radius:var(--radius-md);border:1px solid var(--border-subtle)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:14px;font-weight:700">${meal.name}</span>
+                    <span style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono)">${meal.time}</span>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:13px;font-weight:700;color:var(--accent-cyan)">${meal.calories} kcal</div>
+                    <div style="font-size:10px;color:var(--text-muted)">P: ${meal.protein}g</div>
+                  </div>
+                </div>
+                <div class="tags">${meal.items.map(i=>`<span class="tag">${i}</span>`).join('')}</div>
+              </div>
+            `).join('')}
+            <button class="btn btn-secondary" style="width:100%">+ Log Another Meal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Water + macros breakdown -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Water -->
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(0,212,255,0.1)">💧</div><div class="card-title">Hydration</div></div>
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:12px">
+              <div style="font-size:28px;font-weight:800;color:var(--accent-cyan)">${n.today.water}L</div>
+              <div style="font-size:12px;color:var(--text-muted)">of ${n.today.waterTarget}L goal</div>
+            </div>
+            <div class="progress-track" style="height:8px;margin-bottom:10px">
+              <div class="progress-fill cyan" style="width:${Utils.pct(n.today.water,n.today.waterTarget)}%"></div>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
+              ${Array.from({length:Math.ceil(n.today.waterTarget/0.25)}).map((_, i) => `
+                <div style="width:24px;height:32px;border-radius:3px 3px 0 0;background:${i<Math.round(n.today.water/0.25)?'var(--accent-cyan)':'var(--bg-elevated)'};border:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer" onclick="this.style.background='var(--accent-cyan)'"></div>
+              `).join('')}
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">Each cup = 250ml · Click to log</div>
+          </div>
+        </div>
+
+        <!-- Macro summary -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Macros</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              ${[
+                {name:'Protein', val:n.today.protein, target:n.today.proteinTarget, color:'#9f67f5'},
+                {name:'Carbs', val:n.today.carbs, target:260, color:'#f59e0b'},
+                {name:'Fat', val:n.today.fat, target:80, color:'#10b981'},
+              ].map(m => `
+                <div class="macro-bar">
+                  <div class="macro-header">
+                    <span class="macro-name">${m.name}</span>
+                    <span class="macro-val" style="color:${m.color}">${m.val}g / ${m.target}g</span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width:${Utils.pct(m.val,m.target)}%;background:${m.color}"></div></div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Meal plan -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Meal Plan</div></div>
+          <div class="card-body">
+            <div class="empty-state" style="padding:24px">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-desc">No meal plan set</div>
+              <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="processTADASHICommand('Create a meal plan for me')">Ask TADASHI</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 💰 FINANCE & WEALTH (finance) ==================== -->
+    <section id="view-finance" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 💰 Finance & Wealth (Route: #finance)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">💰 Finance</div><div class="page-subtitle">Income, expenses, budgets and savings</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('Adjust my spending for this month')">🧠 TADASHI</button>
+        <button class="btn btn-primary btn-sm">+ Add Transaction</button>
+      </div>
+    </div>
+
+    <!-- Balance cards -->
+    <div class="grid-4" style="margin-bottom:20px">
+      ${[
+        {label:'Balance', val:'₹'+Utils.fmt(f.balance), sub:'Current', color:'cyan', icon:'💳'},
+        {label:'This Month Income', val:'₹'+Utils.fmt(f.monthlyIncome), sub:'September', color:'green', icon:'↑'},
+        {label:'This Month Expenses', val:'₹'+Utils.fmt(f.monthlyExpenses), sub:'September', color:'red', icon:'↓'},
+        {label:'Total Savings', val:'₹'+Utils.fmt(f.savings), sub:`${Utils.pct(f.savings,f.savingsGoal)}% of goal`, color:'amber', icon:'🏦'},
+      ].map(c => `
+        <div class="card glow-${c.color}">
+          <div class="stat-widget">
+            <div style="font-size:22px;margin-bottom:4px">${c.icon}</div>
+            <div class="stat-value" style="font-size:20px;color:var(--accent-${c.color})">${c.val}</div>
+            <div class="stat-label">${c.label}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${c.sub}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+      <!-- Transactions -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(0,212,255,0.1)">📊</div>
+            <div><div class="card-title">Recent Transactions</div></div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto">View All</button>
+          </div>
+          <div class="card-body">
+            ${f.transactions.map(tx => `
+              <div class="tx-row">
+                <div class="tx-icon" style="background:${tx.amount>0?'rgba(16,185,129,0.12)':'rgba(239,68,68,0.08)'}">${tx.icon}</div>
+                <div class="tx-info">
+                  <div class="tx-name">${tx.name}</div>
+                  <div class="tx-cat">${tx.category} · ${Utils.formatDateShort(tx.date)}</div>
+                </div>
+                <div class="tx-amount ${tx.amount>0?'credit':'debit'}">${tx.amount>0?'+':''}${Utils.fmtCurrency(tx.amount)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Budgets + Savings -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Savings goal -->
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.15)">🎯</div><div class="card-title">Savings Goal</div></div>
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:12px">
+              <div style="position:relative;width:90px;height:90px;margin:0 auto">
+                ${Utils.arc(Utils.pct(f.savings,f.savingsGoal), 90, 8, 'url(#savingsGrad)')}
+                <svg width="0" height="0"><defs><linearGradient id="savingsGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:var(--accent-amber)"/><stop offset="100%" style="stop-color:var(--accent-green)"/></linearGradient></defs></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <span style="font-size:18px;font-weight:900;color:var(--accent-amber)">${Utils.pct(f.savings,f.savingsGoal)}%</span>
+                </div>
+              </div>
+              <div style="font-size:13px;font-weight:700;margin-top:8px">₹${Utils.fmt(f.savings)} saved</div>
+              <div style="font-size:11px;color:var(--text-muted)">Goal: ₹${Utils.fmt(f.savingsGoal)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budgets -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Budget Status</div><div style="font-size:10px;color:var(--text-muted);margin-left:4px">Day ${new Date().getDate()}/30</div></div>
+          <div class="card-body">
+            ${f.budgets.map(b => {
+              const pct = Utils.pct(b.spent, b.limit);
+              return `
+                <div style="margin-bottom:12px">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+                    <span style="font-weight:600">${b.category}</span>
+                    <span style="color:${pct>80?'var(--accent-red)':pct>60?'var(--accent-amber)':'var(--text-muted)'}">${Utils.fmtCurrency(b.spent)} / ${Utils.fmtCurrency(b.limit)}</span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill ${pct>80?'red':pct>60?'amber':'green'}" style="width:${Math.min(pct,100)}%"></div></div>
+                  <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${pct}% used</div>
+                </div>
+              
+    </section>
+    <!-- ==================== PAGE: 🛒 SHOPPING & INVENTORY (shopping) ==================== -->
+    <section id="view-shopping" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🛒 Shopping & Inventory (Route: #shopping)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">🛒 Shopping</div><div class="page-subtitle">Lists, wishlists and purchases</div></div>
+      <button class="btn btn-primary btn-sm">+ Add Item</button>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">🥦</div><div class="card-title">Grocery List</div><span class="badge badge-amber" style="margin-left:auto">${DATA.shopping.groceries.filter(g=>g.status==='pending').length} pending</span></div>
+        <div class="card-body">
+          ${DATA.shopping.groceries.map((g,i) => `
+            <div class="routine-item">
+              <div class="routine-check ${g.status==='done'?'checked':''}" onclick="DATA.shopping.groceries[${i}].status=DATA.shopping.groceries[${i}].status==='done'?'pending':'done';Router.navigate('shopping')">
+                ${g.status==='done'?'✓':''}
+              </div>
+              <span class="routine-label">${g.item}</span>
+              <span class="routine-time">${g.qty}</span>
+            </div>
+          `).join('')}
+          <button class="btn btn-secondary" style="width:100%;margin-top:12px">+ Add grocery item</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">⭐</div><div class="card-title">Wishlist</div></div>
+        <div class="card-body">
+          ${DATA.shopping.wishlist.map(w => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">${w.item}</div>
+                <div style="font-size:11px;color:var(--text-muted)">Target: ${w.date}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:13px;font-weight:700">${w.price}</div>
+                <span class="badge badge-${Utils.priorityColor(w.priority)}">${w.priority}</span>
+              </div>
+            </div>
+          `).join('')}
+          <button class="btn btn-secondary" style="width:100%;margin-top:12px">+ Add to wishlist</button>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 👥 RELATIONSHIPS (relationships) ==================== -->
+    <section id="view-relationships" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 👥 Relationships (Route: #relationships)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">👥 Relationships</div><div class="page-subtitle">Contacts, important dates and interaction history</div></div>
+      <button class="btn btn-primary btn-sm">+ Add Contact</button>
+    </div>
+    <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(236,72,153,0.08),rgba(124,58,237,0.08));border-color:rgba(236,72,153,0.2);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">🎂</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">Mom's Birthday is TODAY!</div>
+          <div style="font-size:12px;color:var(--text-muted)">Reminder set for 8 PM. Don't forget to call!</div>
+        </div>
+        <button class="btn btn-primary btn-sm">📞 Call Now</button>
+      </div>
+    </div>
+    <div class="grid-auto">
+      ${DATA.relationships.map(r => `
+        <div class="card" style="padding:16px;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent-violet),var(--accent-cyan));display:flex;align-items:center;justify-content:center;font-size:20px">${r.emoji}</div>
+            <div>
+              <div style="font-size:14px;font-weight:700">${r.name}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${r.category}</div>
+            </div>
+            <span class="badge badge-${r.category==='Family'?'pink':r.category==='Friend'?'cyan':'amber'}" style="margin-left:auto">${r.category}</span>
+          </div>
+          ${r.birthday?`<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">🎂 ${Utils.formatDate(r.birthday)}</div>`:''}
+          ${r.notes?`<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">${r.notes}</div>`:''}
+          <div style="font-size:10px;color:var(--text-muted)">Last contact: ${Utils.formatDateShort(r.lastContact)}</div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <button class="btn btn-secondary btn-sm" style="flex:1">Add Note</button>
+            <button class="btn btn-ghost btn-sm">Follow Up</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🏡 HOME CARE (home-module) ==================== -->
+    <section id="view-home-module" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🏡 Home Care (Route: #home-module)
+      </div>
+      
+    <div class="page-header">
+      <div><div class="page-title">🏡 Home Management</div><div class="page-subtitle">Chores, inventory, utilities and maintenance</div></div>
+      <button class="btn btn-primary btn-sm">+ Add Task</button>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">🧹</div><div class="card-title">Chores</div></div>
+        <div class="card-body">
+          ${DATA.homeModule.chores.map(c => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+              <div class="status-dot ${c.status==='ok'?'green':c.status==='due'?'amber':'red'}"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">${c.task}</div>
+                <div style="font-size:10px;color:var(--text-muted)">${c.frequency} · Last: ${Utils.formatDateShort(c.lastDone)}</div>
+              </div>
+              <span class="badge badge-${c.status==='ok'?'green':c.status==='due'?'amber':'red'}">${c.status}</span>
+              <button class="btn btn-success btn-sm">Done</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.15)">💡</div><div class="card-title">Utilities & Bills</div></div>
+        <div class="card-body">
+          ${DATA.homeModule.utilities.map(u => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+              <div style="flex:1"><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--text-muted)">Due: ${u.due}</div></div>
+              <div style="font-size:14px;font-weight:700">${u.amount}</div>
+              <span class="badge badge-cyan">${u.status}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🏍️ VEHICLE CARE (vehicle) ==================== -->
+    <section id="view-vehicle" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🏍️ Vehicle Care (Route: #vehicle)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">🏍️ Vehicle</div><div class="page-subtitle">Fuel, service, insurance and maintenance</div></div><button class="btn btn-primary btn-sm">+ Log Fuel</button></div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-body vehicle-card">
+          <div class="vehicle-header"><span class="vehicle-icon">🏍️</span><div><div class="vehicle-name">${v.make} ${v.model} ${v.year}</div><div class="vehicle-plate">${v.plate}</div></div></div>
+          <div class="vehicle-stats">
+            <div class="vehicle-stat"><div class="vehicle-stat-val" style="color:var(--accent-cyan)">${v.odometer.toLocaleString()}</div><div class="vehicle-stat-lbl">km</div></div>
+            <div class="vehicle-stat"><div class="vehicle-stat-val" style="color:var(--accent-green)">${v.fuel}%</div><div class="vehicle-stat-lbl">Fuel</div></div>
+            <div class="vehicle-stat"><div class="vehicle-stat-val" style="font-size:13px;color:var(--accent-amber)">${Utils.daysUntil(v.nextService)}d</div><div class="vehicle-stat-lbl">Next service</div></div>
+          </div>
+          <div class="progress-track" style="margin-top:12px;height:8px"><div class="progress-fill green" style="width:${v.fuel}%"></div></div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Fuel: ${v.fuel}% full</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Documents & Reminders</div></div>
+        <div class="card-body">
+          ${[
+            {name:'Insurance', expiry:v.insurance.expiry, provider:v.insurance.provider, icon:'🛡️'},
+            {name:'PUC Certificate', expiry:v.puc.expiry, provider:'Pollution Control', icon:'📄'},
+            {name:'Next Service', expiry:v.nextService, provider:'Periodic maintenance', icon:'🔧'},
+          ].map(d => `
+            <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+              <span style="font-size:18px">${d.icon}</span>
+              <div style="flex:1"><div style="font-size:13px;font-weight:500">${d.name}</div><div style="font-size:10px;color:var(--text-muted)">${d.provider}</div></div>
+              <div style="text-align:right">
+                <div class="doc-expiry ${Utils.daysUntil(d.expiry)<=30?'warn':'ok'}" style="font-size:12px">Expires ${Utils.formatDateShort(d.expiry)}</div>
+                <div style="font-size:10px;color:var(--text-muted)">${Utils.daysUntil(d.expiry)} days left</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Fuel Log</div></div>
+      <div class="card-body">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Liters</th><th>Amount</th><th>Odometer</th><th>Mileage</th></tr></thead>
+          <tbody>
+            ${v.fuelLogs.map((l,i,arr) => {
+              const mileage = i<arr.length-1 ? ((l.odometer-arr[i+1].odometer)/l.liters).toFixed(1) : '—';
+              return `<tr><td>${Utils.formatDateShort(l.date)}</td><td>${l.liters}L</td><td>${Utils.fmtCurrency(l.amount)}</td><td>${l.odometer.toLocaleString()} km</td><td>${mileage !== '—' ? mileage+' km/L' : '—'}</td></tr>
+    </section>
+    <!-- ==================== PAGE: ✈️ TRAVEL & TRIPS (travel) ==================== -->
+    <section id="view-travel" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: ✈️ Travel & Trips (Route: #travel)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">✈️ Travel</div><div class="page-subtitle">Trips, itineraries, packing and budgets</div></div><button class="btn btn-primary btn-sm">+ Plan Trip</button></div>
+    <div class="card" style="margin-bottom:20px;overflow:hidden">
+      <div class="trip-header" style="background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(124,58,237,0.08))">
+        <span style="font-size:32px">${trip.emoji}</span>
+        <div>
+          <div class="trip-dest">${trip.dest}</div>
+          <div class="trip-dates">${Utils.formatDate(trip.start)} — ${Utils.formatDate(trip.end)}</div>
+          <span class="badge badge-violet">${trip.status}</span>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:20px;font-weight:800;color:var(--accent-cyan)">₹${Utils.fmt(trip.budget)}</div>
+          <div style="font-size:11px;color:var(--text-muted)">Budget · Spent: ₹${Utils.fmt(trip.spent)}</div>
+          <div class="progress-track" style="margin-top:6px;width:120px"><div class="progress-fill green" style="width:${Utils.pct(trip.spent,trip.budget)}%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(0,212,255,0.1)">🗺️</div><div class="card-title">Itinerary</div></div>
+        <div style="padding:0">
+          ${trip.itinerary.map(day => `
+            <div class="itinerary-day">
+              <div class="itinerary-day-label">${day.day}</div>
+              ${day.items.map(item => `
+                <div class="itinerary-item">
+                  <span class="itinerary-time">${item.time}</span>
+                  <span style="flex:1;font-size:12px">${item.event}</span>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">🎒</div><div class="card-title">Packing List</div></div>
+          <div class="card-body">
+            ${trip.packing.map(item => `
+              <div class="routine-item">
+                <div class="routine-check" onclick="this.classList.toggle('checked');this.textContent=this.classList.contains('checked')?'✓':''"></div>
+                <span class="routine-label">${item}</span>
+              </div>
+            `).join('')}
+            <button class="btn btn-secondary" style="width:100%;margin-top:8px">+ Add item</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Budget Breakdown</div></div>
+          <div class="card-body">
+            ${[
+              {cat:'Transport', planned:4000, spent:2500, icon:'🚌'},
+              {cat:'Hotel', planned:6000, spent:0, icon:'🏨'},
+              {cat:'Food', planned:3000, spent:0, icon:'🍽️'},
+              {cat:'Activities', planned:2000, spent:0, icon:'🎡'},
+            ].map(b => `
+              <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle)">
+                <span>${b.icon}</span>
+                <span style="flex:1;font-size:12px;font-weight:500">${b.cat}</span>
+                <span style="font-size:12px;font-weight:700">₹${Utils.fmt(b.planned)}</span>
+                ${b.spent?`<span style="font-size:10px;color:var(--accent-amber)">₹${Utils.fmt(b.spent)} spent</span>`:''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 📁 DOCUMENT VAULT (documents) ==================== -->
+    <section id="view-documents" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 📁 Document Vault (Route: #documents)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">📁 Documents</div><div class="page-subtitle">Storage, search, OCR and expiry tracking</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm">🔍 Search</button>
+        <button class="btn btn-primary btn-sm">+ Upload</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      ${[
+        {label:'Total Documents', val:DATA.documents.length, color:'cyan'},
+        {label:'Expiring Soon', val:DATA.documents.filter(d=>d.expiry&&Utils.daysUntil(d.expiry)<60).length, color:'amber'},
+        {label:'Categories', val:4, color:'violet'},
+        {label:'Total Size', val:'14.3 MB', color:'green'},
+      ].map(s => `
+        <div class="card"><div class="stat-widget"><div class="stat-value" style="color:var(--accent-${s.color})">${s.val}</div><div class="stat-label">${s.label}</div></div></div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">All Documents</div></div>
+      <div>
+        ${DATA.documents.map(d => `
+          <div class="doc-item">
+            <div class="doc-icon" style="background:rgba(0,212,255,0.08)">${d.icon}</div>
+            <div class="doc-info">
+              <div class="doc-name">${d.name}</div>
+              <div class="doc-meta">${d.type} · ${d.size} · ${d.tags.join(', ')}</div>
+            </div>
+            ${d.expiry ? `<div class="doc-expiry ${Utils.daysUntil(d.expiry)<60?'warn':'ok'}">Exp: ${Utils.formatDateShort(d.expiry)}</div>` : '<div style="font-size:10px;color:var(--text-muted)">No expiry</div>'}
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-secondary btn-sm">View</button>
+              <button class="btn btn-ghost btn-sm">🗑</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 💡 KNOWLEDGE BASE (knowledge) ==================== -->
+    <section id="view-knowledge" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 💡 Knowledge Base (Route: #knowledge)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">💡 Knowledge Base</div><div class="page-subtitle">Notes, ideas, journals and semantic search</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('Search my knowledge base for habits')">🔍 Semantic Search</button>
+        <button class="btn btn-primary btn-sm">+ New Note</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(0,212,255,0.06));border-color:rgba(0,212,255,0.15)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">🔮</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--accent-cyan)">RAG Semantic Search</div>
+          <div style="font-size:12px;color:var(--text-muted)">Ask TADASHI to search your knowledge base using natural language</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="processTADASHICommand('What do I know about habits?')">Try it →</button>
+      </div>
+    </div>
+    <div class="grid-auto">
+      ${DATA.knowledge.map(k => `
+        <div class="card knowledge-card">
+          <div class="knowledge-type">${k.type}</div>
+          <div class="knowledge-title">${k.title}</div>
+          <div class="knowledge-preview">${k.preview}</div>
+          <div class="knowledge-footer">
+            <div class="tags">${k.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+            <span style="font-size:10px;color:var(--text-muted)">${Utils.formatDateShort(k.date)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🌅 ROUTINES & HABITS (routines) ==================== -->
+    <section id="view-routines" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🌅 Routines & Habits (Route: #routines)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">🌅 Routines</div><div class="page-subtitle">Sleep, morning and night routines</div></div><button class="btn btn-primary btn-sm">+ Add Task</button></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      ${[
+        {label:'Sleep Target', val:r.sleep.target, icon:'🌙', color:'violet'},
+        {label:'Wake Target', val:r.sleep.wake, icon:'☀️', color:'amber'},
+        {label:'Last Night', val:r.sleep.lastNight+'h', icon:'💤', color:'cyan'},
+      ].map(s=>`<div class="card"><div class="stat-widget" style="padding:14px"><div style="font-size:22px">${s.icon}</div><div class="stat-value" style="font-size:22px;color:var(--accent-${s.color})">${s.val}</div><div class="stat-label">${s.label}</div></div></div>`).join('')}
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.15)">☀️</div><div class="card-title">Morning Routine</div><span class="badge badge-green" style="margin-left:auto">${r.morning.filter(t=>t.done).length}/${r.morning.length}</span></div>
+        <div class="card-body">
+          ${r.morning.map((task,i) => `
+            <div class="routine-item">
+              <div class="routine-check ${task.done?'checked':''}" onclick="DATA.routines.morning[${i}].done=!DATA.routines.morning[${i}].done;Router.navigate('routines');">${task.done?'✓':''}</div>
+              <span class="routine-label">${task.task}</span>
+              <span class="routine-time">${task.time}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">🌙</div><div class="card-title">Night Routine</div><span class="badge badge-violet" style="margin-left:auto">${r.night.filter(t=>t.done).length}/${r.night.length}</span></div>
+        <div class="card-body">
+          ${r.night.map((task,i) => `
+            <div class="routine-item">
+              <div class="routine-check ${task.done?'checked':''}" onclick="DATA.routines.night[${i}].done=!DATA.routines.night[${i}].done;Router.navigate('routines');">${task.done?'✓':''}</div>
+              <span class="routine-label">${task.task}</span>
+              <span class="routine-time">${task.time}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🧘 WELLBEING & MOOD (wellbeing) ==================== -->
+    <section id="view-wellbeing" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🧘 Wellbeing & Mood (Route: #wellbeing)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">🧘 Wellbeing</div><div class="page-subtitle">Mood, stress, breaks and mental health</div></div><button class="btn btn-primary btn-sm">+ Journal Entry</button></div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">😊</div><div class="card-title">Today's Mood Check-in</div></div>
+      <div class="card-body">
+        <div class="mood-selector">
+          ${['😔','😞','😐','🙂','😊','😁'].map((emoji,i)=>`<button class="mood-btn ${w.todayMood===i?'selected':''}" onclick="DATA.wellbeing.todayMood=${i};document.querySelectorAll('.mood-btn').forEach((b,j)=>b.classList.toggle('selected',j===${i}))">${emoji}</button>`).join('')}
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:8px">${w.todayMood===null?'Tap to log your mood':['Very Bad','Bad','Neutral','OK','Good','Great'][w.todayMood]+' ✓'}</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-header"><div class="card-title">Mood This Week</div></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:8px">
+            ${w.moodHistory.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent-cyan);height:${m/5*70}px;min-height:4px"></div><span style="font-size:9px;color:var(--text-muted)">${['M','T','W','T','F','S','S'][i]}</span></div>`).join('')}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);text-align:center">Avg: ${(w.moodHistory.reduce((a,b)=>a+b,0)/w.moodHistory.length).toFixed(1)}/5</div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Stress & Breaks</div></div>
+        <div class="card-body">
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span>Stress</span><span style="font-weight:700;color:var(--accent-amber)">${w.stressLevel}/5</span></div>
+            <div class="progress-track"><div class="progress-fill amber" style="width:${w.stressLevel/5*100}%"></div></div>
+          </div>
+          ${w.breaks.map(b=>`<div style="display:flex;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border-subtle)"><span>⏸️</span><span>${b.time}</span><span style="color:var(--text-muted)">${b.type} · ${b.duration}</span></div>`).join('')}
+          <button class="btn btn-secondary btn-sm" style="margin-top:10px;width:100%">+ Log Break</button>
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 💻 DIGITAL LIFE (digital-life) ==================== -->
+    <section id="view-digital-life" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 💻 Digital Life (Route: #digital-life)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">💻 Digital Life</div><div class="page-subtitle">Subscriptions, accounts, renewals</div></div><button class="btn btn-primary btn-sm">+ Add Subscription</button></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      ${[
+        {label:'Monthly Cost', val:'₹'+monthlyTotal+'/mo', color:'red'},
+        {label:'Active Subs', val:dl.subscriptions.filter(s=>s.status==='active').length, color:'cyan'},
+        {label:'Free Plans', val:dl.subscriptions.filter(s=>s.status!=='active').length, color:'green'},
+      ].map(s=>`<div class="card"><div class="stat-widget" style="padding:14px"><div class="stat-value" style="font-size:22px;color:var(--accent-${s.color})">${s.val}</div><div class="stat-label">${s.label}</div></div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">All Subscriptions</div></div>
+      <div>
+        ${dl.subscriptions.map(s=>`
+          <div class="sub-item">
+            <div class="sub-logo" style="background:${s.color}20">${s.icon}</div>
+            <div class="sub-info">
+              <div class="sub-name">${s.name}</div>
+              <div class="sub-renewal">${s.renewal?'Renews '+Utils.formatDateShort(s.renewal):'No renewal'}</div>
+            </div>
+            <div class="sub-amount">
+              <div class="sub-price">${s.amount?'₹'+s.amount:'Free'}</div>
+              <div class="sub-period">/${s.period}</div>
+            </div>
+            <span class="badge badge-${s.status==='active'?'cyan':s.status==='free'?'green':'amber'}">${s.status}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 🎭 ENTERTAINMENT (entertainment) ==================== -->
+    <section id="view-entertainment" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 🎭 Entertainment (Route: #entertainment)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">🎭 Entertainment</div><div class="page-subtitle">Movies, shows, books, games and hobbies</div></div><button class="btn btn-primary btn-sm">+ Add</button></div>
+    <div class="grid-auto">
+      ${DATA.entertainment.map(e=>`
+        <div class="card media-card">
+          <div class="media-thumb" style="background:${{Movie:'rgba(239,68,68,0.08)',Show:'rgba(124,58,237,0.08)',Book:'rgba(0,212,255,0.08)',Game:'rgba(16,185,129,0.08)'}[e.type]||'var(--bg-elevated)'}">${e.emoji}</div>
+          <div class="media-body">
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:4px">${e.type} · ${e.genre}</div>
+            <div class="media-title">${e.title}</div>
+            <div class="media-status">
+              <span class="badge badge-${Utils.statusColor(e.status)}">${e.status}</span>
+              ${e.progress?`<div class="progress-track" style="flex:1;height:3px"><div class="progress-fill cyan" style="width:${e.progress}%"></div></div>`:''}
+              ${e.rating?`<span style="font-size:11px">${'⭐'.repeat(Math.min(e.rating,5))}</span>`:''}
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: 📊 SYSTEM ANALYTICS (analytics) ==================== -->
+    <section id="view-analytics" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: 📊 System Analytics (Route: #analytics)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">📊 Analytics</div><div class="page-subtitle">Cross-domain trends, insights and forecasts</div></div>
+      <button class="btn btn-secondary btn-sm" onclick="processTADASHICommand('Show me my life analytics summary')">🧠 TADASHI Insights</button>
+    </div>
+
+    <!-- Life Score trend -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-icon" style="background:rgba(0,212,255,0.1)">⚡</div><div class="card-title">Life Score This Week</div></div>
+      <div class="card-body">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:6px">
+          ${[65,72,58,80,74,68,82].map((v,i)=>`
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:100%;border-radius:4px 4px 0 0;background:${i===6?'linear-gradient(180deg,var(--accent-cyan),rgba(0,212,255,0.3))':'var(--bg-elevated)'};height:${v/82*70}px;min-height:4px;border:1px solid ${i===6?'var(--accent-cyan)':'var(--border-subtle)'};transition:all 0.3s" title="${v}"></div>
+              <span style="font-size:9px;color:${i===6?'var(--accent-cyan)':'var(--text-muted)'};font-weight:${i===6?700:400}">${a.days[i]}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-col charts -->
+    <div class="grid-3" style="margin-bottom:20px">
+      ${[
+        {title:'Productivity', data:a.productivity, color:'var(--accent-cyan)', unit:'%', icon:'⚡'},
+        {title:'Study Hours', data:a.studyHours, color:'var(--accent-violet-bright)', unit:'h', icon:'📚'},
+        {title:'Fitness Sessions', data:a.fitness, color:'var(--accent-green)', unit:'', icon:'💪'},
+      ].map(chart=>`
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:rgba(0,0,0,0.2)">${chart.icon}</div><div class="card-title">${chart.title}</div></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:flex-end;gap:4px;height:60px;margin-bottom:6px">
+              ${chart.data.map((v,i)=>`
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+                  <div style="width:100%;border-radius:3px 3px 0 0;background:${chart.color};height:${v/Math.max(...chart.data)*56}px;min-height:3px;opacity:${i===6?1:0.5}"></div>
+                  <span style="font-size:8px;color:var(--text-muted)">${a.days[i].charAt(0)}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div style="text-align:center;font-size:12px;font-weight:700;color:${chart.color}">${chart.data[chart.data.length-1]}${chart.unit} today</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Cross-domain insights -->
+    <div class="grid-2" style="margin-bottom:20px">
+      <!-- Spending this week -->
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.15)">💰</div><div class="card-title">Spending This Week</div></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:flex-end;gap:4px;height:70px;margin-bottom:8px">
+            ${a.spending.map((v,i)=>`
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="width:100%;border-radius:3px 3px 0 0;background:${v>5000?'var(--accent-red)':v>4000?'var(--accent-amber)':'var(--accent-green)'};height:${v/5640*65}px;min-height:3px"></div>
+                <span style="font-size:8px;color:var(--text-muted)">${a.days[i].charAt(0)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px">
+            <span style="color:var(--text-muted)">Total this month</span>
+            <span style="font-weight:700;color:var(--accent-amber)">₹${Utils.fmt(DATA.finance.monthlyExpenses)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Correlation insights -->
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(124,58,237,0.15)">🔗</div><div class="card-title">TADASHI Correlations</div></div>
+        <div class="card-body">
+          ${[
+            {insight:'Sleep ↔ Productivity', desc:'7.5h+ sleep correlates with 80%+ productivity score', confidence:87, up:true},
+            {insight:'Gym ↔ Study Focus', desc:'Gym days show 23% higher study session effectiveness', confidence:74, up:true},
+            {insight:'Late meals ↔ Sleep quality', desc:'Meals after 8 PM reduce sleep quality by ~15 min', confidence:65, up:false},
+          ].map(c=>`
+            <div style="padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                <span style="font-size:14px">${c.up?'↗️':'↘️'}</span>
+                <span style="font-size:12px;font-weight:700">${c.insight}</span>
+                <span style="font-size:10px;color:var(--accent-cyan);margin-left:auto">${c.confidence}%</span>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted)">${c.desc}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Domain breakdown -->
+    <div class="card">
+      <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.1)">📈</div><div class="card-title">Domain Performance</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+          ${[
+            {domain:'Productivity', score:74, trend:'+3', color:'cyan'},
+            {domain:'Fitness', score:80, trend:'+5', color:'green'},
+            {domain:'Finance', score:82, trend:'+1', color:'amber'},
+            {domain:'Study', score:58, trend:'-2', color:'red'},
+            {domain:'Nutrition', score:84, trend:'+8', color:'violet'},
+            {domain:'Wellbeing', score:70, trend:'0', color:'pink'},
+            {domain:'Sleep', score:76, trend:'-4', color:'indigo'},
+            {domain:'Relationships', score:65, trend:'+2', color:'cyan'},
+          ].map(d=>`
+            <div style="text-align:center">
+              <div style="position:relative;width:60px;height:60px;margin:0 auto">
+                ${Utils.arc(d.score, 60, 6, `var(--accent-${d.color})`)}
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--accent-${d.color})">${d.score}</div>
+              </div>
+              <div style="font-size:11px;font-weight:600;margin-top:6px">${d.domain}</div>
+              <div style="font-size:10px;color:${d.trend.startsWith('+')?'var(--accent-green)':d.trend===0?'var(--text-muted)':'var(--accent-red)'}">${d.trend}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  
+    </section>
+    <!-- ==================== PAGE: ⚙️ SETTINGS & VOICE (settings) ==================== -->
+    <section id="view-settings" class="skeleton-page-view" style="display:none">
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--accent-cyan);margin-bottom:12px;opacity:0.8">
+        PAGE SKELETON: ⚙️ Settings & Voice (Route: #settings)
+      </div>
+      
+    <div class="page-header"><div><div class="page-title">⚙️ Settings</div><div class="page-subtitle">Profile, preferences, AI behavior and permissions</div></div></div>
+    <!-- Profile -->
+    <div class="card" style="margin-bottom:20px;padding:20px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent-violet),var(--accent-cyan));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;box-shadow:var(--glow-violet)">KC</div>
+        <div>
+          <div style="font-size:18px;font-weight:800">Krishna Singh</div>
+          <div style="font-size:12px;color:var(--text-muted)">LifeOS User · IST (UTC+5:30)</div>
+          <div style="font-size:12px;color:var(--accent-cyan);margin-top:4px">Life Score: 84/100</div>
+        </div>
+        <button class="btn btn-secondary" style="margin-left:auto">Edit Profile</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- TADASHI AI Settings -->
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">🔑 TADASHI AI Connection</div>
+          <div class="card" style="padding:16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:700">Gemini API Key</span>
+              <span id="gemini-conn-badge" class="badge ${AI.hasKey() ? 'badge-green' : 'badge-amber'}">${AI.hasKey() ? 'Connected' : 'Not connected'}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">
+              Connect Google's Gemini LLM to give TADASHI genuine conversational intelligence, deep life reasoning, and proactive replanning.
+              Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent-cyan);font-weight:600">aistudio.google.com/apikey ↗</a>.
+              Your key is saved locally in your browser (localStorage) and never transmitted to third parties.
+            </div>
+            <div class="form-group" style="margin-bottom:10px">
+              <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
+                <span>Gemini API Key</span>
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent-cyan);font-size:11px">Get Free Key ↗</a>
+              </label>
+              <div style="display:flex;gap:6px">
+                <input type="password" class="form-input" id="gemini-key-input" style="flex:1" placeholder="${AI.hasKey() ? '•••••••••••••••••••••••••••• (Saved in browser)' : 'AIzaSy... (Paste Gemini API key here)'}">
+                <button class="btn btn-secondary btn-sm" type="button" onclick="toggleGeminiKeyVisibility()" title="Toggle visibility" id="gemini-eye-btn">👁️</button>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Gemini Model</label>
+              <select class="form-input" id="gemini-model-select" onchange="onGeminiModelChange(this.value)" style="background:var(--bg-elevated);color:var(--text-primary)">
+                ${AI.MODELS.map(m => `<option value="${m.id}" ${AI.getModel() === m.id ? 'selected' : ''}>${m.name}</option>`).join('')}
+                <option value="custom" ${!AI.MODELS.some(m => m.id === AI.getModel()) ? 'selected' : ''}>Custom Model ID...</option>
+              </select>
+              <input type="text" class="form-input" id="gemini-model-custom" placeholder="e.g. gemini-1.5-flash-8b" value="${!AI.MODELS.some(m => m.id === AI.getModel()) ? AI.getModel() : ''}" style="margin-top:6px;display:${!AI.MODELS.some(m => m.id === AI.getModel()) ? 'block' : 'none'}">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="saveGeminiSettings()">💾 Save Key & Model</button>
+              <button class="btn btn-secondary btn-sm" onclick="testGeminiSettings()">🔌 Test Connection</button>
+              <button class="btn btn-danger btn-sm" id="gemini-remove-btn" onclick="removeGeminiSettings()" style="${AI.hasKey() ? '' : 'display:none'}">🗑 Remove Key</button>
+            </div>
+            <div id="gemini-status-msg" style="font-size:11px;margin-top:10px;line-height:1.4"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">🎙️ Voice & Audio Settings</div>
+          <div class="card" style="padding:16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div>
+                <div style="font-size:13px;font-weight:700">Auto-Speak Replies</div>
+                <div style="font-size:11px;color:var(--text-muted)">Read TADASHI's replies aloud automatically with speech synthesis</div>
+              </div>
+              <div class="toggle ${Voice.isVoiceOutputEnabled() ? 'on' : ''}" id="settings-voice-toggle" onclick="this.classList.toggle('on'); Voice.setVoiceOutputEnabled(this.classList.contains('on'))"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label" style="display:flex;justify-content:space-between">
+                <span>Speech Speed</span>
+                <span id="voice-speed-val">${Voice.getSpeed()}x</span>
+              </label>
+              <input type="range" min="0.8" max="1.3" step="0.05" value="${Voice.getSpeed()}" style="width:100%;accent-color:var(--accent-cyan)" oninput="document.getElementById('voice-speed-val').textContent = this.value + 'x'; Voice.setSpeed(parseFloat(this.value))">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="Voice.speak('Hello! I am TADASHI, your personal life intelligence assistant. All voice links are fully operational.')">🔊 Test TADASHI Voice</button>
+              <button class="btn btn-secondary btn-sm" onclick="Voice.stopSpeaking()">⏹ Stop</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">🧠 TADASHI AI</div>
+          ${[
+            {icon:'🔄', title:'Autonomy Mode', desc:'Current: Suggestion mode (TADASHI proposes, you approve)', action:'Change'},
+            {icon:'💾', title:'Memory System', desc:'Short-term, episodic and preference memory active', action:'Manage'},
+            {icon:'🔮', title:'Proactive Briefings', desc:'Morning briefing at 7 AM daily', action:'Configure'},
+            {icon:'⚡', title:'Event Detection', desc:'TADASHI monitors for risks and opportunities', action:''},
+          ].map(s=>`
+            <div class="settings-item">
+              <div class="settings-item-icon" style="background:rgba(0,212,255,0.1)">${s.icon}</div>
+              <div class="settings-item-info"><div class="settings-item-title">${s.title}</div><div class="settings-item-desc">${s.desc}</div></div>
+              ${s.action?`<button class="btn btn-secondary btn-sm">${s.action}</button>`:
+              `<div class="toggle on" onclick="this.classList.toggle('on')"></div>`}
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">🔔 Notifications</div>
+          ${[
+            {icon:'⏰', title:'Reminders', desc:'Task deadlines, bills, birthdays', toggle:true},
+            {icon:'⚠️', title:'Risk Alerts', desc:'Conflicts, overload, approaching deadlines', toggle:true},
+            {icon:'📋', title:'Daily Briefing', desc:'Morning summary at 7 AM', toggle:true},
+            {icon:'🔄', title:'Replan Approvals', desc:'Notify when TADASHI proposes changes', toggle:true},
+          ].map(s=>`
+            <div class="settings-item">
+              <div class="settings-item-icon" style="background:rgba(245,158,11,0.1)">${s.icon}</div>
+              <div class="settings-item-info"><div class="settings-item-title">${s.title}</div><div class="settings-item-desc">${s.desc}</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Privacy + Modules -->
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">🔒 Privacy & Security</div>
+          ${[
+            {icon:'🛡️', title:'TADASHI Data Access', desc:'Manage which modules TADASHI can read', action:'Manage'},
+            {icon:'🗑️', title:'Clear Memory', desc:'Delete all TADASHI learned patterns and preferences', action:'Clear', danger:true},
+            {icon:'📋', title:'Audit Log', desc:'View all AI actions and changes', action:'View'},
+            {icon:'🔑', title:'Change Password', desc:'Update your account password', action:'Change'},
+          ].map(s=>`
+            <div class="settings-item" style="${s.danger?'border-color:rgba(239,68,68,0.2)':''}">
+              <div class="settings-item-icon" style="background:rgba(${s.danger?'239,68,68':'124,58,237'},0.1)">${s.icon}</div>
+              <div class="settings-item-info"><div class="settings-item-title" style="${s.danger?'color:var(--accent-red)':''}">${s.title}</div><div class="settings-item-desc">${s.desc}</div></div>
+              <button class="btn ${s.danger?'btn-danger':'btn-secondary'} btn-sm">${s.action}</button>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">🎨 Appearance</div>
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:rgba(0,212,255,0.1)">🌙</div>
+            <div class="settings-item-info"><div class="settings-item-title">Dark Mode</div><div class="settings-item-desc">Currently: Dark (Glassmorphism)</div></div>
+            <div class="toggle on"></div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:rgba(124,58,237,0.15)">🎨</div>
+            <div class="settings-item-info"><div class="settings-item-title">Accent Color</div><div class="settings-item-desc">Cyan + Violet (default)</div></div>
+            <div style="display:flex;gap:6px">
+              ${['#00d4ff','#7c3aed','#10b981','#f59e0b','#ec4899'].map(c=>`<div style="width:20px;height:20px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${c==='#00d4ff'?'#fff':'transparent'}" onclick="document.documentElement.style.setProperty('--accent-cyan',this.style.background)"></div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App info -->
+    <div class="card" style="margin-top:4px;padding:16px;text-align:center">
+      <div style="font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet-bright));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">TADASHI — LifeOS v1.0</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Total AI for Dynamic Assistance, Scheduling and Human Intelligence</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Built by Krishna Singh Chouhan · Academic Final Project 2026</div>
+    </div>
+  
+    </section>
+
+        </main>
+
+        <!-- ──────────────── CONTEXT DRAWER ──────────────── -->
+        <aside id="context-drawer" class="open" style="width:280px;flex-shrink:0">
+          <div class="drawer-inner">
+            <div class="drawer-header">
+              <span class="drawer-title">Context</span>
+              <button class="drawer-close-btn" onclick="document.getElementById('context-drawer').classList.remove('open')">✕</button>
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">LIFE STATE</div>
+              <div class="card" style="padding:12px">
+                <div style="font-size:20px;font-weight:800;line-height:1">22:45</div>
+                <div style="font-size:11px;font-weight:600;color:var(--accent-cyan);margin-top:4px">Busy with class · Low availability</div>
+              </div>
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">ACTIVE RISKS</div>
+              <div class="risk-alert critical">
+                <span class="risk-alert-icon">⚠️</span>
+                <div class="risk-alert-body">
+                  <div class="risk-alert-title">OS Exam in 6 days</div>
+                  <div class="risk-alert-desc">42% syllabus gap detected</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- ──────────────── GLOBAL COMMAND OVERLAY ──────────────── -->
+    <div id="command-overlay" class="modal-overlay" style="display:none">
+      <div class="command-box">
+        <input type="text" class="command-input" placeholder="Type a command or jump to page..." />
+      </div>
+    </div>
+
+    <!-- ──────────────── HOLOGRAPHIC VOICE CALL OVERLAY ──────────────── -->
+    <div id="voice-call-modal" class="voice-call-overlay" style="display:none">
+      <div class="voice-call-header">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-cyan);font-weight:700">TADASHI Live Voice Call</div>
+        <div style="font-size:20px;font-weight:800;margin-top:6px">Listening... Speak now</div>
+      </div>
+      <div class="voice-orb-container">
+        <div class="voice-orb-ring voice-orb-ring-1"></div>
+        <div class="voice-orb-ring voice-orb-ring-2"></div>
+        <div class="voice-orb-core">🧠</div>
+      </div>
+      <div class="voice-wave-bars">
+        <div class="voice-wave-bar"></div><div class="voice-wave-bar"></div><div class="voice-wave-bar"></div>
+        <div class="voice-wave-bar"></div><div class="voice-wave-bar"></div><div class="voice-wave-bar"></div>
+      </div>
+      <div class="voice-call-transcript"><span>You: "What should I focus on next?"</span></div>
+      <div class="voice-call-controls">
+        <button class="voice-control-btn">🎙️</button>
+        <button class="voice-control-btn end-call" onclick="document.getElementById('voice-call-modal').style.display='none'">✕</button>
+        <button class="voice-control-btn">🔊</button>
+      </div>
+    </div>
+
+    <!-- Universal Floating Action Button (+) -->
+    <button id="universal-fab" title="Quick Action">+</button>
+
+    <!-- Bottom Status Pill -->
+    <div class="tadashi-status">
+      <div class="status-dot green"></div>
+      <span>TADASHI active</span>
+    </div>
+
+  </div>
+
+  <script>
+    function switchSkeletonPage(pageId, btn) {
+      document.querySelectorAll('.skeleton-page-view').forEach(v => v.style.display = 'none');
+      document.querySelectorAll('.page-tab-btn').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById('view-' + pageId);
+      if (target) target.style.display = 'block';
+      if (btn) btn.classList.add('active');
+      const title = document.getElementById('topbar-page-title');
+      if (title && btn) title.textContent = btn.textContent.trim();
+    }
+  </script>
+</body>
+</html>
