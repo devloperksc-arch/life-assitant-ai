@@ -94,10 +94,11 @@ const Utils = {
     </svg>`;
   },
 
-  // Parse markdown (bold, italic, code blocks, inline code)
+  // Parse markdown safely (escapes HTML first to prevent XSS)
   md(text) {
     if (!text) return '';
-    return text
+    const esc = this.escapeHtml(text);
+    return esc
       .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.45);padding:10px 12px;border-radius:6px;overflow-x:auto;margin:8px 0;font-family:Consolas,monospace;font-size:12px;border:1px solid rgba(255,255,255,0.08)"><code>$1</code></pre>')
       .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.12);padding:2px 6px;border-radius:4px;font-size:11px;font-family:Consolas,monospace;color:var(--accent-cyan)">$1</code>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

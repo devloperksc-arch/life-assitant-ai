@@ -39,7 +39,43 @@ const DB = (() => {
   const api = {
     init() { _load(); return this; },
 
-    reset() { _pushUndo(); _state = JSON.parse(JSON.stringify(DATA)); _save(); _emit('all','reset',null); },
+    reset() {
+      _pushUndo();
+      try {
+        localStorage.setItem('tadashi_pre_reset_backup', JSON.stringify(_state));
+      } catch(e) {}
+      _state = JSON.parse(JSON.stringify(DATA));
+      _save();
+      _emit('all','reset',null);
+    },
+
+    restorePreResetBackup() {
+      const b = localStorage.getItem('tadashi_pre_reset_backup');
+      if (!b) return false;
+      try {
+        _pushUndo();
+        _state = JSON.parse(b);
+        _save();
+        _emit('all', 'restore', null);
+        return true;
+      } catch(e) { return false; }
+    },
+
+    hasPreResetBackup() {
+      return !!localStorage.getItem('tadashi_pre_reset_backup');
+    },
+
+    importState(newState) {
+      if (!newState || typeof newState !== 'object') return false;
+      _pushUndo();
+      try {
+        localStorage.setItem('tadashi_pre_import_backup', JSON.stringify(_state));
+      } catch(e) {}
+      _state = JSON.parse(JSON.stringify(newState));
+      _save();
+      _emit('all', 'import', null);
+      return true;
+    },
 
     undo() {
       if (!_undoStack.length) return false;
@@ -594,3 +630,8 @@ ${subsList || '  None'}
   api.init();
   return api;
 })();
+
+if (typeof window !== 'undefined') {
+  window.DB = DB;
+}
+

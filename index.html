@@ -156,6 +156,9 @@
     .view-panel {
       contain: layout style;
     }
+    .hidden {
+      display: none !important;
+    }
     /* Logo status dot — lighter than animate-ping */
     @keyframes dot-pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
@@ -193,6 +196,27 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     .toast-animate { animation: toast-in 0.22s ease forwards; }
+    /* ---- AI Calendar ---- */
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      padding: 4px 2px 2px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      font-size: 12px;
+      position: relative;
+    }
+    .cal-day:hover { background: rgba(0,212,255,0.10); }
+    .cal-day.today { background: rgba(0,212,255,0.18); box-shadow: 0 0 10px -2px rgba(0,212,255,0.35); font-weight: 700; }
+    .cal-day.today .cal-num { color: #00d4ff; }
+    .cal-day.selected { background: rgba(0,212,255,0.28); box-shadow: 0 0 14px -2px rgba(0,212,255,0.5); }
+    .cal-day.other-month .cal-num { color: rgba(133,147,152,0.35); }
+    .cal-num { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #e2e2eb; line-height: 1; margin-bottom: 3px; }
+    .cal-dot-row { display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 28px; }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
+    /* Domain modal */
+    #domain-detail-modal { animation: toast-in 0.22s ease forwards; }
   </style>
 
   <!-- TADASHI Core Engines: Data, DB, Utilities, Gemini AI, Voice -->
@@ -201,6 +225,7 @@
   <script src="js/utils.js"></script>
   <script src="js/lib/ai.js"></script>
   <script src="js/lib/voice.js"></script>
+  <script src="js/domain-pages.js?v=5.1"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
 
@@ -225,7 +250,7 @@
 <!-- CENTER: Segmented Floating Neural Dock Buttons -->
 <nav class="hidden md:flex items-center gap-1.5 bg-surface-container-lowest/60 p-1.5 rounded-xl border border-outline-variant/20 shadow-inner" id="nav-tabs"><button class="nav-btn relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-white bg-gradient-to-r from-primary-container/25 via-primary-container/20 to-primary-container/10 border border-primary-container/40 shadow-[0_0_14px_-2px_rgba(0,212,255,0.4)] transition-all active:scale-95" data-target="view-workspace"><span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">space_dashboard</span><span class="">Workspace</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-tadashi"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span class="">TADASHI AI</span><span class="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary-container/40 text-secondary border border-secondary/40 font-mono font-bold tracking-wider">COPILOT</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-manage"><span class="material-symbols-outlined text-[20px]">apps</span><span class="">Manage</span><span class="text-[10px] px-2 py-0.5 rounded font-mono bg-surface-container text-primary-container border border-primary-container/30 font-semibold">22</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-briefings"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="">Briefings</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-schedule"><span class="material-symbols-outlined text-[20px]">event_available</span><span class="">Schedule &amp; Tasks</span></button></nav>
 <!-- RIGHT: Telemetry Indicators + Voice Link + Execute Briefing Action -->
-<div class="flex items-center gap-2 shrink-0"><div class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/20 text-xs font-mono text-outline"><span class="material-symbols-outlined text-[16px]">schedule</span><span class="text-on-surface font-semibold text-sm" id="live-clock">--:--</span><span class="text-[11px] text-outline/80">IST</span></div><div class="hidden sm:flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-tertiary/25 text-xs font-mono"><span class="text-[11px] uppercase tracking-wider text-outline">LifeScore</span><span class="font-bold text-tertiary text-sm">84</span><span class="text-outline/60 text-[11px]">/100</span><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#6af7ba]"></span></div><button class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest/70 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all active:scale-95 group" onclick="openVoiceModal()"><span class="material-symbols-outlined text-primary-container text-[18px] group-hover:animate-pulse">graphic_eq</span><span class="hidden lg:inline text-xs font-medium">Voice Link</span></button><button class="flex items-center gap-2 py-2 px-4 rounded-xl bg-gradient-to-r from-primary-container via-surface-tint to-primary-container text-surface-container-lowest font-mono text-xs font-bold cyan-glow hover:shadow-[0_0_26px_rgba(0,212,255,0.6)] transition-all active:scale-95 shrink-0" onclick="togglePlayAudio()"><span class="material-symbols-outlined text-surface-container-lowest text-[18px]" style="font-variation-settings: 'FILL' 1;">bolt</span><span class="">Execute Briefing</span></button><button class="md:hidden flex items-center justify-center p-2 rounded-xl bg-surface-container text-outline hover:text-white" onclick="toggleMobileMenu()"><span class="material-symbols-outlined text-[24px]">menu</span></button></div>
+<div class="flex items-center gap-2 shrink-0"><div class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/20 text-xs font-mono text-outline"><span class="material-symbols-outlined text-[16px]">schedule</span><span class="text-on-surface font-semibold text-sm" id="live-clock">--:--</span><span class="text-[11px] text-outline/80">IST</span></div><div class="hidden sm:flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-tertiary/25 text-xs font-mono"><span class="text-[11px] uppercase tracking-wider text-outline">LifeScore</span><span class="font-bold text-tertiary text-sm">84</span><span class="text-outline/60 text-[11px]">/100</span><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#6af7ba]"></span></div><button class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest/70 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all active:scale-95 group" onclick="openVoiceModal()"><span class="material-symbols-outlined text-primary-container text-[18px] group-hover:animate-pulse">graphic_eq</span><span class="hidden lg:inline text-xs font-medium">Voice Link</span></button><button class="flex items-center gap-2 py-2 px-4 rounded-xl bg-gradient-to-r from-primary-container via-surface-tint to-primary-container text-surface-container-lowest font-mono text-xs font-bold cyan-glow hover:shadow-[0_0_26px_rgba(0,212,255,0.6)] transition-all active:scale-95 shrink-0" onclick="togglePlayAudio()"><span class="material-symbols-outlined text-surface-container-lowest text-[18px]" style="font-variation-settings: 'FILL' 1;">bolt</span><span class="">Execute Briefing</span></button><button aria-label="Toggle navigation menu" class="md:hidden flex items-center justify-center p-2 rounded-xl bg-surface-container text-outline hover:text-white" onclick="toggleMobileMenu()"><span class="material-symbols-outlined text-[24px]">menu</span></button></div>
 </header>
 </div>
 <!-- Mobile Nav Drawer Menu -->
@@ -254,9 +279,9 @@
 <!-- ================================================================= -->
 <!-- EXPANSIVE FULL-WIDTH MAIN WORKSPACE CANVAS -->
 <!-- ================================================================= -->
-<main class="relative z-10 w-full min-h-screen pt-28 pb-16 px-4 sm:px-6 lg:px-10 max-w-[1580px] mx-auto">
+<main class="relative z-10 w-full min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-10 max-w-[1580px] mx-auto">
 <!-- Operational HUD Sub-bar -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-outline-variant/15">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-outline-variant/15" id="hud-subbar">
 <div class="flex items-center gap-3 flex-wrap">
 <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5" id="view-title">
         TADASHI LifeOS
@@ -326,58 +351,60 @@
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
 <span class="text-xs font-mono text-outline">30m remaining</span>
-<span class="text-primary-container text-xs font-mono font-medium hover:underline cursor-pointer flex items-center gap-1" onclick="switchTab('view-schedule')">
-            Resume →
+<span class="text-primary-container text-xs font-mono font-medium hover:underline cursor-pointer flex items-center gap-1" onclick="openDomainPage('study')">
+            Open Domain →
           </span>
 </div>
 </div>
 <!-- Action Item 2: Pending Call -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-amber-400 flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-amber-400 flex flex-col justify-between cursor-pointer group" onclick="openDomainPage('relationships')">
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
 <span class="text-amber-400 font-semibold uppercase tracking-wider">PENDING CALL</span>
 <span class="text-outline/80">23:15 IST</span>
 </div>
-<h4 class="text-base text-white font-medium">Mom's Birthday Call</h4>
+<h4 class="text-base text-white font-medium group-hover:text-amber-400 transition-colors">Mom's Birthday Call</h4>
 <p class="text-xs text-outline mt-1 leading-relaxed">Scheduled call slot before midnight.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
 <span class="text-xs font-mono text-amber-400 font-medium">High priority</span>
-<span class="text-white hover:text-amber-400 text-xs font-mono cursor-pointer flex items-center gap-1">
-            Dial / Open
+<span class="text-white hover:text-amber-400 text-xs font-mono cursor-pointer flex items-center gap-1" onclick="openDomainPage('relationships'); event.stopPropagation();">
+            Open Domain →
           </span>
 </div>
 </div>
 <!-- Action Item 3: Due Tomorrow -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-secondary flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-secondary flex flex-col justify-between cursor-pointer group" onclick="openDomainPage('tasks')">
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
 <span class="text-secondary font-semibold uppercase tracking-wider">DUE TOMORROW</span>
 <span class="text-outline/80">Academics</span>
 </div>
-<h4 class="text-base text-white font-medium">Submit OS Assignment 3</h4>
+<h4 class="text-base text-white font-medium group-hover:text-secondary transition-colors">Submit OS Assignment 3</h4>
 <p class="text-xs text-outline mt-1 leading-relaxed">Draft ready in GitHub repo; verify tests.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
 <span class="text-xs font-mono text-outline">Due 14:00</span>
-<span class="text-secondary text-xs font-mono hover:underline cursor-pointer flex items-center gap-1">
-            Review Code
+<span class="text-secondary text-xs font-mono hover:underline cursor-pointer flex items-center gap-1" onclick="openDomainPage('tasks'); event.stopPropagation();">
+            Tasks Domain →
           </span>
 </div>
 </div>
 <!-- Action Item 4: Completed -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-tertiary flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-tertiary flex flex-col justify-between cursor-pointer group" onclick="openDomainPage('fitness')">
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
 <span class="text-tertiary font-semibold uppercase tracking-wider">COMPLETED</span>
 <span class="text-outline/80">Fitness</span>
 </div>
-<h4 class="text-base text-white font-medium">Zone 2 Aerobic Conditioning</h4>
+<h4 class="text-base text-white font-medium group-hover:text-tertiary transition-colors">Zone 2 Aerobic Conditioning</h4>
 <p class="text-xs text-outline mt-1 leading-relaxed">45 min run logged · HRV 68ms.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
 <span class="text-xs font-mono text-tertiary">Logged 20:30</span>
-<span class="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+<span class="text-tertiary text-xs font-mono hover:underline cursor-pointer flex items-center gap-1" onclick="openDomainPage('fitness'); event.stopPropagation();">
+            Fitness Domain →
+          </span>
 </div>
 </div>
 </section>
@@ -473,12 +500,12 @@
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <!-- Domain Card 1: Study & Cognition -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:border-primary-container/60 hover:shadow-[0_0_20px_rgba(0,212,255,0.15)] transition-all active:scale-[0.99] group" onclick="openDomainPage('study')">
 <div>
 <div class="flex items-center justify-between mb-3">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-primary-container">menu_book</span>
-<h4 class="text-sm text-white font-medium">Study &amp; Learning</h4>
+<h4 class="text-sm text-white font-medium group-hover:text-primary transition-colors">Study &amp; Learning</h4>
 </div>
 <span class="text-[9px] px-2 py-0.5 rounded bg-primary-container/15 text-primary-container font-mono">1 IN PROGRESS</span>
 </div>
@@ -486,16 +513,16 @@
 </div>
 <div class="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-on-surface">Target: 24.5 / 30h</span>
-<button class="text-primary-container hover:text-white font-medium" onclick="switchTab('view-tadashi')">Ask TADASHI →</button>
+<button class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform" onclick="openDomainPage('study'); event.stopPropagation();">Open Page →</button>
 </div>
 </div>
 <!-- Domain Card 2: Fitness & Vitality -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:border-tertiary/60 hover:shadow-[0_0_20px_rgba(106,247,186,0.15)] transition-all active:scale-[0.99] group" onclick="openDomainPage('fitness')">
 <div>
 <div class="flex items-center justify-between mb-3">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-tertiary">directions_run</span>
-<h4 class="text-sm text-white font-medium">Fitness &amp; Health</h4>
+<h4 class="text-sm text-white font-medium group-hover:text-tertiary transition-colors">Fitness &amp; Health</h4>
 </div>
 <span class="text-[9px] px-2 py-0.5 rounded bg-tertiary/15 text-tertiary font-mono">DONE TODAY</span>
 </div>
@@ -503,16 +530,16 @@
 </div>
 <div class="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-on-surface">Weekly: 4 of 5 sessions</span>
-<button class="text-tertiary hover:underline font-medium" onclick="switchTab('view-manage')">Details</button>
+<button class="text-tertiary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform" onclick="openDomainPage('fitness'); event.stopPropagation();">Open Page →</button>
 </div>
 </div>
 <!-- Domain Card 3: Capital & Reserves -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:border-secondary/60 hover:shadow-[0_0_20px_rgba(208,188,255,0.15)] transition-all active:scale-[0.99] group" onclick="openDomainPage('finance')">
 <div>
 <div class="flex items-center justify-between mb-3">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-secondary">monetization_on</span>
-<h4 class="text-sm text-white font-medium">Finance &amp; Wealth</h4>
+<h4 class="text-sm text-white font-medium group-hover:text-secondary transition-colors">Finance &amp; Wealth</h4>
 </div>
 <span class="text-[9px] px-2 py-0.5 rounded bg-secondary/15 text-secondary font-mono">ACTION REQUIRED</span>
 </div>
@@ -520,16 +547,16 @@
 </div>
 <div class="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-on-surface">Runway: 42 days</span>
-<button class="text-secondary hover:underline font-medium" onclick="switchTab('view-manage')">Manage →</button>
+<button class="text-secondary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform" onclick="openDomainPage('finance'); event.stopPropagation();">Open Page →</button>
 </div>
 </div>
 <!-- Domain Card 4: Neural Wellness -->
-<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between">
+<div class="glass-surface glass-surface-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer hover:border-primary/60 hover:shadow-[0_0_20px_rgba(0,212,255,0.15)] transition-all active:scale-[0.99] group" onclick="openDomainPage('wellbeing')">
 <div>
 <div class="flex items-center justify-between mb-3">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">self_improvement</span>
-<h4 class="text-sm text-white font-medium">Wellbeing &amp; Mood</h4>
+<h4 class="text-sm text-white font-medium group-hover:text-primary transition-colors">Wellbeing &amp; Mood</h4>
 </div>
 <span class="text-[9px] px-2 py-0.5 rounded bg-primary/15 text-primary font-mono">23:30 QUEUED</span>
 </div>
@@ -537,7 +564,7 @@
 </div>
 <div class="pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-on-surface">Target: 8.2 hrs rest</span>
-<button class="text-primary hover:underline font-medium" onclick="switchTab('view-schedule')">Check Protocol</button>
+<button class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform" onclick="openDomainPage('wellbeing'); event.stopPropagation();">Open Page →</button>
 </div>
 </div>
 </div>
@@ -683,311 +710,313 @@
 <!-- 22 Domains Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="domains-grid">
 <!-- Domain 01: Home Dashboard -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('home')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">dashboard</span>
 <span class="text-xs font-mono text-primary-container">01 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">Home Dashboard</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Home Dashboard</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Central neural cockpit, priority matrix, active daily flow, and cognitive sync.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">Active Overview</span>
-<button onclick="switchTab('view-workspace')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('home'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 02: TADASHI AI & Voice -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('tadashi')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">neurology</span>
 <span class="text-xs font-mono text-primary-container">02 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">TADASHI AI &amp; Voice</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">TADASHI AI &amp; Voice</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Autonomous conversational intelligence, speech-to-text, and real-time guidance.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">Gemini Online</span>
-<button onclick="switchTab('view-tadashi')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('tadashi'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 03: Schedule & Calendar -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('calendar')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">calendar_today</span>
 <span class="text-xs font-mono text-primary-container">03 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">Schedule &amp; Calendar</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Schedule &amp; Calendar</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Dynamic time-blocking, conflict prevention, calendar integration, and event flow.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">4 Events Today</span>
-<button onclick="switchTab('view-schedule')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('calendar'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 04: Tasks & Projects -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('tasks')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">check_circle</span>
 <span class="text-xs font-mono text-primary-container">04 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">Tasks &amp; Projects</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Tasks &amp; Projects</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Prioritized commitment queue, project sprints, to-dos, and execution velocity.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-amber-400">3 Pending Tasks</span>
-<button onclick="switchTab('view-schedule')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('tasks'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 05: Goals & OKRs -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('goals')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary">flag</span>
 <span class="text-xs font-mono text-primary">05 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">Goals &amp; OKRs</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Goals &amp; OKRs</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Quarterly objectives, key milestones, measurable metrics, and achievement telemetry.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">3 Goals Active</span>
-<button onclick="showToast('Goals &amp; OKRs refreshed')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('goals'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 06: Study & Learning -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="core">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('study')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">school</span>
 <span class="text-xs font-mono text-primary-container">06 · CORE</span>
 </div>
-<h4 class="text-base font-medium text-white">Study &amp; Learning</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Study &amp; Learning</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Operating Systems Exam prep, flashcard retention, formula drills, and problem sets.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-amber-400">Exam in 6 Days</span>
-<button onclick="switchTab('view-workspace')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('study'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
-<!-- Domain 07: Fitness & Health -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary" data-category="vitality">
+<!-- Domain 07: Heavy · Fitness & Workout -->
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.25)] transition-all active:scale-[0.99] group" data-category="vitality" onclick="openDomainPage('fitness')">
 <div class="flex items-center justify-between mb-2">
-<span class="material-symbols-outlined text-tertiary">fitness_center</span>
-<span class="text-xs font-mono text-tertiary">07 · VITALITY</span>
+<span class="material-symbols-outlined text-primary-container">fitness_center</span>
+<span class="text-xs font-mono text-primary-container font-bold">07 · HEAVY ENGINE</span>
 </div>
-<h4 class="text-base font-medium text-white">Fitness &amp; Health</h4>
-<p class="text-xs text-outline mt-1 line-clamp-2">Zone 2 cardio, progressive strength, gym tracking, and recovery biometrics.</p>
+<h4 class="text-base font-bold text-white group-hover:text-primary-container transition-colors flex items-center gap-1.5">
+  <span>Heavy · Fitness &amp; Workout</span>
+  <span class="text-[9px] px-1.5 py-0.5 rounded bg-primary-container/20 text-primary-container border border-primary-container/40 font-mono font-bold tracking-wider">HEAVY</span>
+</h4>
+<p class="text-xs text-outline mt-1 line-clamp-2">Heavy gym log, active sets x reps tracker, rest countdown timer, and 1RM metrics.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
-<span class="text-tertiary">Logged 20:30 (520 kcal)</span>
-<button onclick="showToast('Fitness metrics synced')" class="text-tertiary hover:underline">Manage →</button>
+<span class="text-primary-container font-semibold">48,250 kg lifted · Push A</span>
+<button onclick="openDomainPage('fitness'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Heavy →</button>
 </div>
 </div>
 
 <!-- Domain 08: Nutrition & Diet -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary" data-category="vitality">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="vitality" onclick="openDomainPage('nutrition')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-tertiary">restaurant</span>
 <span class="text-xs font-mono text-tertiary">08 · VITALITY</span>
 </div>
-<h4 class="text-base font-medium text-white">Nutrition &amp; Diet</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Nutrition &amp; Diet</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Macro tracking, clean energy balance, hydration logs, and dietary planning.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">1,840 / 2,200 kcal</span>
-<button onclick="showToast('Nutrition logs verified')" class="text-tertiary hover:underline">Manage →</button>
+<button onclick="openDomainPage('nutrition'); event.stopPropagation();" class="text-tertiary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 09: Finance & Wealth -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-secondary" data-category="vitality">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-secondary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="vitality" onclick="openDomainPage('finance')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-secondary">payments</span>
 <span class="text-xs font-mono text-secondary">09 · VITALITY</span>
 </div>
-<h4 class="text-base font-medium text-white">Finance &amp; Wealth</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Finance &amp; Wealth</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Monthly budget allocation, SIP auto-debit approvals, expense limits, and emergency fund.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-amber-400">₹36.8k / ₹50k spend</span>
-<button onclick="showToast('Finance overview verified')" class="text-secondary hover:underline">Manage →</button>
+<button onclick="openDomainPage('finance'); event.stopPropagation();" class="text-secondary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 10: Wellbeing & Mood -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary" data-category="vitality">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="vitality" onclick="openDomainPage('wellbeing')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-tertiary">self_improvement</span>
 <span class="text-xs font-mono text-tertiary">10 · VITALITY</span>
 </div>
-<h4 class="text-base font-medium text-white">Wellbeing &amp; Mood</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Wellbeing &amp; Mood</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Mental equilibrium, stress debriefs, mindfulness intervals, and emotional resilience.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">Mood: Optimal (4/5)</span>
-<button onclick="showToast('Wellbeing check-in saved')" class="text-tertiary hover:underline">Manage →</button>
+<button onclick="openDomainPage('wellbeing'); event.stopPropagation();" class="text-tertiary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 11: Shopping & Inventory -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-amber-400" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-amber-400 cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('shopping')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-amber-400">shopping_bag</span>
 <span class="text-xs font-mono text-amber-400">11 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Shopping &amp; Inventory</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Shopping &amp; Inventory</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Household inventory, grocery restock queue, hardware wishlist, and orders.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">3 Items Pending</span>
-<button onclick="showToast('Shopping list loaded')" class="text-amber-400 hover:underline">Manage →</button>
+<button onclick="openDomainPage('shopping'); event.stopPropagation();" class="text-amber-400 hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 12: Relationships -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-amber-400" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-amber-400 cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('relationships')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-amber-400">group</span>
 <span class="text-xs font-mono text-amber-400">12 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Relationships</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Relationships</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Family birthdays, call schedules, social cadence, and network check-ins.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-amber-400">Mom Birthday 23:15</span>
-<button onclick="openVoiceModal()" class="text-amber-400 hover:underline">Manage →</button>
+<button onclick="openDomainPage('relationships'); event.stopPropagation();" class="text-amber-400 hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 13: Home Care -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('homecare')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-on-surface">cottage</span>
-<span class="text-xs font-mono text-outline">13 · LIVING</span>
+<span class="text-xs font-mono text-on-surface">13 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Home Care</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Home Care</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Living sanctuary, minimalist organization, chore maintenance, and air quality.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">All Chores Done</span>
-<button onclick="showToast('Home Care verified')" class="text-primary hover:underline">Manage →</button>
+<button onclick="openDomainPage('homecare'); event.stopPropagation();" class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 14: Vehicle Care -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('vehicle')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-on-surface">two_wheeler</span>
-<span class="text-xs font-mono text-outline">14 · LIVING</span>
+<span class="text-xs font-mono text-on-surface">14 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Vehicle Care</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Vehicle Care</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Maintenance schedules, fuel levels, tire pressure logs, and insurance renewals.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">Fuel 72% · Service Nov</span>
-<button onclick="showToast('Vehicle status checked')" class="text-primary hover:underline">Manage →</button>
+<button onclick="openDomainPage('vehicle'); event.stopPropagation();" class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 15: Travel & Trips -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('travel')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-on-surface">flight</span>
-<span class="text-xs font-mono text-outline">15 · LIVING</span>
+<span class="text-xs font-mono text-on-surface">15 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Travel &amp; Trips</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Travel &amp; Trips</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Itineraries, flight bookings, packing checklists, and weekend getaways.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">Next: Goa (October)</span>
-<button onclick="showToast('Travel itinerary loaded')" class="text-primary hover:underline">Manage →</button>
+<button onclick="openDomainPage('travel'); event.stopPropagation();" class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 16: Entertainment -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant" data-category="living">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="living" onclick="openDomainPage('entertainment')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-on-surface">theater_comedy</span>
-<span class="text-xs font-mono text-outline">16 · LIVING</span>
+<span class="text-xs font-mono text-on-surface">16 · LIVING</span>
 </div>
-<h4 class="text-base font-medium text-white">Entertainment</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Entertainment</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Watchlists, gaming sessions, reading leisure, and media backlog.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">3 In-Progress</span>
-<button onclick="showToast('Entertainment list loaded')" class="text-primary hover:underline">Manage →</button>
+<button onclick="openDomainPage('entertainment'); event.stopPropagation();" class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 17: Document Vault -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('vault')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">folder_shared</span>
 <span class="text-xs font-mono text-primary-container">17 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">Document Vault</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Document Vault</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Encrypted identity documents, academic records, certificates, and legal contracts.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">Zero Breaches · Encrypted</span>
-<button onclick="showToast('Vault secured')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('vault'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 18: Knowledge Base -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-secondary" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-secondary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('knowledge')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-secondary">lightbulb</span>
 <span class="text-xs font-mono text-secondary">18 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">Knowledge Base</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Knowledge Base</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Second Brain notes, concept flashcards, CS algorithms, and citation graph.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">1,420 Markdown Notes</span>
-<button onclick="showToast('Knowledge graph loaded')" class="text-secondary hover:underline">Manage →</button>
+<button onclick="openDomainPage('knowledge'); event.stopPropagation();" class="text-secondary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 19: Routines & Habits -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-tertiary cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('routines')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-tertiary">bedtime</span>
 <span class="text-xs font-mono text-tertiary">19 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">Routines &amp; Habits</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Routines &amp; Habits</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Morning wake protocol, evening neuro-reset, habit streaks, and sleep hygiene.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">Streak: 12 Days</span>
-<button onclick="showToast('Routines verified')" class="text-tertiary hover:underline">Manage →</button>
+<button onclick="openDomainPage('routines'); event.stopPropagation();" class="text-tertiary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 20: Digital Life -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-outline-variant cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('digital')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary">laptop</span>
-<span class="text-xs font-mono text-outline">20 · SYSTEM</span>
+<span class="text-xs font-mono text-primary">20 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">Digital Life</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Digital Life</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Subscription audits, cloud storage hygiene, bookmarks, and developer tools.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-outline">5 Subscriptions Active</span>
-<button onclick="showToast('Digital life audited')" class="text-primary hover:underline">Manage →</button>
+<button onclick="openDomainPage('digital'); event.stopPropagation();" class="text-primary hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 21: System Analytics -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('analytics')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">query_stats</span>
 <span class="text-xs font-mono text-primary-container">21 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">System Analytics</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">System Analytics</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Autonomous telemetry, domain invariant monitoring, and Life Quality index (84.2).</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-tertiary">LifeScore 84/100</span>
-<button onclick="showToast('Analytics refreshed')" class="text-primary-container hover:underline">Manage →</button>
+<button onclick="openDomainPage('analytics'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 
 <!-- Domain 22: Settings & Voice -->
-<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container" data-category="systems">
+<div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="systems" onclick="openDomainPage('settings')">
 <div class="flex items-center justify-between mb-2">
 <span class="material-symbols-outlined text-primary-container">settings</span>
 <span class="text-xs font-mono text-primary-container">22 · SYSTEM</span>
 </div>
-<h4 class="text-base font-medium text-white">Settings &amp; Voice</h4>
+<h4 class="text-base font-medium text-white group-hover:text-primary transition-colors">Settings &amp; Voice</h4>
 <p class="text-xs text-outline mt-1 line-clamp-2">Google Gemini API key, speech recognition preferences, and AI autonomy parameters.</p>
 <div class="mt-4 pt-3 border-t border-outline-variant/10 flex items-center justify-between text-xs font-mono">
 <span class="text-primary-container">Gemini 3.5 Active</span>
-<button onclick="openVoiceModal()" class="text-primary-container hover:underline">Manage →</button>
-</div>
+<button onclick="openDomainPage('settings'); event.stopPropagation();" class="text-primary-container hover:underline font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">Open Page →</button>
 </div>
 </div>
 </div>
@@ -1065,87 +1094,251 @@
 </div>
 </div>
 <!-- ========================================== -->
-<!-- VIEW 5: SCHEDULE / TASKS (Detailed Agenda) -->
+<!-- VIEW 5: SCHEDULE / TASKS + AI CALENDAR     -->
 <!-- ========================================== -->
 <div class="view-panel hidden space-y-6" id="view-schedule">
-<div class="glass-surface rounded-2xl p-6 sm:p-7 border border-outline-variant/20 shadow-2xl">
-<div class="flex items-center justify-between pb-6 border-b border-outline-variant/10">
-<div>
-<h2 class="text-2xl text-white font-semibold">Daily Schedule &amp; Task Pipeline</h2>
-<p class="text-sm text-outline mt-1 font-mono">Real-time schedule flow, completed actions, and upcoming milestones.</p>
-</div>
-<div class="flex items-center gap-3">
-<button onclick="openQuickAdd()" class="px-4 py-2 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors">
-            + New Task / Timeblock
+
+  <!-- ---- TOP: AI CALENDAR CONTROL PANEL ---- -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- CALENDAR GRID (spans 2 cols) -->
+    <div class="xl:col-span-2 glass-surface rounded-2xl p-6 border border-outline-variant/20 shadow-2xl">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <button aria-label="Previous month" onclick="calPrevMonth()" class="w-8 h-8 rounded-lg glass-surface hover:bg-surface-container flex items-center justify-center text-outline hover:text-white transition-all active:scale-95">
+            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
           </button>
-</div>
-</div>
-<!-- Schedule Timeline Full -->
-<div class="mt-6 space-y-4">
-<!-- Row 1 -->
-<div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-tertiary">
-<div class="flex items-center gap-4">
-<span class="material-symbols-outlined text-tertiary text-[22px]">check_circle</span>
-<div>
-<div class="flex items-center gap-2 font-mono">
-<span class="text-xs text-outline">19:30 - 20:30 IST</span>
-<span class="text-[10px] px-2 py-0.5 rounded bg-tertiary/15 text-tertiary">COMPLETED</span>
-</div>
-<h4 class="text-sm text-white font-medium mt-0.5">Zone 2 Aerobic Conditioning (45m run + stretch)</h4>
-</div>
-</div>
-<span class="text-tertiary text-xs font-mono">Vitality Domain</span>
-</div>
-<!-- Row 2 (Active) -->
-<div class="glass-surface p-5 rounded-xl flex items-center justify-between border-l-4 border-primary-container bg-primary-container/5 cyan-glow">
-<div class="flex items-center gap-4">
-<span class="material-symbols-outlined text-primary-container animate-pulse text-[22px]">radio_button_checked</span>
-<div>
-<div class="flex items-center gap-2 font-mono">
-<span class="text-xs text-primary-container font-semibold">22:00 - 23:15 IST</span>
-<span class="text-[10px] px-2 py-0.5 rounded bg-primary-container/20 text-primary-container">ACTIVE NOW</span>
-</div>
-<h4 class="text-base text-white font-medium mt-0.5">OS Memory Deep Study (Virtual Paging &amp; TLBs)</h4>
-<p class="text-xs text-outline mt-0.5 font-mono">Focus block · 30m remaining.</p>
-</div>
-</div>
-<button onclick="markTaskComplete(this)" class="px-4 py-2 rounded-xl bg-primary-container text-surface-container-lowest text-xs font-mono font-bold hover:bg-surface-tint active:scale-95 transition-colors">
-            Mark Complete
+          <h2 class="text-lg font-semibold text-white font-mono" id="cal-month-label">Loading…</h2>
+          <button aria-label="Next month" onclick="calNextMonth()" class="w-8 h-8 rounded-lg glass-surface hover:bg-surface-container flex items-center justify-center text-outline hover:text-white transition-all active:scale-95">
+            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
           </button>
-</div>
-<!-- Row 3 -->
-<div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-amber-400">
-<div class="flex items-center gap-4">
-<span class="material-symbols-outlined text-amber-400 text-[22px]">schedule</span>
-<div>
-<div class="flex items-center gap-2 font-mono">
-<span class="text-xs text-outline">23:15 - 23:30 IST</span>
-<span class="text-[10px] px-2 py-0.5 rounded bg-amber-400/15 text-amber-400">UP NEXT</span>
-</div>
-<h4 class="text-sm text-white font-medium mt-0.5">Mom's Birthday Call</h4>
-</div>
-</div>
-<button class="px-3 py-1.5 rounded-lg glass-surface hover:bg-surface-container text-outline hover:text-white text-xs font-mono">
-            Initiate Call
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="calGoToday()" class="px-3 py-1.5 rounded-lg bg-primary-container/20 text-primary-container border border-primary-container/30 text-xs font-mono hover:bg-primary-container/30 active:scale-95 transition-all">Today</button>
+          <button onclick="openQuickAdd()" class="px-4 py-1.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors">+ Add Event</button>
+        </div>
+      </div>
+
+      <!-- Day headers -->
+      <div class="grid grid-cols-7 gap-1 mb-2">
+        <div class="text-[11px] font-mono text-outline text-center py-1">Sun</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Mon</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Tue</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Wed</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Thu</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Fri</div>
+        <div class="text-[11px] font-mono text-outline text-center py-1">Sat</div>
+      </div>
+
+      <!-- Calendar grid (rendered by JS) -->
+      <div class="grid grid-cols-7 gap-1" id="cal-grid"></div>
+
+      <!-- Legend -->
+      <div class="flex items-center gap-4 mt-4 pt-4 border-t border-outline-variant/10 text-[11px] font-mono text-outline">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary-container"></span>Study</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-tertiary"></span>Fitness</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Personal</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span>Routine</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Deadline</span>
+      </div>
+    </div>
+
+    <!-- AI CALENDAR CONTROL PANEL (1 col) -->
+    <div class="xl:col-span-1 glass-surface rounded-2xl p-6 border border-outline-variant/20 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center gap-2 border-b border-outline-variant/10 pb-4">
+        <div class="w-9 h-9 rounded-xl bg-primary-container/15 border border-primary-container/40 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings:'FILL' 1">smart_toy</span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-white">AI Calendar Control</p>
+          <p class="text-[11px] font-mono text-primary-container">Full AI autonomy active</p>
+        </div>
+      </div>
+
+      <!-- Quick AI Commands -->
+      <div class="space-y-2">
+        <p class="text-[11px] font-mono text-outline uppercase tracking-wider">Quick Commands</p>
+        <button onclick="calAICommand('reschedule')" class="w-full text-left px-3 py-2.5 rounded-xl glass-surface hover:bg-primary-container/10 hover:border-primary-container/30 border border-transparent text-xs font-mono text-on-surface transition-all active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-container text-[16px]">auto_fix_high</span>
+          Auto-optimize this week
+        </button>
+        <button onclick="calAICommand('balance')" class="w-full text-left px-3 py-2.5 rounded-xl glass-surface hover:bg-tertiary/10 hover:border-tertiary/30 border border-transparent text-xs font-mono text-on-surface transition-all active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary text-[16px]">balance</span>
+          Balance study/fitness/rest
+        </button>
+        <button onclick="calAICommand('deadline')" class="w-full text-left px-3 py-2.5 rounded-xl glass-surface hover:bg-rose-400/10 hover:border-rose-400/30 border border-transparent text-xs font-mono text-on-surface transition-all active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-rose-400 text-[16px]">warning</span>
+          Flag all upcoming deadlines
+        </button>
+        <button onclick="calAICommand('freetime')" class="w-full text-left px-3 py-2.5 rounded-xl glass-surface hover:bg-amber-400/10 hover:border-amber-400/30 border border-transparent text-xs font-mono text-on-surface transition-all active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-400 text-[16px]">wb_sunny</span>
+          Find me free time slots
+        </button>
+        <button onclick="calAICommand('sleep')" class="w-full text-left px-3 py-2.5 rounded-xl glass-surface hover:bg-secondary/10 hover:border-secondary/30 border border-transparent text-xs font-mono text-on-surface transition-all active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary text-[16px]">bedtime</span>
+          Protect sleep schedule
+        </button>
+      </div>
+
+      <!-- AI prompt input -->
+      <div class="mt-auto">
+        <p class="text-[11px] font-mono text-outline uppercase tracking-wider mb-2">Tell AI what to do</p>
+        <div class="flex flex-col gap-2">
+          <textarea id="cal-ai-input" rows="2" placeholder="e.g. 'Schedule 2h OS study every morning this week' or 'Block Sunday evenings for family'" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-xl px-3 py-2.5 text-on-surface placeholder:text-outline/45 focus:border-primary-container focus:ring-1 focus:ring-primary-container text-xs resize-none font-mono"></textarea>
+          <button onclick="calAISend()" class="px-4 py-2 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+            Send to AI
           </button>
+        </div>
+        <div id="cal-ai-response" class="mt-3 text-xs font-mono text-primary-container hidden p-3 glass-surface rounded-xl border border-primary-container/20 leading-relaxed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- BOTTOM: SELECTED DAY AGENDA + TASK PIPELINE ---- -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Day Agenda (left) -->
+    <div class="glass-surface rounded-2xl p-6 border border-outline-variant/20 shadow-xl">
+      <div class="flex items-center justify-between pb-4 border-b border-outline-variant/10 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-container">event</span>
+          <h3 class="text-base font-semibold text-white">Agenda — <span id="cal-selected-day-label">Today</span></h3>
+        </div>
+        <span class="text-[11px] font-mono text-outline" id="cal-event-count">4 events</span>
+      </div>
+      <div class="space-y-3" id="cal-day-agenda">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Task Pipeline (right) -->
+    <div class="glass-surface rounded-2xl p-6 border border-outline-variant/20 shadow-xl">
+      <div class="flex items-center justify-between pb-4 border-b border-outline-variant/10 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-container">checklist</span>
+          <h3 class="text-base font-semibold text-white">Task Pipeline</h3>
+        </div>
+        <button onclick="openQuickAdd()" class="px-3 py-1.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors">+ New Task</button>
+      </div>
+      <div class="space-y-3">
+        <!-- Row 1 -->
+        <div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-tertiary">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-tertiary text-[20px]">check_circle</span>
+            <div>
+              <div class="flex items-center gap-2 font-mono mb-0.5">
+                <span class="text-[11px] text-outline">19:30 - 20:30</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-tertiary/15 text-tertiary">DONE</span>
+              </div>
+              <p class="text-sm text-white font-medium">Zone 2 Aerobic Conditioning</p>
+            </div>
+          </div>
+          <span class="text-tertiary text-[11px] font-mono">Vitality</span>
+        </div>
+        <!-- Row 2 Active -->
+        <div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-primary-container bg-primary-container/5 cyan-glow">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary-container animate-pulse text-[20px]">radio_button_checked</span>
+            <div>
+              <div class="flex items-center gap-2 font-mono mb-0.5">
+                <span class="text-[11px] text-primary-container font-semibold">22:00 - 23:15</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-primary-container/20 text-primary-container">ACTIVE</span>
+              </div>
+              <p class="text-sm text-white font-medium">OS Memory Deep Study</p>
+            </div>
+          </div>
+          <button onclick="markTaskComplete(this)" class="px-3 py-1.5 rounded-lg bg-primary-container text-surface-container-lowest text-[11px] font-mono font-bold hover:bg-surface-tint active:scale-95">Done</button>
+        </div>
+        <!-- Row 3 -->
+        <div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-amber-400">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-400 text-[20px]">schedule</span>
+            <div>
+              <div class="flex items-center gap-2 font-mono mb-0.5">
+                <span class="text-[11px] text-outline">23:15 - 23:30</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-amber-400/15 text-amber-400">NEXT</span>
+              </div>
+              <p class="text-sm text-white font-medium">Mom's Birthday Call</p>
+            </div>
+          </div>
+          <button class="px-3 py-1.5 rounded-lg glass-surface text-outline hover:text-white text-[11px] font-mono">Dial</button>
+        </div>
+        <!-- Row 4 -->
+        <div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-secondary">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary text-[20px]">bedtime</span>
+            <div>
+              <div class="flex items-center gap-2 font-mono mb-0.5">
+                <span class="text-[11px] text-outline">23:30 - 00:00</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-secondary/15 text-secondary">ROUTINE</span>
+              </div>
+              <p class="text-sm text-white font-medium">Wind-Down &amp; Neuro-Reset</p>
+            </div>
+          </div>
+          <span class="text-secondary text-[11px] font-mono">Sleep</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<!-- Row 4 -->
-<div class="glass-surface p-4 rounded-xl flex items-center justify-between border-l-4 border-secondary">
-<div class="flex items-center gap-4">
-<span class="material-symbols-outlined text-secondary text-[22px]">bedtime</span>
-<div>
-<div class="flex items-center gap-2 font-mono">
-<span class="text-xs text-outline">23:30 - 00:00 IST</span>
-<span class="text-[10px] px-2 py-0.5 rounded bg-secondary/15 text-secondary">NIGHT PROTOCOL</span>
-</div>
-<h4 class="text-sm text-white font-medium mt-0.5">Wind-Down &amp; Neuro-Reset</h4>
-</div>
-</div>
-<span class="text-secondary text-xs font-mono">Sleep Domain</span>
-</div>
-</div>
-</div>
-</div>
+
+
+    <!-- ================================================================= -->
+    <!-- VIEW: DOMAIN DEDICATED PAGE (All 22 Domains)                      -->
+    <!-- ================================================================= -->
+    <div class="view-panel hidden space-y-6" id="view-domain-page">
+      <!-- Injected dynamically via js/domain-pages.js -->
+    </div>
+  <!-- ================================================================= -->
+  <!-- DOMAIN DETAIL MODAL (opens for all 22 domains)                    -->
+  <!-- ================================================================= -->
+  <div id="domain-detail-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4" onclick="if(event.target===this)closeDomainModal()">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative z-10 w-full max-w-2xl glass-surface rounded-2xl border border-outline-variant/30 shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant/10" id="dmod-header">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center" id="dmod-icon-wrap">
+            <span class="material-symbols-outlined text-[26px]" id="dmod-icon" style="font-variation-settings:'FILL' 1">dashboard</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold text-white" id="dmod-title">Domain</h2>
+            <p class="text-[11px] font-mono text-outline" id="dmod-tag">Loading…</p>
+          </div>
+        </div>
+        <button aria-label="Close domain modal" onclick="closeDomainModal()" class="w-9 h-9 rounded-xl glass-surface hover:bg-surface-container flex items-center justify-center text-outline hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+      <!-- Modal Body -->
+      <div class="p-6 space-y-5">
+        <!-- Status Row -->
+        <div class="flex flex-wrap gap-3" id="dmod-status-row"></div>
+        <!-- Description -->
+        <p class="text-sm text-on-surface leading-relaxed" id="dmod-desc"></p>
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="dmod-stats"></div>
+        <!-- AI Actions -->
+        <div class="glass-surface rounded-xl p-4 border border-primary-container/20">
+          <p class="text-[11px] font-mono text-primary-container uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">smart_toy</span>
+            AI Actions
+          </p>
+          <div class="flex flex-wrap gap-2" id="dmod-actions"></div>
+        </div>
+      </div>
+      <!-- Modal Footer -->
+      <div class="px-6 pb-6 flex items-center gap-3">
+        <button onclick="closeDomainModal()" class="flex-1 py-2.5 rounded-xl glass-surface border border-outline-variant/30 text-outline hover:text-white text-xs font-mono font-medium transition-all">Close</button>
+        <button onclick="askTadashiAboutDomain()" class="flex-1 py-2.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">smart_toy</span>
+          Ask TADASHI
+        </button>
+      </div>
+    </div>
+  </div>
+
 </main>
 <!-- Interactive Logic for Floating Dynamic Dock, View Switching, and Filters -->
   </div>
@@ -1191,6 +1384,16 @@
 <!-- END: Mobile Dynamic Island Top Bar -->
 <!-- BEGIN: Main Content Area -->
 <main class="max-w-md mx-auto px-4 pt-3 space-y-5">
+      <!-- Mobile Dedicated Domain View Container -->
+      <div id="mobile-domain-view" class="hidden space-y-4 pt-1">
+        <button onclick="document.getElementById('mobile-domain-view').classList.add('hidden'); window.scrollTo({top:0,behavior:'smooth'});" 
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-cyan-400 font-mono active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span>Back to Dashboard</span>
+        </button>
+        <div id="mobile-domain-view-content" class="space-y-4"></div>
+      </div>
+
 <!-- Sub-status Cognitive Environment Micro-pill -->
 <div class="flex items-center justify-between text-[11px] text-slate-400 px-1 font-mono" data-purpose="neural-sync-indicator">
 <div class="flex items-center space-x-1.5 truncate">
@@ -1561,7 +1764,7 @@
   <!-- Quick-Add Task Modal -->
   <div id="quick-add-modal" class="fixed inset-0 z-50 bg-black/70 hidden items-center justify-center p-4" onclick="if(event.target===this) closeQuickAdd()">
     <div class="max-w-sm w-full glass-surface border border-primary-container/40 rounded-2xl p-6 relative shadow-[0_0_40px_rgba(0,212,255,0.2)]">
-      <button onclick="closeQuickAdd()" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-white text-xs">✕</button>
+      <button aria-label="Close quick add modal" onclick="closeQuickAdd()" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-white text-xs">✕</button>
       <div class="flex items-center gap-2 mb-4 font-mono text-xs text-primary-container">
         <span class="material-symbols-outlined text-[16px]">add_task</span>
         <span class="uppercase tracking-widest font-semibold">Quick Add Task</span>
@@ -1581,7 +1784,7 @@
 
   <div id="shared-voice-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="max-w-md w-full glass-surface border border-primary-container/40 rounded-3xl p-6 sm:p-8 text-center relative shadow-[0_0_50px_rgba(0,212,255,0.25)]">
-      <button onclick="closeVoiceModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-white text-xs">✕</button>
+      <button aria-label="Close voice link modal" onclick="closeVoiceModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-white text-xs">✕</button>
       
       <div class="flex items-center justify-center gap-2 mb-2 font-mono text-xs text-primary-container">
         <span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
@@ -1616,14 +1819,14 @@
 
       <!-- Controls -->
       <div class="flex items-center justify-center gap-4">
-        <button id="voice-mic-btn" onclick="toggleVoiceMic()" title="Toggle Mic" class="w-12 h-12 rounded-2xl bg-surface-container text-primary-container border border-outline-variant/30 flex items-center justify-center hover:border-primary-container transition-all active:scale-95">
+        <button id="voice-mic-btn" aria-label="Toggle microphone" onclick="toggleVoiceMic()" title="Toggle Mic" class="w-12 h-12 rounded-2xl bg-surface-container text-primary-container border border-outline-variant/30 flex items-center justify-center hover:border-primary-container transition-all active:scale-95">
           <span class="material-symbols-outlined text-[22px]">mic</span>
         </button>
         <button onclick="closeVoiceModal()" class="px-5 py-3 rounded-2xl bg-red-500/85 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)] active:scale-95">
           <span class="material-symbols-outlined text-[18px]">call_end</span>
           <span>End Call</span>
         </button>
-        <button onclick="testVoiceSpeaker()" title="Play Audio" class="w-12 h-12 rounded-2xl bg-surface-container text-tertiary border border-outline-variant/30 flex items-center justify-center hover:border-tertiary transition-all active:scale-95">
+        <button aria-label="Play test audio" onclick="testVoiceSpeaker()" title="Play Audio" class="w-12 h-12 rounded-2xl bg-surface-container text-tertiary border border-outline-variant/30 flex items-center justify-center hover:border-tertiary transition-all active:scale-95">
           <span class="material-symbols-outlined text-[22px]">volume_up</span>
         </button>
       </div>
@@ -1642,7 +1845,7 @@
           </h3>
           <p class="text-[10px] text-outline">Autonomous invariant monitoring &amp; life telemetry</p>
         </div>
-        <button onclick="closeMobileDomains()" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-xs text-outline hover:text-white">✕</button>
+        <button aria-label="Close domains list" onclick="closeMobileDomains()" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-xs text-outline hover:text-white">✕</button>
       </div>
       <div class="overflow-y-auto no-scrollbar py-3 space-y-2">
         <div class="grid grid-cols-2 gap-2 text-xs" id="mobile-domains-grid">
@@ -1683,7 +1886,7 @@
       { id: 'tasks', num: '04', name: 'Tasks & Projects', cat: 'core', icon: 'check_circle', emoji: '✅', tag: '3 Urgent Pending', color: '#00d4ff' },
       { id: 'goals', num: '05', name: 'Goals & OKRs', cat: 'core', icon: 'flag', emoji: '🎯', tag: '3 Goals Active', color: '#00d4ff' },
       { id: 'study', num: '06', name: 'Study & Learning', cat: 'core', icon: 'school', emoji: '📚', tag: 'Exam in 6d', color: '#00d4ff' },
-      { id: 'fitness', num: '07', name: 'Fitness & Health', cat: 'vitality', icon: 'fitness_center', emoji: '💪', tag: 'Logged 20:30', color: '#6af7ba' },
+      { id: 'fitness', num: '07', name: 'Heavy · Fitness & Workout', cat: 'vitality', icon: 'fitness_center', emoji: '🏋️‍♂️', tag: 'HEAVY ENGINE', color: '#00d4ff' },
       { id: 'nutrition', num: '08', name: 'Nutrition & Diet', cat: 'vitality', icon: 'restaurant', emoji: '🥗', tag: '1,840 kcal', color: '#6af7ba' },
       { id: 'finance', num: '09', name: 'Finance & Wealth', cat: 'vitality', icon: 'payments', emoji: '💰', tag: '₹36.8k spend', color: '#6af7ba' },
       { id: 'wellbeing', num: '10', name: 'Wellbeing & Mood', cat: 'vitality', icon: 'self_improvement', emoji: '🧘', tag: 'Optimal (4/5)', color: '#6af7ba' },
@@ -1700,12 +1903,298 @@
       { id: 'analytics', num: '21', name: 'System Analytics', cat: 'systems', icon: 'query_stats', emoji: '📊', tag: 'LifeScore 84', color: '#00d4ff' },
       { id: 'settings', num: '22', name: 'Settings & Voice', cat: 'systems', icon: 'settings', emoji: '⚙️', tag: 'Gemini Active', color: '#00d4ff' }
     ];
+    window.DOMAINS = DOMAINS;
+
 
     // Chat history and state
     let chatHistory = [];
     let isVoiceCallActive = false;
     let isBriefingPlaying = false;
     let isMicActive = false;
+    // ================================================================
+    // AI CALENDAR ENGINE
+    // ================================================================
+    let calCurrentDate = new Date();
+    let calSelectedDate = new Date();
+
+    const CAL_EVENTS = (function() {
+      var now = new Date(); var y = now.getFullYear(), m = now.getMonth();
+      var pad = function(n) { return String(n).padStart(2,'0'); };
+      var key = function(d) { return y+'-'+pad(m+1)+'-'+pad(d); };
+      var today = now.getDate(); var ev = {};
+      ev[key(today)] = [
+        { time:'19:30', title:'Zone 2 Aerobic Run', color:'#6af7ba', domain:'Fitness' },
+        { time:'22:00', title:'OS Memory Deep Study', color:'#00d4ff', domain:'Study' },
+        { time:'23:15', title:"Mom's Birthday Call", color:'#f59e0b', domain:'Relationships' },
+        { time:'23:30', title:'Wind-Down & Neuro-Reset', color:'#d0bcff', domain:'Routine' }
+      ];
+      var d2 = Math.min(today+1, 28);
+      ev[key(d2)] = [
+        { time:'08:30', title:'Cognitive Warm-up', color:'#00d4ff', domain:'Study' },
+        { time:'14:00', title:'OS Assignment 3 Submission', color:'#f43f5e', domain:'Deadline' },
+        { time:'20:00', title:'Strength Training', color:'#6af7ba', domain:'Fitness' }
+      ];
+      var d3 = Math.min(today+2, 28);
+      ev[key(d3)] = [
+        { time:'09:00', title:'Distributed Systems Reading', color:'#00d4ff', domain:'Study' },
+        { time:'18:30', title:'Weekly Finance Review', color:'#d0bcff', domain:'Finance' }
+      ];
+      var d4 = Math.max(1, today-3);
+      ev[key(d4)] = [
+        { time:'07:00', title:'Morning Meditation', color:'#6af7ba', domain:'Wellbeing' },
+        { time:'21:00', title:'Reading (Leisure)', color:'#a8e8ff', domain:'Entertainment' }
+      ];
+      var extras = [['#00d4ff','Study Block'],['#6af7ba','Workout'],['#f59e0b','Finance Review'],['#d0bcff','Deep Work'],['#a8e8ff','Reading']];
+      for (var i=1; i<=28; i++) { if (!ev[key(i)] && (i%4===0)) { var e=extras[i%extras.length]; ev[key(i)]=[{time:'10:00',title:e[1],color:e[0],domain:'General'}]; } }
+      return ev;
+    })();
+
+    function calRender() {
+      var grid = document.getElementById('cal-grid');
+      var label = document.getElementById('cal-month-label');
+      if (!grid || !label) return;
+      var y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth();
+      var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      label.textContent = MONTHS[m] + ' ' + y;
+      var firstDay = new Date(y,m,1).getDay();
+      var daysInMonth = new Date(y,m+1,0).getDate();
+      var daysInPrev = new Date(y,m,0).getDate();
+      var today = new Date();
+      grid.innerHTML = '';
+      for (var i=firstDay-1; i>=0; i--) { var c=document.createElement('div'); c.className='cal-day other-month'; var ns=document.createElement('span'); ns.className='cal-num'; ns.textContent=daysInPrev-i; c.appendChild(ns); grid.appendChild(c); }
+      for (var d=1; d<=daysInMonth; d++) {
+        var c2=document.createElement('div');
+        var isToday=(y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate());
+        var isSel=(y===calSelectedDate.getFullYear()&&m===calSelectedDate.getMonth()&&d===calSelectedDate.getDate());
+        c2.className='cal-day'+(isToday?' today':'')+(isSel?' selected':'');
+        var dk=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var evs=CAL_EVENTS[dk]||[];
+        var hasDots = evs.length > 0;
+        c2.innerHTML = '';
+        var numSpan = document.createElement('span');
+        numSpan.className = 'cal-num';
+        numSpan.textContent = d;
+        c2.appendChild(numSpan);
+        if (hasDots) {
+          var dotDiv = document.createElement('div');
+          dotDiv.className = 'cal-dot-row';
+          evs.slice(0,4).forEach(function(ev) {
+            var dot = document.createElement('span');
+            dot.className = 'cal-dot';
+            dot.style.background = ev.color;
+            dotDiv.appendChild(dot);
+          });
+          c2.appendChild(dotDiv);
+        }
+        c2.onclick=(function(yy,mm,dd){return function(){calSelectDay(yy,mm,dd);};})(y,m,d);
+        grid.appendChild(c2);
+      }
+      var trailing=((firstDay+daysInMonth)%7===0)?0:7-((firstDay+daysInMonth)%7);
+      for (var dd=1; dd<=trailing; dd++) { var c3=document.createElement('div'); c3.className='cal-day other-month'; var ns3=document.createElement('span'); ns3.className='cal-num'; ns3.textContent=dd; c3.appendChild(ns3); grid.appendChild(c3); }
+    }
+
+    function calSelectDay(y,m,d) { calSelectedDate=new Date(y,m,d); calRender(); calRenderAgenda(); }
+
+    function calRenderAgenda() {
+      var agenda=document.getElementById('cal-day-agenda');
+      var labelEl=document.getElementById('cal-selected-day-label');
+      var countEl=document.getElementById('cal-event-count');
+      if (!agenda) return;
+      var y=calSelectedDate.getFullYear(), mo=calSelectedDate.getMonth(), d=calSelectedDate.getDate();
+      var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      if (labelEl) labelEl.textContent=DAYS[calSelectedDate.getDay()]+', '+MONTHS[mo]+' '+d;
+      var dk=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var evs=CAL_EVENTS[dk]||[];
+      if (countEl) countEl.textContent=evs.length+' event'+(evs.length!==1?'s':'');
+      if (!evs.length) {
+        agenda.innerHTML = '';
+        var emptyDiv = document.createElement('div');
+        emptyDiv.className = 'text-sm text-outline font-mono text-center py-8';
+        emptyDiv.textContent = 'No events.';
+        var suggSpan = document.createElement('span');
+        suggSpan.className = 'text-primary-container cursor-pointer hover:underline';
+        suggSpan.textContent = 'Ask AI to suggest →';
+        suggSpan.onclick = function() { calAICommand('freetime'); };
+        var br = document.createElement('br');
+        emptyDiv.appendChild(br);
+        emptyDiv.appendChild(suggSpan);
+        agenda.appendChild(emptyDiv);
+        return;
+      }
+      agenda.innerHTML = '';
+      evs.forEach(function(e) {
+        var wrap = document.createElement('div');
+        wrap.className = 'glass-surface p-3.5 rounded-xl flex items-center gap-3 border-l-4';
+        wrap.style.borderColor = e.color;
+        var inner = document.createElement('div');
+        inner.className = 'flex-1 min-w-0';
+        var meta = document.createElement('div');
+        meta.className = 'flex items-center gap-2 font-mono mb-0.5';
+        var timeEl = document.createElement('span');
+        timeEl.className = 'text-[11px] text-outline';
+        timeEl.textContent = e.time;
+        var domainEl = document.createElement('span');
+        domainEl.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono';
+        domainEl.style.cssText = 'background:'+e.color+'22;color:'+e.color;
+        domainEl.textContent = e.domain.toUpperCase();
+        meta.appendChild(timeEl);
+        meta.appendChild(domainEl);
+        var titleEl2 = document.createElement('p');
+        titleEl2.className = 'text-sm text-white font-medium truncate';
+        titleEl2.textContent = e.title;
+        inner.appendChild(meta);
+        inner.appendChild(titleEl2);
+        var btn2 = document.createElement('button');
+        btn2.className = 'shrink-0 w-7 h-7 rounded-lg glass-surface flex items-center justify-center text-outline hover:text-white';
+        btn2.addEventListener('click', function() { showToast('Event options coming soon'); });
+        var ic = document.createElement('span');
+        ic.className = 'material-symbols-outlined text-[14px]';
+        ic.textContent = 'more_horiz';
+        btn2.appendChild(ic);
+        wrap.appendChild(inner);
+        wrap.appendChild(btn2);
+        agenda.appendChild(wrap);
+      });
+    }
+
+    function calPrevMonth() { calCurrentDate.setMonth(calCurrentDate.getMonth()-1); calRender(); }
+    function calNextMonth() { calCurrentDate.setMonth(calCurrentDate.getMonth()+1); calRender(); }
+    function calGoToday() { calCurrentDate=new Date(); calSelectedDate=new Date(); calRender(); calRenderAgenda(); }
+
+    async function calAICommand(cmd) {
+      var resp=document.getElementById('cal-ai-response');
+      if (resp) { resp.classList.remove('hidden'); resp.textContent='TADASHI analyzing your schedule...'; }
+      var prompts={
+        reschedule:'Review my schedule this week and suggest an optimized daily plan with time blocks for study, fitness, and personal tasks. Be concise.',
+        balance:'Analyze my current schedule and suggest how to better balance study, fitness, rest, and social time. Actionable recommendations only.',
+        deadline:'List all upcoming deadlines across my 22 domains by urgency. Format as a priority list with dates.',
+        freetime:'Find free time slots in my schedule this week and suggest productive or restorative activities for each slot.',
+        sleep:'Review my evening schedule and recommend adjustments to protect my 8.2-hour sleep window.'
+      };
+      var prompt=prompts[cmd]||cmd;
+      try {
+        var reply=await AI.chat(prompt,[]);
+        if (resp) resp.textContent=reply;
+        showToast('AI calendar command executed');
+      } catch(e2) { if (resp) resp.textContent='AI: '+(e2.message||'Error'); }
+    }
+
+    async function calAISend() {
+      var inp=document.getElementById('cal-ai-input');
+      if (!inp||!inp.value.trim()) return;
+      var text=inp.value.trim(); inp.value='';
+      await calAICommand(text);
+    }
+
+    // ================================================================
+    // DOMAIN DETAIL MODAL
+    // ================================================================
+    var DOMAIN_DETAIL = {
+      goals:        { icon:'flag',            color:'#a8e8ff', num:'05', name:'Goals & OKRs',         desc:'Quarterly OKRs, milestone tracking, achievement telemetry, and long-horizon planning across all 22 life domains.', status:[{label:'3 Goals Active',color:'#6af7ba'},{label:'Q4 2026',color:'#00d4ff'}], stats:[{k:'Q4 Goals',v:'3 Active'},{k:'Milestones',v:'8 of 12'},{k:'Progress',v:'67%'}], actions:['Review Q4 Goals','Set New Milestone','Prioritize goals'] },
+      fitness:      { icon:'fitness_center',  color:'#3cd7ff', num:'07', name:'Heavy · Fitness & Workout', desc:'Heavy workout tracker, progressive overload, active set & rep logging, rest timer countdown, and 1RM power metrics.', status:[{label:'HEAVY ACTIVE',color:'#3cd7ff'},{label:'Week: 4/5',color:'#6af7ba'}], stats:[{k:'Volume Lifted',v:'48,250 kg'},{k:'Active Routine',v:'Push A'},{k:'1RM Bench',v:'125 kg'}], actions:['Open Heavy Session','Start Rest Timer','Calculate 1RM'] },
+      nutrition:    { icon:'restaurant',      color:'#6af7ba', num:'08', name:'Nutrition & Diet',     desc:'Macro tracking, clean energy balance, hydration targets, meal logging, and dietary optimization for cognitive performance.', status:[{label:'1840/2200 kcal',color:'#6af7ba'}], stats:[{k:'Calories',v:'1840/2200'},{k:'Protein',v:'145g/160g'},{k:'Water',v:'2.8L'}], actions:['Log Meal','Plan Meals','Check Macros'] },
+      finance:      { icon:'payments',        color:'#d0bcff', num:'09', name:'Finance & Wealth',     desc:'Monthly budget tracking, SIP auto-debit approvals, expense categorization, emergency fund, and financial goals.', status:[{label:'Action Required',color:'#f59e0b'},{label:'36.8k/50k spend',color:'#d0bcff'}], stats:[{k:'Monthly Spend',v:'36800'},{k:'Budget',v:'50000'},{k:'SIP Pending',v:'5000'}], actions:['Review Budget','Approve SIP','Check Investments'] },
+      wellbeing:    { icon:'self_improvement',color:'#6af7ba', num:'10', name:'Wellbeing & Mood',     desc:'Mental equilibrium index, stress debriefs, mindfulness intervals, journaling, and emotional resilience tracking.', status:[{label:'Optimal (4/5)',color:'#6af7ba'},{label:'Streak: 12d',color:'#00d4ff'}], stats:[{k:'Mood Score',v:'4/5'},{k:'Mindfulness',v:'15 min'},{k:'Stress',v:'Low'}], actions:['Log Mood','Start Meditation','Review Triggers'] },
+      shopping:     { icon:'shopping_bag',    color:'#f59e0b', num:'11', name:'Shopping & Inventory', desc:'Household inventory tracking, grocery restock queue, hardware wishlist, orders pipeline, and expense logging.', status:[{label:'3 Items Pending',color:'#f59e0b'}], stats:[{k:'Pending',v:'3 Items'},{k:'Value',v:'4200'},{k:'Orders',v:'2 Active'}], actions:['Add to List','Check Orders','Review Wishlist'] },
+      relationships:{ icon:'group',           color:'#f59e0b', num:'12', name:'Relationships',        desc:'Family birthdays, scheduled calls, social cadence, network check-ins, and relationship quality metrics.', status:[{label:'Mom Bday Tonight',color:'#f59e0b'},{label:'Call at 23:15',color:'#00d4ff'}], stats:[{k:'Contacts',v:'14 Active'},{k:'Calls Due',v:'2 this week'},{k:'Birthdays',v:'1 Today'}], actions:['Initiate Birthday Call','Schedule Call','Review Contacts'] },
+      homecare:     { icon:'cottage',         color:'#d0bcff', num:'13', name:'Home Care',            desc:'Living sanctuary organization, minimalist space protocols, chore scheduling, air quality monitoring, and home maintenance.', status:[{label:'All Chores Done',color:'#6af7ba'}], stats:[{k:'Chores',v:'5/5 Done'},{k:'Air Quality',v:'Good'},{k:'Deep Clean',v:'Nov 1'}], actions:['Log Chore','Schedule Deep Clean','Check Supplies'] },
+      vehicle:      { icon:'two_wheeler',     color:'#d0bcff', num:'14', name:'Vehicle Care',         desc:'Maintenance schedules, fuel monitoring, tire pressure logs, insurance renewal tracking, and service reminders.', status:[{label:'Fuel 72%',color:'#6af7ba'},{label:'Service: Nov',color:'#f59e0b'}], stats:[{k:'Fuel',v:'72%'},{k:'Next Service',v:'Nov 2026'},{k:'Insurance',v:'Valid'}], actions:['Log Fuel','Schedule Service','Check Insurance'] },
+      travel:       { icon:'flight',          color:'#d0bcff', num:'15', name:'Travel & Trips',       desc:'Trip itineraries, flight and hotel bookings, packing checklists, budget tracking, and upcoming travel plans.', status:[{label:'Next: Goa (Oct)',color:'#6af7ba'}], stats:[{k:'Next Trip',v:'Goa'},{k:'Budget',v:'18000'},{k:'Packing',v:'40% Done'}], actions:['View Itinerary','Update Packing','Check Bookings'] },
+      entertainment:{ icon:'theater_comedy',  color:'#d0bcff', num:'16', name:'Entertainment',        desc:'Watchlists, gaming sessions, reading leisure log, media queue management, and screen-time budgeting.', status:[{label:'3 In Progress',color:'#d0bcff'}], stats:[{k:'Watching',v:'2 Shows'},{k:'Reading',v:'1 Book'},{k:'Queue',v:'12 Items'}], actions:['Update Watchlist','Log Watched','Set Screen Limit'] },
+      vault:        { icon:'folder_shared',   color:'#00d4ff', num:'17', name:'Document Vault',       desc:'Encrypted identity documents, academic records, certificates, legal contracts, and critical file backups.', status:[{label:'Encrypted',color:'#6af7ba'},{label:'0 Breaches',color:'#00d4ff'}], stats:[{k:'Documents',v:'47 Files'},{k:'Encryption',v:'AES-256'},{k:'Last Backup',v:'Today'}], actions:['View Documents','Add File','Check Expiry Dates'] },
+      knowledge:    { icon:'lightbulb',       color:'#d0bcff', num:'18', name:'Knowledge Base',       desc:'Second Brain markdown notes, concept flashcards, CS algorithms, citation graph, and learning vault.', status:[{label:'1420 Notes',color:'#d0bcff'},{label:'Daily Streak',color:'#00d4ff'}], stats:[{k:'Notes',v:'1420'},{k:'Flashcards',v:'340'},{k:'Recall Rate',v:'78%'}], actions:['Add Note','Review Flashcards','Explore Graph'] },
+      routines:     { icon:'bedtime',         color:'#6af7ba', num:'19', name:'Routines & Habits',    desc:'Morning wake protocols, evening neuro-reset, habit streak tracking, sleep hygiene, and behavioral design.', status:[{label:'Streak: 12 Days',color:'#6af7ba'}], stats:[{k:'Streak',v:'12 Days'},{k:'Habits',v:'7 Active'},{k:'Consistency',v:'91%'}], actions:['Mark Evening Done','Review Habits','Set New Habit'] },
+      digital:      { icon:'laptop',          color:'#a8e8ff', num:'20', name:'Digital Life',         desc:'Subscription audits, cloud storage hygiene, bookmark management, developer tools, and digital declutter schedule.', status:[{label:'5 Subs Active',color:'#a8e8ff'}], stats:[{k:'Subscriptions',v:'5 Active'},{k:'Monthly Cost',v:'2840'},{k:'Storage',v:'68% Used'}], actions:['Review Subscriptions','Clean Storage','Audit Apps'] },
+      analytics:    { icon:'query_stats',     color:'#00d4ff', num:'21', name:'System Analytics',     desc:'Autonomous telemetry, domain invariant monitoring, Life Quality Index, and system-wide performance tracking.', status:[{label:'LifeScore 84/100',color:'#6af7ba'}], stats:[{k:'LifeScore',v:'84/100'},{k:'Domains',v:'22 Active'},{k:'Trend',v:'+2 pts'}], actions:['View Full Report','Run System Check','Export Analytics'] },
+      settings:     { icon:'settings',        color:'#00d4ff', num:'22', name:'Settings & Voice',     desc:'Google Gemini API configuration, speech recognition preferences, AI autonomy levels, and system personalization.', status:[{label:'Gemini Active',color:'#6af7ba'}], stats:[{k:'AI Model',v:'Gemini 3.5'},{k:'Voice',v:'Active'},{k:'Autonomy',v:'Full'}], actions:['Configure AI','Test Voice','Update API Key'] }
+    };
+
+    var DOMAIN_TAB_MAP = { home:'view-workspace', tadashi:'view-tadashi', calendar:'view-schedule', tasks:'view-schedule', study:'view-workspace' };
+    var _currentDomainKey = null;
+
+    function openDomainModal(key) {
+      if (typeof window.openDomainPage === 'function') {
+        window.openDomainPage(key);
+        return;
+      }
+      if (DOMAIN_TAB_MAP[key]) { switchTab(DOMAIN_TAB_MAP[key]); return; }
+      var data = DOMAIN_DETAIL[key];
+      if (!data) { showToast(key + ' domain â€” details coming soon'); return; }
+      _currentDomainKey = key;
+      var iconEl = document.getElementById('dmod-icon');
+      var iconWrap = document.getElementById('dmod-icon-wrap');
+      var titleEl = document.getElementById('dmod-title');
+      var tagEl = document.getElementById('dmod-tag');
+      var descEl = document.getElementById('dmod-desc');
+      var statusRow = document.getElementById('dmod-status-row');
+      var statsGrid = document.getElementById('dmod-stats');
+      var actionsEl = document.getElementById('dmod-actions');
+      if (iconEl) { iconEl.textContent=data.icon; iconEl.style.color=data.color; }
+      if (iconWrap) iconWrap.style.background=data.color+'18';
+      if (titleEl) titleEl.textContent=data.name;
+      if (tagEl) tagEl.textContent='#'+data.num+' - TADASHI DOMAIN';
+      if (descEl) descEl.textContent=data.desc;
+      if (statusRow) {
+        statusRow.innerHTML = '';
+        (data.status||[]).forEach(function(s) {
+          var sp = document.createElement('span');
+          sp.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-semibold';
+          sp.style.cssText = 'background:'+s.color+'18;color:'+s.color+';border:1px solid '+s.color+'35';
+          sp.textContent = s.label;
+          statusRow.appendChild(sp);
+        });
+      }
+      if (statsGrid) {
+        statsGrid.innerHTML = '';
+        (data.stats||[]).forEach(function(s) {
+          var wrap = document.createElement('div');
+          wrap.className = 'glass-surface rounded-xl p-3 border border-outline-variant/15';
+          var lbl = document.createElement('p');
+          lbl.className = 'text-[10px] font-mono text-outline uppercase tracking-wider mb-1';
+          lbl.textContent = s.k;
+          var val = document.createElement('p');
+          val.className = 'text-sm font-semibold text-white';
+          val.textContent = s.v;
+          wrap.appendChild(lbl);
+          wrap.appendChild(val);
+          statsGrid.appendChild(wrap);
+        });
+      }
+      if (actionsEl) {
+        actionsEl.innerHTML = '';
+        (data.actions||[]).forEach(function(a) {
+          var btn = document.createElement('button');
+          btn.className = 'px-3 py-1.5 rounded-lg glass-surface hover:bg-surface-container border border-outline-variant/20 hover:border-primary-container/30 text-xs font-mono text-on-surface hover:text-primary-container transition-all active:scale-95';
+          btn.textContent = a;
+          (function(action, domainName) {
+            btn.addEventListener('click', function() {
+              populatePrompt(action + ' for my ' + domainName + ' domain');
+              closeDomainModal();
+              switchTab('view-tadashi');
+            });
+          })(a, data.name);
+          actionsEl.appendChild(btn);
+        });
+      }
+      var modal=document.getElementById('domain-detail-modal');
+      if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+    }
+
+    function closeDomainModal() {
+      var modal=document.getElementById('domain-detail-modal');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+
+    function askTadashiAboutDomain() {
+      var data=_currentDomainKey?DOMAIN_DETAIL[_currentDomainKey]:null;
+      if (data) populatePrompt('Summarize the current status of my '+data.name+' domain and give me 3 priority actions I should take today.');
+      closeDomainModal(); switchTab('view-tadashi');
+    }
+
+    document.addEventListener('keydown', function(e) { if (e.key==='Escape') closeDomainModal(); });
+    document.addEventListener('DOMContentLoaded', function() { calRender(); calRenderAgenda(); });
+
 
     // --- Desktop Tab Switching ---
     function switchTab(viewId) {
@@ -1757,11 +2246,19 @@
         } else if (viewId === 'view-schedule') {
           title.innerText = 'Daily Schedule & Flow';
           subtitle.innerText = 'Synchronized execution agenda and upcoming milestone tasks.';
+        } else if (viewId === 'view-domain-page') {
+          title.innerText = 'Life Domain Management';
+          subtitle.innerText = 'Respective domain telemetry, direct user editing, and AI autonomous control.';
         }
       }
 
+      const hud = document.getElementById('hud-subbar');
+      if (hud) hud.style.display = (viewId === 'view-domain-page') ? 'none' : 'flex';
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    window.switchTab = switchTab;
+
 
     // Bind nav buttons
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -2220,7 +2717,7 @@
           card.className = 'glass-panel p-2.5 rounded-xl flex items-center gap-2 border border-slate-800 hover:border-cyan-500/40 cursor-pointer active:scale-95 transition';
           card.onclick = () => {
             closeMobileDomains();
-            showToast(`Selected Domain: ${d.name}`);
+            openDomainPage(d.id);
           };
           card.innerHTML = `
             <span class="material-symbols-outlined text-[18px]" style="color: ${d.color}">${d.icon}</span>

@@ -21,11 +21,11 @@
 | **Home Dashboard** | Daily briefing, live stats, schedule timeline, urgent actions, active priorities |
 | **TADASHI AI** | Conversational life agent, proactive plan proposals, conflict resolution, what-if simulator |
 | **Schedule & Calendar** | Multi-view calendar, event collision detection, energy-based time blocking |
-| **Tasks & Projects** | Kanban board (Backlog, Todo, In Progress, Review, Done), project hierarchies |
+| **Tasks & Projects** | Task pipeline, priority filters, project hierarchies, instant status toggling |
 | **Goals & OKRs** | Key results tracking, milestone progress, visual completion rings |
-| **Study & Skills** | Pomodoro focus timer, active course tracker, spaced repetition deck |
-| **Fitness & Health** | Workout logs, split tracker, PR tracking, volume metrics |
-| **Nutrition & Diet** | Calorie & macro ring charts, meal planning, hydration tracker |
+| **Study & Skills** | OS exam countdown, formula drills, spaced retention deck |
+| **Heavy · Fitness & Workout** | Modeled after Heavy / Hevy: live workout sets × reps × kg logger, active rest timer countdown, Big 4 PRs & 1RM calculator, routine splits, and muscle heatmap |
+| **Nutrition & Diet** | Calorie & macro tracking, meal planning, hydration logger |
 | **Finance & Wealth** | Monthly budgets, expense categorization, net worth projection |
 | **Shopping & Inventory** | Smart pantry list, price watches, purchase prioritizer |
 | **Relationships** | Contact cadence, important date reminders, interaction notes |
@@ -39,7 +39,18 @@
 | **Digital Life** | Subscription auditor, backup statuses, digital asset management |
 | **Entertainment** | Reading lists, media backlogs, game & movie queues |
 | **System Analytics** | Holistic life score, weekly progress reports, optimization insights |
-| **Settings & Security** | Data export/import, theme toggles, API keys, privacy controls |
+| **Settings & Security** | Data export/import JSON, safety pre-reset snapshot restore, Gemini API key configuration |
+
+---
+
+## 🔒 Security & Data Safety
+
+- **No Hardcoded Secrets**: Gemini API keys are never stored in source code. Users can configure their personal key directly in the Settings & Security domain panel, stored securely in browser `localStorage`.
+- **Destructive Action Confirmation**: All permanent deletes (tasks, heavy workout sets) and database resets require explicit user confirmation.
+- **Safety Snapshots & Data Backups**:
+  - **Export JSON**: Download a complete, full-fidelity JSON backup of all 22 domains.
+  - **Import JSON**: Restore a previous JSON backup with validation and automatic pre-import safety snapshots.
+  - **Pre-Reset Safety Snapshot**: Every database reset automatically preserves a pre-reset backup in `localStorage`, allowing one-click rollback if reset was triggered accidentally.
 
 ---
 
@@ -65,5 +76,6 @@ start index.html
 
 - **Theme**: Obsidian Dark Glassmorphism
 - **Accents**: Cyber Cyan (`#00f0ff`) & Neon Violet (`#7000ff`)
-- **Typography**: Inter / System Sans-Serif with tabular figures
+- **Typography**: Inter & JetBrains Mono with tabular figures
 - **Interactions**: Smooth transitions, backdrop-filter blurs, micro-animations, keyboard shortcuts (`Ctrl+K`)
+- **Architecture**: Clean, modular structure (`js/data.js`, `js/db.js`, `js/domain-pages.js`, `js/utils.js`, `js/lib/ai.js`, `js/lib/voice.js`) with legacy references preserved in `archive/`.

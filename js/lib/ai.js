@@ -4,7 +4,7 @@
 // ============================================================
 
 const AI = {
-  DEFAULT_KEY: 'AQ.Ab8RN6KItplR_BJ6sjMBeHx-Q8QZ4xpU3UX_15LMlc6_XcwdOA',
+  DEFAULT_KEY: '',
   KEY_STORAGE: 'tadashi_gemini_key',
   MODEL_STORAGE: 'tadashi_gemini_model',
   DEFAULT_MODEL: 'gemini-1.5-flash',
@@ -14,9 +14,9 @@ const AI = {
     { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
   ],
 
-  getKey()   { const s = localStorage.getItem(this.KEY_STORAGE); return s !== null ? s.trim() : this.DEFAULT_KEY; },
+  getKey()   { const s = localStorage.getItem(this.KEY_STORAGE); return (s || '').trim(); },
   setKey(k)  { localStorage.setItem(this.KEY_STORAGE, (k || '').trim()); },
-  clearKey() { localStorage.setItem(this.KEY_STORAGE, ''); },
+  clearKey() { localStorage.removeItem(this.KEY_STORAGE); },
   hasKey()   { return !!this.getKey(); },
   getModel() { return (localStorage.getItem(this.MODEL_STORAGE) || '').trim() || this.DEFAULT_MODEL; },
   setModel(m){ const v=(m||'').trim(); if(v) localStorage.setItem(this.MODEL_STORAGE,v); else localStorage.removeItem(this.MODEL_STORAGE); },

@@ -329,3 +329,8 @@ const DATA = {
     { role:'tadashi', content:"Good evening, Krishna! 🌙 Here's your life state:\n\n**Today's priorities:**\n1. OS Assignment due in 3 days — you need 4–5 more hours\n2. Push Day gym session at 5:30 PM\n3. Call Mom — it's her birthday!\n\n**Risks detected:**\n⚠️ OS Exam on Sep 26 — only 58% syllabus done\n⚠️ Bathroom cleaning overdue\n\nWhat would you like to tackle first?", time:'21:54' },
   ]
 };
+
+if (typeof window !== 'undefined') {
+  window.DATA = DATA;
+}
+
