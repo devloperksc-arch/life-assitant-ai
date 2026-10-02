@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#06080e" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="50%" stop-color="#6af7ba"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#06080e"/>
+  <circle cx="256" cy="256" r="220" fill="url(#bgGlow)"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#1e293b" stroke-width="3" stroke-dasharray="8 8"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#00d4ff" stroke-width="2" stroke-opacity="0.4"/>
+  <!-- Neural hexagon nodes -->
+  <g filter="url(#glow)">
+    <polygon points="256,150 348,203 348,309 256,362 164,309 164,203" fill="none" stroke="url(#cyanGrad)" stroke-width="6"/>
+    <!-- Connecting neural lines -->
+    <line x1="256" y1="150" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <line x1="348" y1="203" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <line x1="348" y1="309" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <line x1="256" y1="362" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <line x1="164" y1="309" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <line x1="164" y1="203" x2="256" y2="256" stroke="#00d4ff" stroke-width="3" stroke-opacity="0.8"/>
+    <!-- Nodes -->
+    <circle cx="256" cy="150" r="12" fill="#00d4ff"/>
+    <circle cx="348" cy="203" r="12" fill="#6af7ba"/>
+    <circle cx="348" cy="309" r="12" fill="#00d4ff"/>
+    <circle cx="256" cy="362" r="12" fill="#6af7ba"/>
+    <circle cx="164" cy="309" r="12" fill="#00d4ff"/>
+    <circle cx="164" cy="203" r="12" fill="#6af7ba"/>
+    <!-- Center Core -->
+    <circle cx="256" cy="256" r="24" fill="url(#cyanGrad)"/>
+    <circle cx="256" cy="256" r="10" fill="#ffffff"/>
+  </g>
+</svg>

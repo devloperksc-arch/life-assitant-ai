@@ -1,0 +1,24 @@
+{
+  "name": "TADASHI LifeOS",
+  "short_name": "TADASHI",
+  "description": "Personal Neural Assistant & Autonomous Life Operating System",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06080e",
+  "theme_color": "#06080e",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "productivity",
+    "lifestyle",
+    "utilities"
+  ]
+}
