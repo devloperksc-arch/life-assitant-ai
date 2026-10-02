@@ -1,0 +1,17 @@
+# TADASHI LifeOS — .gitignore
+
+# Backup files
+*.backup.html
+*.bak
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.code-workspace
+
+# Build outputs (if Tailwind CLI is added later)
+css/tailwind.css
+
+# Node (if npm is ever used)
+node_modules/

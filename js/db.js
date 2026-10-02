@@ -19,6 +19,36 @@ const DB = (() => {
     if (!_state) {
       _state = JSON.parse(JSON.stringify(DATA));
       _save();
+    } else if (typeof DATA !== 'undefined') {
+      let changed = false;
+      for (const k in DATA) {
+        if (_state[k] === undefined) {
+          _state[k] = JSON.parse(JSON.stringify(DATA[k]));
+          changed = true;
+        } else if (typeof DATA[k] === 'object' && DATA[k] !== null && !Array.isArray(DATA[k])) {
+          for (const subk in DATA[k]) {
+            if (_state[k][subk] === undefined) {
+              _state[k][subk] = JSON.parse(JSON.stringify(DATA[k][subk]));
+              changed = true;
+            }
+          }
+        }
+      }
+      if (_state.vehicle && _state.vehicle.make !== 'Royal Enfield') {
+        _state.vehicle = JSON.parse(JSON.stringify(DATA.vehicle));
+        changed = true;
+      }
+      if (_state.finance && !_state.finance.budgets) {
+        _state.finance.budgets = JSON.parse(JSON.stringify(DATA.finance.budgets));
+        _state.finance.travelSavingsFund = DATA.finance.travelSavingsFund;
+        changed = true;
+      }
+      if (_state.shopping && (!_state.shopping.dmartList || !_state.shopping.pantryStock)) {
+        _state.shopping.dmartList = JSON.parse(JSON.stringify(DATA.shopping.dmartList));
+        _state.shopping.pantryStock = JSON.parse(JSON.stringify(DATA.shopping.pantryStock));
+        changed = true;
+      }
+      if (changed) _save();
     }
   }
 
@@ -257,6 +287,7 @@ const DB = (() => {
     },
 
     // ============================================================
+    // ============================================================
     // FINANCE & WEALTH (Domain 09)
     // ============================================================
     finance: {
@@ -283,11 +314,19 @@ const DB = (() => {
       updateBudget(category, patch) {
         _pushUndo();
         const b = (_state.finance.budgets || []).find(b => b.category.toLowerCase() === category.toLowerCase());
-        if (b) Object.assign(b, patch); else _state.finance.budgets.push({ category, spent:0, limit:0, ...patch });
+        if (b) Object.assign(b, patch); else _state.finance.budgets.push({ id: 'b-' + _nextId(), category, spent:0, limit:0, ...patch });
         _save(); _emit('finance','updateBudget',{category,patch});
       },
       setSavings(amount) {
         _pushUndo(); _state.finance.savings = amount; _save(); _emit('finance','savings',{amount});
+      },
+      allocateToTravel(amount) {
+        _pushUndo();
+        _state.finance.travelSavingsFund = (_state.finance.travelSavingsFund || 0) + amount;
+        if (_state.travel && _state.travel.trips && _state.travel.trips[0]) {
+          _state.travel.trips[0].savedFromFinance = (_state.travel.trips[0].savedFromFinance || 0) + amount;
+        }
+        _save(); _emit('finance','allocateTravel',{amount});
       }
     },
 
@@ -315,27 +354,59 @@ const DB = (() => {
     // ============================================================
     shopping: {
       get() { return JSON.parse(JSON.stringify(_state.shopping)); },
-      addGrocery(item) {
-        _pushUndo(); _state.shopping.groceries.push({ status:'pending', ...item });
-        _save(); _emit('shopping','addGrocery',item);
-      },
-      completeGrocery(itemName) {
+      toggleDmartItem(id) {
         _pushUndo();
-        const i = _state.shopping.groceries.find(g => g.item.toLowerCase().includes(itemName.toLowerCase()));
-        if (i) i.status = 'done'; _save(); _emit('shopping','completeGrocery',{itemName});
+        const list = _state.shopping.dmartList || [];
+        const item = list.find(i => i.id == id);
+        if (item) item.checked = !item.checked;
+        _save(); _emit('shopping','toggleDmart',{id});
       },
-      deleteGrocery(itemName) {
+      addDmartItem(item) {
         _pushUndo();
-        _state.shopping.groceries = _state.shopping.groceries.filter(g => !g.item.toLowerCase().includes(itemName.toLowerCase()));
-        _save(); _emit('shopping','deleteGrocery',{itemName});
+        if (!_state.shopping.dmartList) _state.shopping.dmartList = [];
+        const n = { id: _nextId(), checked: false, ...item };
+        _state.shopping.dmartList.unshift(n);
+        _save(); _emit('shopping','addDmart',n);
+        return n;
+      },
+      deleteDmartItem(id) {
+        _pushUndo();
+        if (_state.shopping.dmartList) {
+          _state.shopping.dmartList = _state.shopping.dmartList.filter(i => i.id != id);
+        }
+        _save(); _emit('shopping','deleteDmart',{id});
+      },
+      clearCheckedDmart() {
+        _pushUndo();
+        if (_state.shopping.dmartList) {
+          _state.shopping.dmartList = _state.shopping.dmartList.filter(i => !i.checked);
+        }
+        _save(); _emit('shopping','clearChecked',null);
+      },
+      markPantryFinished(id) {
+        _pushUndo();
+        const p = (_state.shopping.pantryStock || []).find(i => i.id == id);
+        if (p) {
+          p.status = 'Out of Stock';
+          if (!_state.shopping.dmartList) _state.shopping.dmartList = [];
+          const exists = _state.shopping.dmartList.find(d => d.item.toLowerCase() === p.item.toLowerCase());
+          if (!exists) {
+            _state.shopping.dmartList.unshift({ id: _nextId(), item: p.item, category: p.category || 'Groceries', qty: '1 pk', estPrice: 200, urgency: 'high', checked: false });
+          }
+        }
+        _save(); _emit('shopping','pantryFinished',{id});
       },
       addWishlist(item) {
-        _pushUndo(); _state.shopping.wishlist.push({ priority:'medium', ...item });
+        _pushUndo();
+        if (!_state.shopping.wishlist) _state.shopping.wishlist = [];
+        _state.shopping.wishlist.push({ priority:'medium', ...item });
         _save(); _emit('shopping','addWishlist',item);
       },
       deleteWishlist(itemName) {
         _pushUndo();
-        _state.shopping.wishlist = _state.shopping.wishlist.filter(w => !w.item.toLowerCase().includes(itemName.toLowerCase()));
+        if (_state.shopping.wishlist) {
+          _state.shopping.wishlist = _state.shopping.wishlist.filter(w => !w.item.toLowerCase().includes(itemName.toLowerCase()));
+        }
         _save(); _emit('shopping','deleteWishlist',{itemName});
       }
     },
@@ -347,8 +418,8 @@ const DB = (() => {
       list() { return JSON.parse(JSON.stringify(_state.relationships || [])); },
       add(r) {
         _pushUndo();
-        const n = { id: _nextId(), lastContact: new Date().toISOString().split('T')[0], ...r };
-        _state.relationships.push(n); _save(); _emit('relationships','add',n); return n;
+        const n = { id: _nextId(), lastContact: 'Today', ...r };
+        _state.relationships.unshift(n); _save(); _emit('relationships','add',n); return n;
       },
       update(id, patch) {
         _pushUndo();
@@ -359,7 +430,7 @@ const DB = (() => {
         _pushUndo(); _state.relationships = _state.relationships.filter(r => r.id != id);
         _save(); _emit('relationships','delete',{id}); return true;
       },
-      markContacted(id) { return api.relationships.update(id, { lastContact: new Date().toISOString().split('T')[0] }); }
+      markContacted(id) { return api.relationships.update(id, { lastContact: 'Today' }); }
     },
 
     // ============================================================
@@ -391,6 +462,14 @@ const DB = (() => {
         _pushUndo();
         const n = { date: new Date().toISOString().split('T')[0], ...log };
         _state.vehicle.fuelLogs.unshift(n); _save(); _emit('vehicle','fuel',n); return n;
+      },
+      markWashed(type = 'Pressure Wash & Motul Chain Lube') {
+        _pushUndo();
+        const today = new Date().toISOString().split('T')[0];
+        _state.vehicle.lastWashDate = today;
+        if (!_state.vehicle.washHistory) _state.vehicle.washHistory = [];
+        _state.vehicle.washHistory.unshift({ date: today, type, cost: 350 });
+        _save(); _emit('vehicle','wash',{date: today, type});
       }
     },
 

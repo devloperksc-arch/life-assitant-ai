@@ -62,22 +62,23 @@
   let currentDomainId = 'home';
 
   // Master open function
-  function openDomainPage(id) {
+  function openDomainPage(id, pushHistory = true) {
     const domainId = normalizeDomainId(id);
     currentDomainId = domainId;
 
     // Desktop view switching
     if (typeof window.switchTab === 'function') {
-      try { window.switchTab('view-domain-page'); } catch(e) {}
+      try { window.switchTab('view-domain-page', false); } catch(e) {}
     }
     document.querySelectorAll('.view-panel').forEach(p => {
-      p.classList.add('hidden');
-      p.style.display = 'none';
+      p.classList.add('panel-hidden');
+      p.style.display = '';
     });
     const target = document.getElementById('view-domain-page');
     if (target) {
+      target.classList.remove('panel-hidden');
       target.classList.remove('hidden');
-      target.style.display = 'block';
+      target.style.display = '';
     }
 
     // Only update mobile view if on mobile screen
@@ -108,20 +109,14 @@
     const mainEl = document.querySelector('#desktop-app main') || document.querySelector('main');
     if (mainEl) mainEl.scrollTop = 0;
 
-    // Diagnostic log
-    if (mainEl) {
-      Array.from(mainEl.children).forEach(c => {
-        const cs = window.getComputedStyle(c);
-        if (cs.display !== 'none' || c.offsetHeight > 0) {
-          console.warn(`[VISIBLE-CHECK] id="${c.id}" display="${cs.display}" offsetTop=${c.offsetTop} offsetHeight=${c.offsetHeight}`);
+    // Push browser history so clicking Chrome Back returns to the previous view instead of leaving
+    if (pushHistory) {
+      try {
+        if (window.location.hash !== '#' + domainId) {
+          history.pushState({ type: 'domain', id: domainId }, '', '#' + domainId);
         }
-      });
+      } catch(e) {}
     }
-
-    // Update URL hash for easy sharing/bookmarking
-    try {
-      history.replaceState(null, '', '#' + domainId);
-    } catch(e) {}
   }
 
   // Master render function
@@ -239,19 +234,28 @@
     }
   }
 
-  function returnToDomainsHub() {
+  function returnToDomainsHub(pushHistory = true) {
     const hud = document.getElementById('hud-subbar');
     if (hud) hud.style.display = 'flex';
     if (typeof window.switchTab === 'function') {
-      window.switchTab('view-manage');
+      window.switchTab('view-manage', false);
     } else {
-      document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.view-panel').forEach(p => {
+        p.classList.add('panel-hidden');
+        p.style.display = '';
+      });
       const target = document.getElementById('view-manage');
-      if (target) target.classList.remove('hidden');
+      if (target) {
+        target.classList.remove('panel-hidden');
+        target.classList.remove('hidden');
+        target.style.display = '';
+      }
     }
     const mobileDomainView = document.getElementById('mobile-domain-view');
     if (mobileDomainView) mobileDomainView.classList.add('hidden');
-    try { history.replaceState(null, '', '#manage'); } catch(e) {}
+    if (pushHistory) {
+      try { history.pushState({ type: 'tab', id: 'view-manage' }, '', '#manage'); } catch(e) {}
+    }
   }
 
   function getDomainDescription(id) {
@@ -379,9 +383,9 @@
         { label: '⚡ AI: Mark Room Cleaning Done', prompt: 'Mark room cleaning and laundry chores as completed.' }
       ],
       'vehicle': [
-        { label: '⚡ AI: Estimate Fuel for Weekend Trip', prompt: 'Estimate the fuel volume and cost required for a 160km weekend ride on my Yamaha MT-15.' },
-        { label: '⚡ AI: Service Interval Check', prompt: 'Review my bike odometer (8,420 km) and give recommendations for the upcoming 10,000 km service.' },
-        { label: '⚡ AI: Log Fuel Refill (₹650)', prompt: 'Log a fuel refill of 6.2 Liters costing ₹650 at 8,420 km odometer.' }
+        { label: '⚡ AI: 15-Day Wash & Lube Reminder', prompt: 'Check days remaining until next 15-day pressure wash and Motul chain lube for my Royal Enfield Classic 350.' },
+        { label: '⚡ AI: Weekend Ride & Leave Plan', prompt: 'Analyze upcoming weekend ride to Lonavala or Goa and remind me to apply for work/casual leave in advance.' },
+        { label: '⚡ AI: Classic 350 Service Check', prompt: 'Review my Royal Enfield Classic 350 odometer (8,420 km) and give recommendations for the upcoming 10,000 km service.' }
       ],
       'travel': [
         { label: '⚡ AI: Tailor Goa Packing Checklist', prompt: 'Review my Goa trip packing list and add essentials for coastal weather and beach sports.' },
@@ -552,7 +556,7 @@
       const amt = parseFloat(amtStr) || -500;
       db.finance.addTransaction({ name: title, amount: amt, category: 'General' });
     } else if (domainId === 'shopping') {
-      db.shopping.addGrocery(title);
+      db.shopping.addDmartItem({ item: title, category: 'Groceries', qty: '1 unit', estPrice: 150 });
     } else if (domainId === 'study') {
       db.study.addSubject({ name: title, code: 'STUDY-101', progress: 0 });
     } else if (domainId === 'fitness') {
@@ -644,6 +648,189 @@
     window.DB.nutrition.setWater(Math.round((cur + liters) * 10) / 10);
     if (typeof window.showToast === 'function') window.showToast(`+${liters * 1000}ml water logged! 💧`);
     renderDomainPage('nutrition');
+  };
+
+  // Nutrition helpers
+  window.logCustomMeal = function() {
+    const name = prompt('Enter meal description (e.g. 4 Boiled Eggs + 2 Brown Bread Toasts):', 'Whey Protein + Banana');
+    if (!name) return;
+    const cal = parseInt(prompt('Estimated calories (kcal):', '320')) || 300;
+    const pro = parseInt(prompt('Protein content (grams):', '28')) || 25;
+    const carbs = parseInt(prompt('Carbohydrates (grams):', '35')) || 30;
+    const fat = parseInt(prompt('Fats (grams):', '6')) || 5;
+
+    if (window.DB && window.DB.nutrition) {
+      window.DB.nutrition.logMeal({
+        name,
+        calories: cal,
+        protein: pro,
+        carbs,
+        fat,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      if (typeof window.showToast === 'function') window.showToast(`🥗 Logged: ${name} (+${cal} kcal, ${pro}g protein)`);
+    }
+    renderDomainPage('nutrition');
+  };
+
+  window.quickAddMealPreset = function(name, cal, pro, carbs, fat) {
+    if (window.DB && window.DB.nutrition) {
+      window.DB.nutrition.logMeal({
+        name,
+        calories: cal,
+        protein: pro,
+        carbs: carbs || 0,
+        fat: fat || 0,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      if (typeof window.showToast === 'function') window.showToast(`⚡ Added ${name} (+${cal} kcal, ${pro}g pro)!`);
+    }
+    renderDomainPage('nutrition');
+  };
+
+  // Finance helpers
+  window.promptEditBudget = function(category, currentLimit) {
+    const newLimit = parseInt(prompt(`Set monthly budget cap for "${category}" (₹):`, currentLimit || 5000));
+    if (isNaN(newLimit) || newLimit < 0) return;
+    if (window.DB && window.DB.finance) {
+      window.DB.finance.updateBudget(category, { limit: newLimit });
+      if (typeof window.showToast === 'function') window.showToast(`💰 Budget updated: ${category} → ₹${newLimit.toLocaleString()}`);
+    }
+    renderDomainPage('finance');
+  };
+
+  window.promptAddTransaction = function() {
+    const name = prompt('Transaction description (e.g. Gym Supplements, Petrol Classic 350, D-Mart Grocery):', 'Supermarket Grocery');
+    if (!name) return;
+    const amtStr = prompt('Amount (Use minus - for expense, plus for income, e.g. -1450 or +15000):', '-850');
+    if (!amtStr) return;
+    const amt = parseFloat(amtStr);
+    if (isNaN(amt)) return;
+    const cat = prompt('Category (Food, Gym & Fitness, Royal Enfield Bike, Travel & Trips, D-Mart & Shopping, Tech & Subs, Bills, Income):', amt < 0 ? 'Food' : 'Income') || 'General';
+
+    if (window.DB && window.DB.finance) {
+      window.DB.finance.addTransaction({
+        name,
+        amount: amt,
+        category: cat,
+        type: amt > 0 ? 'income' : 'expense'
+      });
+      if (typeof window.showToast === 'function') window.showToast(`💳 Transaction added: ${name} (${amt > 0 ? '+' : ''}₹${Math.abs(amt).toLocaleString()})`);
+    }
+    renderDomainPage('finance');
+  };
+
+  window.deleteFinanceTransaction = function(id) {
+    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    if (window.DB && window.DB.finance) {
+      window.DB.finance.deleteTransaction(id);
+      if (typeof window.showToast === 'function') window.showToast('Transaction deleted');
+    }
+    renderDomainPage('finance');
+  };
+
+  // Shopping / D-Mart helpers
+  window.toggleDmartCheck = function(id) {
+    if (window.DB && window.DB.shopping) {
+      window.DB.shopping.toggleDmartItem(id);
+    }
+    renderDomainPage('shopping');
+  };
+
+  window.promptAddDmartItem = function() {
+    const item = prompt('Enter item to buy at D-Mart (e.g. Peanut Butter, Rolled Oats, Surf Excel):', 'Dark Chocolate 85%');
+    if (!item) return;
+    const qty = prompt('Quantity / Pack size (e.g. 1 kg, 500g, 2 packs):', '1 pack') || '1 unit';
+    const cat = prompt('Aisle Category (Groceries, Dairy, Toiletries, Snacks, Gym Supplies):', 'Groceries') || 'Groceries';
+    const est = parseInt(prompt('Estimated price (₹):', '180')) || 100;
+
+    if (window.DB && window.DB.shopping) {
+      window.DB.shopping.addDmartItem({
+        item,
+        category: cat,
+        qty,
+        estPrice: est,
+        urgency: 'high'
+      });
+      if (typeof window.showToast === 'function') window.showToast(`🛒 Added "${item}" to D-Mart shopping list!`);
+    }
+    renderDomainPage('shopping');
+  };
+
+  window.clearCheckedDmartItems = function() {
+    if (window.DB && window.DB.shopping) {
+      window.DB.shopping.clearCheckedDmart();
+      if (typeof window.showToast === 'function') window.showToast('Cleared purchased items from D-Mart list');
+    }
+    renderDomainPage('shopping');
+  };
+
+  window.markPantryItemFinished = function(id, itemName) {
+    if (window.DB && window.DB.shopping) {
+      window.DB.shopping.markPantryFinished(id);
+      if (typeof window.showToast === 'function') {
+        window.showToast(`⚠️ Marked "${itemName}" finished! Added directly to D-Mart shopping list! 🛒`);
+      }
+    }
+    renderDomainPage('shopping');
+  };
+
+  // Relationships helpers
+  window.promptAddContact = function() {
+    const name = prompt('Contact full name (e.g. Rohan Sharma):');
+    if (!name) return;
+    const role = prompt('Relationship / Connection (e.g. Friend, College Batchmate, Tech Mentor, Gym Bro, Family):', 'Friend') || 'Friend';
+    const phone = prompt('Phone number (e.g. +91 98765 43210):', '+91 ') || '';
+    const whatsapp = prompt('WhatsApp number (e.g. 919876543210):', phone.replace(/\D/g, '')) || '';
+    const instagram = prompt('Instagram handle (e.g. @rohan_codes):', '@') || '';
+    const howIKnow = prompt('How I know them / Context:', 'Known from college tech team & hackathon');
+
+    if (window.DB && window.DB.relationships) {
+      window.DB.relationships.add({
+        name,
+        role,
+        phone,
+        whatsapp,
+        instagram,
+        howIKnow: howIKnow || `Connected via ${role}`,
+        cadence: 'Weekly',
+        birthday: ''
+      });
+      if (typeof window.showToast === 'function') window.showToast(`👥 Contact "${name}" saved!`);
+    }
+    renderDomainPage('relationships');
+  };
+
+  window.logRelationshipCall = function(id, name) {
+    if (window.DB && window.DB.relationships) {
+      window.DB.relationships.markContacted(id);
+      if (typeof window.showToast === 'function') window.showToast(`📞 Logged conversation with ${name}! Cadence reset.`);
+    }
+    renderDomainPage('relationships');
+  };
+
+  // Vehicle helpers
+  window.markBikePressureWashed = function() {
+    if (window.DB && window.DB.vehicle) {
+      window.DB.vehicle.markWashed('15-Day Pressure Wash & Motul Chain Lube');
+      if (typeof window.showToast === 'function') {
+        window.showToast('🏍️ Royal Enfield Classic 350 Washed & Motul Lubed! 15-day countdown reset! 💧✨');
+      }
+    }
+    renderDomainPage('vehicle');
+  };
+
+  // Travel helpers
+  window.promptAllocateTravelSavings = function() {
+    const amt = parseInt(prompt('Enter amount to allocate from Finance savings to Travel Fund (₹):', '5000'));
+    if (isNaN(amt) || amt <= 0) return;
+    if (window.DB && window.DB.finance) {
+      window.DB.finance.allocateToTravel(amt);
+      if (typeof window.showToast === 'function') {
+        window.showToast(`✈️ Allocated ₹${amt.toLocaleString()} from Finance to Travel Fund!`);
+      }
+    }
+    renderDomainPage('travel');
   };
 
   // ============================================================
@@ -1097,97 +1284,182 @@
   // ============================================================
 
   // Persistent Heavy in-memory state
+  // Master 6-Day Workout Plan from User Specification
+  const SIX_DAY_ROUTINES = [
+    {
+      day: 1,
+      id: 'day-1',
+      title: 'Day 1 — Push / Chest',
+      split: 'Incline Bench · Flat DB Press · Cable Fly · Shoulder Press · Lateral Raise · Triceps',
+      badge: 'PUSH / CHEST',
+      color: '#00d4ff',
+      exercises: [
+        { name: 'Incline Bench Press', muscle: 'Upper Chest', equipment: 'Barbell', setsCount: 4, baseWeight: 70, reps: 10 },
+        { name: 'Flat DB Press', muscle: 'Mid Chest', equipment: 'Dumbbell', setsCount: 3, baseWeight: 32, reps: 10 },
+        { name: 'Cable Fly', muscle: 'Chest Isolation', equipment: 'Cable', setsCount: 3, baseWeight: 18, reps: 12 },
+        { name: 'Neutral Shoulder Press', muscle: 'Anterior Delts', equipment: 'Dumbbell', setsCount: 3, baseWeight: 24, reps: 10 },
+        { name: 'Lateral Raise', muscle: 'Lateral Delts', equipment: 'Dumbbell', setsCount: 4, baseWeight: 14, reps: 15 },
+        { name: 'Triceps Pushdown', muscle: 'Triceps Lateral', equipment: 'Cable Rope', setsCount: 3, baseWeight: 32, reps: 12 }
+      ]
+    },
+    {
+      day: 2,
+      id: 'day-2',
+      title: 'Day 2 — Pull',
+      split: 'Lat Pulldown · Seated Cable Row · Plate Row · Face Pull · Barbell Curl · Hammer Curl',
+      badge: 'PULL',
+      color: '#6af7ba',
+      exercises: [
+        { name: 'Lat Pulldown', muscle: 'Lats Width', equipment: 'Cable', setsCount: 4, baseWeight: 65, reps: 10 },
+        { name: 'Seated Cable Row', muscle: 'Mid Back', equipment: 'Cable', setsCount: 3, baseWeight: 60, reps: 10 },
+        { name: 'Seated Plate Row', muscle: 'Upper Back & Lats', equipment: 'Machine', setsCount: 3, baseWeight: 45, reps: 10 },
+        { name: 'Face Pull', muscle: 'Rear Delts & Rotator', equipment: 'Cable Rope', setsCount: 3, baseWeight: 25, reps: 15 },
+        { name: 'Barbell Curl', muscle: 'Biceps Peak', equipment: 'Barbell', setsCount: 3, baseWeight: 30, reps: 10 },
+        { name: 'Hammer Curl', muscle: 'Brachialis & Forearm', equipment: 'Dumbbell', setsCount: 3, baseWeight: 16, reps: 12 }
+      ]
+    },
+    {
+      day: 3,
+      id: 'day-3',
+      title: 'Day 3 — Legs',
+      split: 'Squat · Leg Press · Leg Curl · Leg Extension · Calf Raises',
+      badge: 'LEGS',
+      color: '#f59e0b',
+      exercises: [
+        { name: 'Squat', muscle: 'Quads & Glutes', equipment: 'Barbell', setsCount: 4, baseWeight: 100, reps: 8 },
+        { name: 'Leg Press', muscle: 'Quads Power', equipment: 'Machine', setsCount: 3, baseWeight: 180, reps: 10 },
+        { name: 'Leg Curl', muscle: 'Hamstrings', equipment: 'Machine', setsCount: 3, baseWeight: 50, reps: 12 },
+        { name: 'Leg Extension', muscle: 'Quads Isolation', equipment: 'Machine', setsCount: 3, baseWeight: 55, reps: 12 },
+        { name: 'Calf Raises', muscle: 'Calves', equipment: 'Machine', setsCount: 4, baseWeight: 75, reps: 15 }
+      ]
+    },
+    {
+      day: 4,
+      id: 'day-4',
+      title: 'Day 4 — Shoulders + Upper Chest + ABS',
+      split: 'Incline DB Press · Overhead Press · Lateral Raise · Pec-Deck Fly · Hanging Leg Raise · Cable Crunch',
+      badge: 'DELTS / ABS',
+      color: '#d0bcff',
+      exercises: [
+        { name: 'Incline DB Press', muscle: 'Upper Chest', equipment: 'Dumbbell', setsCount: 3, baseWeight: 32, reps: 10 },
+        { name: 'Overhead Press', muscle: 'Deltoids', equipment: 'Barbell', setsCount: 4, baseWeight: 50, reps: 8 },
+        { name: 'Lateral Raise', muscle: 'Side Delts', equipment: 'Dumbbell', setsCount: 4, baseWeight: 14, reps: 15 },
+        { name: 'Pec-Deck Chest Fly', muscle: 'Chest Pectorals', equipment: 'Machine', setsCount: 3, baseWeight: 55, reps: 12 },
+        { name: 'Hanging Leg Raise', muscle: 'Lower Abs', equipment: 'Bodyweight', setsCount: 3, baseWeight: 0, reps: 15 },
+        { name: 'Cable Crunch', muscle: 'Upper Abs', equipment: 'Cable', setsCount: 3, baseWeight: 50, reps: 15 }
+      ]
+    },
+    {
+      day: 5,
+      id: 'day-5',
+      title: 'Day 5 — Back',
+      split: 'Lat Pulldown · Seated Cable Row · T-Bar Row · Reverse Pec Deck · Shrugs · Deadlift',
+      badge: 'BACK / DEADLIFT',
+      color: '#00F0FF',
+      exercises: [
+        { name: 'Lat Pulldown', muscle: 'Lats Width', equipment: 'Cable', setsCount: 4, baseWeight: 70, reps: 8 },
+        { name: 'Seated Cable Row', muscle: 'Mid-Back Rhomboids', equipment: 'Cable', setsCount: 3, baseWeight: 65, reps: 10 },
+        { name: 'T-Bar Row', muscle: 'Back Thickness', equipment: 'Barbell', setsCount: 3, baseWeight: 55, reps: 10 },
+        { name: 'Reverse Pec Deck', muscle: 'Rear Delts', equipment: 'Machine', setsCount: 3, baseWeight: 40, reps: 12 },
+        { name: 'Shrugs', muscle: 'Upper Traps', equipment: 'Dumbbell', setsCount: 3, baseWeight: 34, reps: 15 },
+        { name: 'Your personal Deadlift', muscle: 'Posterior Chain / Back', equipment: 'Barbell', setsCount: 3, baseWeight: 130, reps: 6 }
+      ]
+    },
+    {
+      day: 6,
+      id: 'day-6',
+      title: 'Day 6 — Arms + Traps + ABS',
+      split: 'Preacher Curl · Long-Head Curl · Hammer Curl · Triceps Pushdown · Overhead Ext · Dips · Leg Raise · Cable Crunch',
+      badge: 'ARMS / ABS',
+      color: '#f43f5e',
+      exercises: [
+        { name: 'Preacher Curl', muscle: 'Biceps Short Head', equipment: 'EZ-Bar', setsCount: 3, baseWeight: 30, reps: 10 },
+        { name: 'Long-Head Biceps Curl', muscle: 'Biceps Long Head', equipment: 'Incline DB', setsCount: 3, baseWeight: 14, reps: 12 },
+        { name: 'Hammer Curl', muscle: 'Brachialis', equipment: 'Dumbbell', setsCount: 3, baseWeight: 16, reps: 12 },
+        { name: 'Triceps Pushdown', muscle: 'Triceps Lateral', equipment: 'Cable V-Bar', setsCount: 3, baseWeight: 35, reps: 12 },
+        { name: 'Overhead Extension', muscle: 'Triceps Long Head', equipment: 'Cable Rope', setsCount: 3, baseWeight: 26, reps: 12 },
+        { name: 'Dips', muscle: 'Triceps & Lower Chest', equipment: 'Bodyweight', setsCount: 3, baseWeight: 0, reps: 12 },
+        { name: 'Hanging Leg Raise', muscle: 'Lower Abs', equipment: 'Bodyweight', setsCount: 3, baseWeight: 0, reps: 15 },
+        { name: 'Cable Crunch', muscle: 'Upper Abs', equipment: 'Cable', setsCount: 3, baseWeight: 50, reps: 15 }
+      ]
+    }
+  ];
+
+  function buildRoutineSession(dayNum) {
+    const routine = SIX_DAY_ROUTINES.find(r => r.day === dayNum) || SIX_DAY_ROUTINES[0];
+    return {
+      name: routine.title,
+      elapsedSeconds: 0,
+      isLive: true,
+      day: routine.day,
+      exercises: routine.exercises.map((ex, exIdx) => {
+        const sets = [];
+        for (let i = 1; i <= ex.setsCount; i++) {
+          sets.push({
+            num: String(i),
+            prev: `${ex.baseWeight} kg × ${ex.reps}`,
+            weight: ex.baseWeight,
+            reps: ex.reps,
+            rpe: '8.5',
+            done: i === 1 ? true : false
+          });
+        }
+        return {
+          id: 'ex-' + dayNum + '-' + exIdx,
+          name: ex.name,
+          muscle: ex.muscle,
+          equipment: ex.equipment,
+          sets: sets
+        };
+      })
+    };
+  }
+
+  // Persistent Heavy in-memory state
   window.heavyState = window.heavyState || {
-    activeTab: 'logger', // 'logger', 'routines', 'prs', 'heatmap', 'history'
+    activeTab: 'logger',
+    selectedDay: 1,
     restSecondsLeft: 90,
     restTotalSeconds: 90,
     restTimerRunning: false,
     timerInterval: null,
     calcWeight: 100,
     calcReps: 6,
-    activeSession: {
-      name: 'Heavy Push A (Chest, Shoulders & Triceps)',
-      elapsedSeconds: 2322, // 38m 42s
-      isLive: true,
-      exercises: [
-        {
-          id: 'ex-1',
-          name: 'Barbell Bench Press',
-          muscle: 'Chest',
-          equipment: 'Barbell',
-          sets: [
-            { num: 'W', prev: '60 kg × 12', weight: 60, reps: 12, rpe: '6.0', done: true },
-            { num: '1', prev: '90 kg × 8', weight: 90, reps: 8, rpe: '8.0', done: true },
-            { num: '2', prev: '100 kg × 6', weight: 100, reps: 6, rpe: '8.5', done: true },
-            { num: '3', prev: '105 kg × 5', weight: 105, reps: 5, rpe: '9.5', done: false }
-          ]
-        },
-        {
-          id: 'ex-2',
-          name: 'Incline Dumbbell Press',
-          muscle: 'Upper Chest',
-          equipment: 'Dumbbell',
-          sets: [
-            { num: '1', prev: '34 kg × 10', weight: 34, reps: 10, rpe: '8.0', done: true },
-            { num: '2', prev: '36 kg × 8', weight: 36, reps: 8, rpe: '8.5', done: true },
-            { num: '3', prev: '36 kg × 8', weight: 36, reps: 8, rpe: '9.0', done: false }
-          ]
-        },
-        {
-          id: 'ex-3',
-          name: 'Standing Overhead Press (OHP)',
-          muscle: 'Shoulders',
-          equipment: 'Barbell',
-          sets: [
-            { num: '1', prev: '60 kg × 8', weight: 60, reps: 8, rpe: '8.0', done: true },
-            { num: '2', prev: '65 kg × 6', weight: 65, reps: 6, rpe: '8.5', done: false },
-            { num: '3', prev: '70 kg × 5', weight: 70, reps: 5, rpe: '9.0', done: false }
-          ]
-        },
-        {
-          id: 'ex-4',
-          name: 'Dumbbell Lateral Raise',
-          muscle: 'Lateral Delts',
-          equipment: 'Dumbbell',
-          sets: [
-            { num: '1', prev: '14 kg × 15', weight: 14, reps: 15, rpe: '8.5', done: true },
-            { num: '2', prev: '14 kg × 15', weight: 14, reps: 15, rpe: '9.0', done: false },
-            { num: 'D', prev: '10 kg × 15', weight: 10, reps: 15, rpe: '10.0', done: false }
-          ]
-        },
-        {
-          id: 'ex-5',
-          name: 'Tricep Rope Pushdown',
-          muscle: 'Triceps',
-          equipment: 'Cable',
-          sets: [
-            { num: '1', prev: '32 kg × 12', weight: 32, reps: 12, rpe: '8.0', done: true },
-            { num: '2', prev: '36 kg × 10', weight: 36, reps: 10, rpe: '9.0', done: false },
-            { num: 'F', prev: '36 kg × 10', weight: 36, reps: 10, rpe: '10.0', done: false }
-          ]
-        }
-      ]
-    },
-    routines: [
-      { id: 'push-a', name: 'Heavy Push A', split: 'Chest / Front & Lateral Delts / Triceps', exercisesCount: 5, setsCount: 18, estTime: '55 min', focus: 'Hypertrophy & Strength' },
-      { id: 'pull-a', name: 'Heavy Pull A', split: 'Lats / Upper Back / Rear Delts / Biceps', exercisesCount: 5, setsCount: 17, estTime: '50 min', focus: 'Back Width & Thickness' },
-      { id: 'legs-a', name: 'Heavy Legs & Calves', split: 'Quads / Hamstrings / Glutes / Calves', exercisesCount: 6, setsCount: 20, estTime: '65 min', focus: 'Lower Body Power' },
-      { id: 'upper-p', name: 'Heavy Upper Power', split: 'Flat Bench, Barbell Row, OHP, Chins', exercisesCount: 4, setsCount: 16, estTime: '50 min', focus: 'Maximal Strength' },
-      { id: 'lower-p', name: 'Heavy Lower Power', split: 'Back Squat, Romanian Deadlift, Leg Press', exercisesCount: 4, setsCount: 16, estTime: '55 min', focus: 'Posterior Chain' },
-      { id: 'zone-2', name: 'Heavy Zone 2 & Core', split: 'Incline Treadmill, Concept2 Row, Hanging Raises', exercisesCount: 3, setsCount: 10, estTime: '45 min', focus: 'Cardiovascular Base' }
-    ],
+    activeSession: buildRoutineSession(1),
+    routines: SIX_DAY_ROUTINES.map(r => ({
+      id: r.id,
+      day: r.day,
+      name: r.title,
+      split: r.split,
+      exercisesCount: r.exercises.length,
+      setsCount: r.exercises.reduce((a, b) => a + b.setsCount, 0),
+      estTime: '55 min',
+      focus: r.badge
+    })),
     prs: [
       { name: 'Barbell Bench Press', value: '110 kg', oneRm: '125 kg', date: 'Sept 10, 2026', note: '5 reps @ 105 kg' },
       { name: 'Barbell Back Squat', value: '145 kg', oneRm: '165 kg', date: 'Sept 14, 2026', note: '4 reps @ 135 kg' },
-      { name: 'Conventional Deadlift', value: '180 kg', oneRm: '205 kg', date: 'Aug 28, 2026', note: '3 reps @ 170 kg' },
+      { name: 'Your personal Deadlift', value: '180 kg', oneRm: '205 kg', date: 'Aug 28, 2026', note: '3 reps @ 170 kg' },
       { name: 'Standing Overhead Press', value: '75 kg', oneRm: '85 kg', date: 'Sept 18, 2026', note: '5 reps @ 70 kg' }
     ],
     history: [
-      { name: 'Heavy Pull A', date: 'Yesterday (Sept 24)', duration: '52 min', volume: '13,420 kg', sets: 17, prs: 2 },
-      { name: 'Heavy Legs & Calves', date: 'Sept 22, 2026', duration: '64 min', volume: '17,890 kg', sets: 20, prs: 1 },
-      { name: 'Heavy Push A', date: 'Sept 20, 2026', duration: '58 min', volume: '15,100 kg', sets: 18, prs: 3 },
-      { name: 'Heavy Upper Power', date: 'Sept 18, 2026', duration: '49 min', volume: '12,950 kg', sets: 16, prs: 1 }
+      { name: 'Day 5 — Back & Deadlift', date: 'Yesterday (Sept 24)', duration: '52 min', volume: '14,820 kg', sets: 19, prs: 1 },
+      { name: 'Day 4 — Shoulders + Upper Chest + ABS', date: 'Sept 22, 2026', duration: '58 min', volume: '12,450 kg', sets: 20, prs: 2 },
+      { name: 'Day 3 — Legs', date: 'Sept 20, 2026', duration: '64 min', volume: '18,100 kg', sets: 17, prs: 1 },
+      { name: 'Day 2 — Pull', date: 'Sept 18, 2026', duration: '50 min', volume: '13,200 kg', sets: 19, prs: 1 },
+      { name: 'Day 1 — Push / Chest', date: 'Sept 16, 2026', duration: '55 min', volume: '15,600 kg', sets: 20, prs: 3 }
     ]
+  };
+
+  window.selectHeavyDay = function(dayNum) {
+    window.heavyState.selectedDay = dayNum;
+    window.heavyState.activeSession = buildRoutineSession(dayNum);
+    window.heavyState.activeTab = 'logger';
+    if (typeof window.showToast === 'function') {
+      const r = SIX_DAY_ROUTINES.find(rt => rt.day === dayNum);
+      window.showToast(`🏋️ Loaded: ${r ? r.title : 'Day ' + dayNum}`);
+    }
+    renderDomainPage('fitness');
   };
 
   // Helper functions exposed on window
@@ -1457,8 +1729,30 @@
           </div>
         </div>
 
+        <!-- Upper 6-Day Routine Split Selector -->
+        <div class="mt-4 pt-3 border-t border-outline-variant/15">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-mono text-outline uppercase font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary-container text-[14px]">calendar_view_week</span>
+              Active 6-Day Routine Split (Click Day to Run Routine)
+            </span>
+            <span class="text-[10px] font-mono text-primary-container font-semibold">6 Days / Week Split Active</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            ${SIX_DAY_ROUTINES.map(r => `
+              <button onclick="window.selectHeavyDay(${r.day})" class="p-2.5 rounded-xl font-mono text-xs font-bold transition-all active:scale-95 flex flex-col items-start gap-1 text-left ${window.heavyState.selectedDay === r.day ? 'bg-primary-container/20 text-white border-2 border-primary-container shadow-[0_0_16px_rgba(0,212,255,0.35)]' : 'glass-surface hover:bg-surface-container/70 text-outline hover:text-white border border-outline-variant/25'}">
+                <div class="flex items-center justify-between w-full">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded font-black ${window.heavyState.selectedDay === r.day ? 'bg-primary-container text-surface-container-lowest' : 'bg-surface-container text-outline'}">DAY ${r.day}</span>
+                  <span class="text-[9px] uppercase tracking-wider ${window.heavyState.selectedDay === r.day ? 'text-primary-container font-bold' : 'text-outline/70'}">${r.badge}</span>
+                </div>
+                <span class="text-[11px] font-semibold text-white truncate w-full mt-0.5">${r.title.replace('Day ' + r.day + ' — ', '')}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
         <!-- Heavy Segmented Navigation Tabs -->
-        <div class="flex items-center gap-2 mt-5 pt-4 border-t border-outline-variant/15 overflow-x-auto no-scrollbar">
+        <div class="flex items-center gap-2 mt-4 pt-3 border-t border-outline-variant/15 overflow-x-auto no-scrollbar">
           <button onclick="setHeavyTab('logger')" 
                   class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='logger' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">timer</span>
@@ -1887,55 +2181,132 @@
   // --- 08. NUTRITION & DIET ---
   function renderNutritionDomain(s) {
     const nut = s.nutrition || {};
-    const today = nut.today || { calories: 1840, targetCalories: 2200, protein: 124, targetProtein: 140, water: 2.4 };
+    const today = nut.today || { calories: 1840, targetCalories: 2200, protein: 124, targetProtein: 140, carbs: 210, targetCarbs: 250, fat: 52, targetFat: 65, water: 2.4 };
     const meals = nut.meals || [
-      { name: 'Oatmeal & Whey Protein', cal: 450, time: '08:30' },
-      { name: 'Grilled Chicken, Rice & Greens', cal: 720, time: '13:30' },
-      { name: 'Greek Yogurt & Almonds', cal: 280, time: '17:45' }
+      { name: 'Oatmeal & Whey Protein', calories: 450, protein: 32, carbs: 55, fat: 8, time: '08:30' },
+      { name: 'Grilled Chicken, Rice & Greens', calories: 720, protein: 55, carbs: 80, fat: 12, time: '13:30' },
+      { name: 'Greek Yogurt & Almonds', calories: 280, protein: 22, carbs: 18, fat: 10, time: '17:45' }
     ];
 
+    const calPct = Math.min(100, Math.round(((today.calories || 0) / (today.targetCalories || 2200)) * 100));
+    const proPct = Math.min(100, Math.round(((today.protein || 0) / (today.targetProtein || 140)) * 100));
+    const remainingCal = Math.max(0, (today.targetCalories || 2200) - (today.calories || 0));
+
     return `
-      <!-- Macro Overview -->
+      <!-- Top Macro & Calorie Telemetry Hub -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="glass-surface p-4 rounded-xl border border-primary-container/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Calorie Balance</p>
-          <div class="text-2xl font-bold text-primary-container mt-1">${today.calories} <span class="text-xs font-normal text-outline">/ ${today.targetCalories} kcal</span></div>
-          <p class="text-[10px] text-tertiary font-mono">360 kcal remaining</p>
+        <div class="glass-surface p-4 rounded-xl border border-primary-container/25 relative overflow-hidden">
+          <p class="text-[10px] font-mono uppercase text-outline">Daily Calorie Balance</p>
+          <div class="text-2xl font-black text-primary-container mt-1 font-mono">${today.calories || 0} <span class="text-xs font-normal text-outline">/ ${today.targetCalories || 2200} kcal</span></div>
+          <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden my-2">
+            <div class="bg-primary-container h-full rounded-full transition-all" style="width:${calPct}%"></div>
+          </div>
+          <p class="text-[10px] text-tertiary font-mono font-semibold">${remainingCal} kcal remaining today</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-tertiary/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Protein Goal</p>
-          <div class="text-2xl font-bold text-tertiary mt-1">${today.protein}g <span class="text-xs font-normal text-outline">/ ${today.targetProtein}g</span></div>
-          <p class="text-[10px] text-tertiary font-mono">88% of target</p>
+
+        <div class="glass-surface p-4 rounded-xl border border-tertiary/25 relative overflow-hidden">
+          <p class="text-[10px] font-mono uppercase text-outline">Protein Anabolism Goal</p>
+          <div class="text-2xl font-black text-tertiary mt-1 font-mono">${today.protein || 0}g <span class="text-xs font-normal text-outline">/ ${today.targetProtein || 140}g</span></div>
+          <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden my-2">
+            <div class="bg-tertiary h-full rounded-full transition-all" style="width:${proPct}%"></div>
+          </div>
+          <p class="text-[10px] text-tertiary font-mono">${proPct}% of muscle target met</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-cyan-400/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Daily Hydration</p>
-          <div class="text-2xl font-bold text-cyan-400 mt-1">${today.water} L <span class="text-xs font-normal text-outline">/ 3.5 L</span></div>
+
+        <div class="glass-surface p-4 rounded-xl border border-cyan-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Hydration &amp; Electrolytes</p>
+          <div class="text-2xl font-black text-cyan-400 mt-1 font-mono">${today.water || 2.4} L <span class="text-xs font-normal text-outline">/ 3.5 L</span></div>
           <div class="flex gap-2 mt-2">
-            <button onclick="addQuickWater(0.25)" class="px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-400 text-[10px] font-mono hover:bg-cyan-400/30">+250ml</button>
-            <button onclick="addQuickWater(0.5)" class="px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-400 text-[10px] font-mono hover:bg-cyan-400/30">+500ml</button>
+            <button onclick="addQuickWater(0.25)" class="px-2.5 py-1 rounded-lg bg-cyan-400/20 text-cyan-400 text-[10px] font-mono hover:bg-cyan-400/30 transition-all active:scale-95 border border-cyan-400/30">+250ml</button>
+            <button onclick="addQuickWater(0.5)" class="px-2.5 py-1 rounded-lg bg-cyan-400/20 text-cyan-400 text-[10px] font-mono hover:bg-cyan-400/30 transition-all active:scale-95 border border-cyan-400/30">+500ml</button>
           </div>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-amber-400/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Clean Eating Score</p>
-          <div class="text-2xl font-bold text-amber-400 mt-1">92 / 100</div>
-          <p class="text-[10px] text-outline font-mono">Zero processed sugar today</p>
+
+        <div class="glass-surface p-4 rounded-xl border border-amber-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Macronutrient Split</p>
+          <div class="text-xs font-mono space-y-1 mt-1.5">
+            <div class="flex justify-between"><span class="text-outline">Carbs</span><strong class="text-white">${today.carbs || 210}g / 250g</strong></div>
+            <div class="flex justify-between"><span class="text-outline">Fats</span><strong class="text-amber-400">${today.fat || 52}g / 65g</strong></div>
+            <div class="flex justify-between"><span class="text-outline">Clean Score</span><strong class="text-tertiary">94 / 100 🥗</strong></div>
+          </div>
         </div>
       </div>
 
-      <!-- Meal Logs -->
+      <!-- Quick Meal Presets Bar (1-Click Food Extraction & Logging) -->
+      <div class="glass-surface p-4 rounded-xl border border-primary-container/20">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-mono text-outline uppercase font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary-container text-[14px]">bolt</span>
+            Quick-Add High-Protein Gym Meals (1-Click Log)
+          </span>
+          <button onclick="window.logCustomMeal()" class="text-xs font-mono font-bold text-primary-container hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">add</span>
+            + Custom Meal
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <button onclick="quickAddMealPreset('Grilled Chicken Breast & Basmati Rice', 650, 48, 70, 8)" 
+                  class="p-2.5 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 hover:border-primary-container/40 text-left transition-all active:scale-95 group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white group-hover:text-primary-container">🍗 Chicken &amp; Rice</span>
+              <span class="text-[10px] font-mono text-primary-container font-bold">+650 kcal</span>
+            </div>
+            <p class="text-[10px] text-outline font-mono mt-0.5">48g Protein · 70g Carbs · 8g Fat</p>
+          </button>
+
+          <button onclick="quickAddMealPreset('Whey Protein Isolate Shake (1 Scoop)', 140, 27, 3, 2)" 
+                  class="p-2.5 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 hover:border-tertiary/40 text-left transition-all active:scale-95 group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white group-hover:text-tertiary">🥛 1 Scoop Whey</span>
+              <span class="text-[10px] font-mono text-tertiary font-bold">+140 kcal</span>
+            </div>
+            <p class="text-[10px] text-outline font-mono mt-0.5">27g Protein · 3g Carbs · 2g Fat</p>
+          </button>
+
+          <button onclick="quickAddMealPreset('4 Boiled Eggs & 2 Whole Wheat Toast', 340, 26, 24, 12)" 
+                  class="p-2.5 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 hover:border-amber-400/40 text-left transition-all active:scale-95 group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white group-hover:text-amber-400">🍳 4 Eggs + Toast</span>
+              <span class="text-[10px] font-mono text-amber-400 font-bold">+340 kcal</span>
+            </div>
+            <p class="text-[10px] text-outline font-mono mt-0.5">26g Protein · 24g Carbs · 12g Fat</p>
+          </button>
+
+          <button onclick="quickAddMealPreset('Rolled Oats + Peanut Butter + Banana', 480, 18, 65, 16)" 
+                  class="p-2.5 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 hover:border-secondary/40 text-left transition-all active:scale-95 group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white group-hover:text-secondary">🥜 Oats + PB + Banana</span>
+              <span class="text-[10px] font-mono text-secondary font-bold">+480 kcal</span>
+            </div>
+            <p class="text-[10px] text-outline font-mono mt-0.5">18g Protein · 65g Carbs · 16g Fat</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Meal Logs Stream -->
       <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
-        <h4 class="text-sm font-bold text-white flex items-center gap-2">
-          <span class="material-symbols-outlined text-tertiary text-[18px]">restaurant</span>
-          Today's Logged Meals
-        </h4>
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-tertiary text-[18px]">restaurant</span>
+            Today's Consumed Nutrition &amp; Meal Logs
+          </h4>
+          <button onclick="window.logCustomMeal()" class="px-3 py-1.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-all">
+            + Log Custom Meal
+          </button>
+        </div>
         <div class="space-y-2">
           ${meals.map(m => `
-            <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
+            <div class="p-3.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
               <div>
-                <p class="text-xs font-semibold text-white">${m.name}</p>
-                <p class="text-[10px] text-outline font-mono">${m.time} · Clean Nutrition</p>
+                <p class="text-xs font-bold text-white">${m.name}</p>
+                <p class="text-[10px] text-outline font-mono mt-0.5">
+                  ⏱ ${m.time || 'Today'} · 🥩 ${m.protein || 20}g Protein · 🍚 ${m.carbs || 30}g Carbs · 🥑 ${m.fat || 5}g Fat
+                </p>
               </div>
-              <span class="text-xs font-mono font-bold text-primary-container">${m.cal} kcal</span>
+              <div class="text-right">
+                <span class="text-xs font-mono font-black text-primary-container">${m.calories || m.cal} kcal</span>
+                <span class="block text-[9px] font-mono text-tertiary">Clean Fuel</span>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -1945,57 +2316,141 @@
 
   // --- 09. FINANCE & WEALTH ---
   function renderFinanceDomain(s) {
-    const f = s.finance || { balance: 42650, monthlyIncome: 65000, monthlyExpenses: 36800, savings: 145000, savingsGoal: 200000 };
+    const f = s.finance || { balance: 42650, monthlyIncome: 65000, monthlyExpenses: 36800, savings: 145000, savingsGoal: 200000, travelSavingsFund: 22000 };
+    const budgets = f.budgets || [
+      { category: 'Food & Groceries', spent: 12850, limit: 16000, icon: 'restaurant', color: '#6af7ba' },
+      { category: 'Gym, Diet & Supplements', spent: 4500, limit: 6000, icon: 'fitness_center', color: '#00d4ff' },
+      { category: 'Royal Enfield Bike Care', spent: 2400, limit: 4000, icon: 'two_wheeler', color: '#f59e0b' },
+      { category: 'Travel & Trips Fund', spent: 5500, limit: 10000, icon: 'flight', color: '#d0bcff' },
+      { category: 'D-Mart & Household', spent: 3800, limit: 6000, icon: 'shopping_cart', color: '#a8e8ff' },
+      { category: 'Tech & Subscriptions', spent: 3200, limit: 4500, icon: 'laptop', color: '#818cf8' },
+      { category: 'Bills & Utilities', spent: 4550, limit: 5500, icon: 'bolt', color: '#f43f5e' }
+    ];
     const txs = f.transactions || [
-      { name: 'Grocery Market', amount: -1420, category: 'Food', date: '2026-09-21' },
-      { name: 'Freelance Frontend Stipend', amount: 15000, category: 'Income', date: '2026-09-20' },
-      { name: 'AWS Cloud Hosting', amount: -680, category: 'Tech', date: '2026-09-18' }
+      { id: 1, name: 'Grocery Market & Protein', amount: -1420, category: 'Food & Groceries', date: '2026-09-21' },
+      { id: 2, name: 'Freelance Frontend Stipend', amount: 15000, category: 'Income', date: '2026-09-20' },
+      { id: 3, name: 'Classic 350 Petrol & Motul Lube', amount: -1100, category: 'Royal Enfield Bike Care', date: '2026-09-18' },
+      { id: 4, name: 'AWS Cloud Hosting', amount: -680, category: 'Tech & Subscriptions', date: '2026-09-15' },
+      { id: 5, name: 'Goa Trip Savings Transfer', amount: -5000, category: 'Travel & Trips Fund', date: '2026-09-12' }
     ];
 
     return `
-      <!-- Financial Overview -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="glass-surface p-4 rounded-xl border border-tertiary/20">
+      <!-- Financial Overview Strip -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+        <div class="glass-surface p-4 rounded-xl border border-tertiary/25">
           <p class="text-[10px] font-mono uppercase text-outline">Liquid Net Balance</p>
-          <div class="text-2xl font-bold text-tertiary mt-1">₹${f.balance.toLocaleString()}</div>
-          <p class="text-[10px] text-tertiary font-mono">Checking + Liquid Cash</p>
+          <div class="text-2xl font-black text-tertiary mt-1 font-mono">₹${(f.balance||0).toLocaleString()}</div>
+          <p class="text-[10px] text-tertiary font-mono">Bank + Liquid Cash</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-rose-400/20">
+        <div class="glass-surface p-4 rounded-xl border border-rose-400/25">
           <p class="text-[10px] font-mono uppercase text-outline">Monthly Spend</p>
-          <div class="text-2xl font-bold text-rose-400 mt-1">₹${f.monthlyExpenses.toLocaleString()}</div>
-          <p class="text-[10px] text-outline font-mono">73% of ₹50k limit</p>
+          <div class="text-2xl font-black text-rose-400 mt-1 font-mono">₹${(f.monthlyExpenses||0).toLocaleString()}</div>
+          <p class="text-[10px] text-outline font-mono">Across 7 Budgets</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-primary-container/20">
+        <div class="glass-surface p-4 rounded-xl border border-primary-container/25">
           <p class="text-[10px] font-mono uppercase text-outline">Monthly Inflow</p>
-          <div class="text-2xl font-bold text-primary-container mt-1">₹${f.monthlyIncome.toLocaleString()}</div>
+          <div class="text-2xl font-black text-primary-container mt-1 font-mono">₹${(f.monthlyIncome||0).toLocaleString()}</div>
           <p class="text-[10px] text-outline font-mono">Stipend &amp; Projects</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-amber-400/20">
+        <div class="glass-surface p-4 rounded-xl border border-amber-400/25">
           <p class="text-[10px] font-mono uppercase text-outline">Emergency Savings</p>
-          <div class="text-2xl font-bold text-amber-400 mt-1">₹${f.savings.toLocaleString()}</div>
+          <div class="text-2xl font-black text-amber-400 mt-1 font-mono">₹${(f.savings||0).toLocaleString()}</div>
           <p class="text-[10px] text-amber-400 font-mono">72% of ₹2.0L goal</p>
+        </div>
+        <div class="glass-surface p-4 rounded-xl border border-purple-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Travel Dedicated Fund</p>
+          <div class="text-2xl font-black text-purple-400 mt-1 font-mono">₹${(f.travelSavingsFund||22000).toLocaleString()}</div>
+          <p class="text-[10px] text-purple-300 font-mono">Linked to Goa Trip ✈️</p>
         </div>
       </div>
 
-      <!-- Live Transactions Stream -->
-      <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
+      <!-- Category Budgets Management Section (Requested by User) -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary">pie_chart</span>
+              Category Budgets &amp; Monthly Spending Caps
+            </h3>
+            <p class="text-xs text-outline font-mono mt-0.5">Control expenses, set caps, and monitor live spending across your lifestyle</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="window.promptEditBudget('Food & Groceries', 16000)" class="px-3.5 py-2 rounded-xl bg-tertiary/20 text-tertiary hover:bg-tertiary/30 border border-tertiary/40 font-mono text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">edit_note</span>
+              <span>+ Set / Edit Budget</span>
+            </button>
+            <button onclick="window.promptAddTransaction()" class="px-3.5 py-2 rounded-xl bg-primary-container text-surface-container-lowest hover:bg-surface-tint cyan-glow font-mono text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">add_circle</span>
+              <span>+ Add Transaction</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          ${budgets.map(b => {
+            const pct = Math.min(100, Math.round(((b.spent || 0) / (b.limit || 1)) * 100));
+            const isNearLimit = pct >= 80;
+            const isOver = pct >= 100;
+            const barColor = isOver ? '#f43f5e' : (isNearLimit ? '#f59e0b' : (b.color || '#6af7ba'));
+
+            return `
+              <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-2.5">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="material-symbols-outlined text-[20px]" style="color:${b.color||'#00d4ff'}">${b.icon||'category'}</span>
+                    <div>
+                      <h5 class="text-xs font-bold text-white">${b.category}</h5>
+                      <span class="text-[10px] text-outline font-mono">₹${(b.spent||0).toLocaleString()} of ₹${(b.limit||0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <button onclick="window.promptEditBudget('${b.category}', ${b.limit||5000})" class="text-[10px] font-mono text-outline hover:text-white px-2 py-0.5 rounded hover:bg-surface-container transition-colors">
+                    Edit
+                  </button>
+                </div>
+                <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all" style="width:${pct}%;background:${barColor}"></div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] font-mono">
+                  <span class="${isOver ? 'text-rose-400 font-bold' : (isNearLimit ? 'text-amber-400 font-bold' : 'text-outline')}">${pct}% spent</span>
+                  <span class="text-outline">Remaining: ₹${Math.max(0, (b.limit||0) - (b.spent||0)).toLocaleString()}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Transactions Ledger -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-secondary text-[18px]">receipt_long</span>
-            Recent Financial Transactions
+            Financial Transactions Ledger
           </h4>
-          <span class="text-[10px] font-mono text-outline">Live Ledger</span>
+          <button onclick="window.promptAddTransaction()" class="text-xs font-mono font-bold text-primary-container hover:underline">
+            + Add Transaction
+          </button>
         </div>
         <div class="space-y-2">
           ${txs.map(tx => `
-            <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
-              <div>
-                <p class="text-xs font-semibold text-white">${tx.name}</p>
-                <p class="text-[10px] text-outline font-mono">${tx.category} · ${tx.date}</p>
+            <div class="p-3.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${tx.amount > 0 ? 'bg-tertiary/15 text-tertiary' : 'bg-rose-400/15 text-rose-400'}">
+                  <span class="material-symbols-outlined text-[18px]">${tx.amount > 0 ? 'arrow_downward' : 'arrow_upward'}</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-white">${tx.name}</p>
+                  <p class="text-[10px] text-outline font-mono">${tx.category || 'General'} · ${tx.date || 'Recent'}</p>
+                </div>
               </div>
-              <span class="text-xs font-mono font-bold ${tx.amount>0?'text-tertiary':'text-rose-400'}">
-                ${tx.amount > 0 ? '+' : ''}₹${Math.abs(tx.amount).toLocaleString()}
-              </span>
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-mono font-black ${tx.amount > 0 ? 'text-tertiary' : 'text-rose-400'}">
+                  ${tx.amount > 0 ? '+' : ''}₹${Math.abs(tx.amount).toLocaleString()}
+                </span>
+                <button onclick="window.deleteFinanceTransaction(${tx.id})" title="Delete transaction" class="text-outline hover:text-rose-400 transition-colors p-1">
+                  <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -2062,66 +2517,160 @@
     `;
   }
 
-  // --- 11. SHOPPING & INVENTORY ---
+  // --- 11. SHOPPING & INVENTORY (D-MART SMART SUPERMARKET & PANTRY TRACKER) ---
   function renderShoppingDomain(s) {
     const shop = s.shopping || {};
-    const groceries = shop.groceries || [
-      { name: 'Oat Milk (Almond)', done: false },
-      { name: 'Rolled Oats 1kg', done: false },
-      { name: 'Peanut Butter (Unsweetened)', done: true },
-      { name: 'Bananas & Apples', done: false }
+    const dmartList = shop.dmartList || [
+      { id: 1, item: 'Rolled Oats 1kg (High Fiber)', category: 'Groceries', qty: '2 packs', estPrice: 380, urgency: 'high', checked: false },
+      { id: 2, item: 'Peanut Butter (100% Unsweetened Roast)', category: 'Groceries', qty: '1 kg jar', estPrice: 420, urgency: 'high', checked: false },
+      { id: 3, item: 'Greek Plain Yogurt 400g', category: 'Dairy', qty: '3 tubs', estPrice: 240, urgency: 'medium', checked: true },
+      { id: 4, item: 'Surf Excel Matic Detergent Liquid', category: 'Cleaning & Household', qty: '2 Liters', estPrice: 450, urgency: 'high', checked: false },
+      { id: 5, item: 'Colgate Total Dental Floss & Paste', category: 'Personal Care', qty: '1 pack', estPrice: 195, urgency: 'low', checked: false },
+      { id: 6, item: 'Dark Chocolate 85% Cocoa', category: 'Snacks & Treats', qty: '2 bars', estPrice: 220, urgency: 'medium', checked: false }
     ];
 
+    const pantry = shop.pantryStock || [
+      { id: 101, item: 'Rolled Oats 1kg', category: 'Breakfast', status: 'Out of Stock', levelPct: 5, note: 'Finished yesterday' },
+      { id: 102, item: 'Whey Protein Isolate', category: 'Supplements', status: 'Low Stock (20%)', levelPct: 20, note: '~5 scoops remaining' },
+      { id: 103, item: 'Natural Peanut Butter', category: 'Breakfast', status: 'Out of Stock', levelPct: 0, note: 'Jar empty' },
+      { id: 104, item: 'Basmati Brown Rice 5kg', category: 'Pantry Grains', status: 'In Stock (70%)', levelPct: 70, note: 'Ample supply' },
+      { id: 105, item: 'Cold Pressed Olive Oil', category: 'Cooking Oils', status: 'In Stock (50%)', levelPct: 50, note: 'Half bottle' },
+      { id: 106, item: 'Surf Excel Detergent', category: 'Household', status: 'Out of Stock', levelPct: 0, note: 'Needed for weekend wash' }
+    ];
+
+    const pendingCount = dmartList.filter(i => !i.checked).length;
+    const estTotal = dmartList.reduce((acc, i) => acc + (i.checked ? 0 : (i.estPrice || 0)), 0);
+
     return `
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
-            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-400 text-[18px]">shopping_cart</span>
-              Pantry &amp; Grocery List
-            </h4>
-            <span class="text-[10px] font-mono text-outline">Click to mark bought</span>
+      <!-- Supermarket Mode Hero -->
+      <div class="glass-surface p-5 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-surface-container-lowest to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-3xl font-bold shrink-0 border border-amber-400/30">
+            <span class="material-symbols-outlined text-[32px]">local_mall</span>
           </div>
-          <div class="space-y-2">
-            ${groceries.map(g => `
-              <div onclick="toggleGroceryItem('${g.name.replace(/'/g, "\\'")}')" 
-                   class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
-                <div class="flex items-center gap-2.5">
-                  <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${g.done?'bg-tertiary text-black':'border border-outline-variant'}">
-                    ${g.done ? '✓' : ''}
-                  </span>
-                  <span class="text-xs ${g.done?'line-through text-outline':'text-white'}">${g.name}</span>
-                </div>
-                <span class="text-[9px] font-mono ${g.done?'text-tertiary':'text-outline'}">${g.done?'BOUGHT':'NEEDED'}</span>
-              </div>
-            `).join('')}
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xl font-black text-white font-mono uppercase">D-Mart Smart Supermarket List</h3>
+              <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-mono font-bold">STORE READY</span>
+            </div>
+            <p class="text-xs text-outline font-mono mt-0.5">
+              Open this in D-Mart store. Tick off items in your shopping trolley so you never forget what's finished at home.
+            </p>
           </div>
         </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="window.promptAddDmartItem()" class="px-4 py-2.5 rounded-xl bg-amber-400 text-black font-mono text-xs font-bold hover:bg-amber-300 transition-all active:scale-95 flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+            <span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+            <span>+ Add D-Mart Item</span>
+          </button>
+          <button onclick="window.clearCheckedDmartItems()" class="px-3.5 py-2.5 rounded-xl glass-surface hover:bg-surface-container text-outline hover:text-white border border-outline-variant/30 font-mono text-xs transition-all">
+            Clear Bought
+          </button>
+        </div>
+      </div>
 
-        <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+      <!-- Quick Metrics Strip -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="glass-surface p-4 rounded-xl border border-amber-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Items To Buy in D-Mart</p>
+          <div class="text-2xl font-black text-amber-400 mt-1 font-mono">${pendingCount} <span class="text-xs font-normal text-outline">items</span></div>
+          <p class="text-[10px] text-tertiary font-mono">Organized by Aisle</p>
+        </div>
+        <div class="glass-surface p-4 rounded-xl border border-primary-container/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Estimated Trolley Total</p>
+          <div class="text-2xl font-black text-primary-container mt-1 font-mono">₹${estTotal.toLocaleString()}</div>
+          <p class="text-[10px] text-outline font-mono">Based on D-Mart pricing</p>
+        </div>
+        <div class="glass-surface p-4 rounded-xl border border-rose-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Pantry Items Finished</p>
+          <div class="text-2xl font-black text-rose-400 mt-1 font-mono">${pantry.filter(p => p.levelPct <= 10).length}</div>
+          <p class="text-[10px] text-rose-400 font-mono">Pushed to D-Mart list</p>
+        </div>
+        <div class="glass-surface p-4 rounded-xl border border-tertiary/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Store Sync</p>
+          <div class="text-2xl font-black text-tertiary mt-1 font-mono">Active</div>
+          <p class="text-[10px] text-outline font-mono">Syncs with Pantry auto-trigger</p>
+        </div>
+      </div>
+
+      <!-- Section 1: Active D-Mart In-Store Trolley Checklist -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+          <div>
             <h4 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary-container text-[18px]">favorite</span>
-              Tech &amp; Gear Wishlist
+              <span class="material-symbols-outlined text-amber-400 text-[18px]">checklist</span>
+              Active D-Mart Trolley Checklist (Tap to tick off)
             </h4>
-            <span class="text-[10px] font-mono text-outline">Prioritized</span>
+            <p class="text-[10px] text-outline font-mono">Check items as you drop them in your shopping cart at D-Mart</p>
           </div>
-          <div class="space-y-2">
-            <div class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
-              <div>
-                <p class="text-xs font-semibold text-white">Logitech MX Master 3S</p>
-                <p class="text-[10px] text-outline font-mono">Ergonomics · High Priority</p>
+          <span class="text-xs font-mono font-bold text-amber-400">${dmartList.filter(i=>i.checked).length} / ${dmartList.length} Bought</span>
+        </div>
+
+        <div class="space-y-2">
+          ${dmartList.map(item => `
+            <div onclick="window.toggleDmartCheck(${item.id})" 
+                 class="p-3.5 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-all select-none ${item.checked ? 'opacity-50 line-through' : ''}">
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center font-bold text-xs transition-colors ${item.checked ? 'bg-tertiary text-black border-tertiary' : 'border-outline-variant'}">
+                  ${item.checked ? '✓' : ''}
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-white ${item.checked ? 'line-through text-outline' : ''}">${item.item}</p>
+                  <p class="text-[10px] text-outline font-mono mt-0.5">
+                    ${item.category} · Qty: <strong>${item.qty}</strong> · Est: ₹${item.estPrice}
+                  </p>
+                </div>
               </div>
-              <span class="text-xs font-mono font-bold text-primary-container">₹7,995</span>
-            </div>
-            <div class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
-              <div>
-                <p class="text-xs font-semibold text-white">4K Monitor Stand with USB-C</p>
-                <p class="text-[10px] text-outline font-mono">Desk Setup · Medium Priority</p>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold ${item.checked ? 'bg-tertiary/20 text-tertiary' : 'bg-amber-400/15 text-amber-400'}">
+                  ${item.checked ? 'BOUGHT' : 'NEEDED'}
+                </span>
               </div>
-              <span class="text-xs font-mono font-bold text-outline">₹2,499</span>
             </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Section 2: Home Pantry Stock Level Tracker with "Mark Finished" Action -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+          <div>
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary-container text-[18px]">inventory_2</span>
+              Home Pantry &amp; Kitchen Inventory Tracker
+            </h4>
+            <p class="text-[10px] text-outline font-mono">When an item is finished at home, tap "Mark Finished" to immediately push it to your D-Mart shopping list!</p>
           </div>
+          <span class="text-[10px] font-mono text-outline">Auto-syncs with D-Mart List</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          ${pantry.map(p => {
+            const isFinished = p.levelPct <= 10;
+            const isLow = p.levelPct > 10 && p.levelPct <= 30;
+
+            return `
+              <div class="p-4 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/15 space-y-3">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h5 class="text-xs font-bold text-white">${p.item}</h5>
+                    <p class="text-[10px] text-outline font-mono mt-0.5">${p.category} · ${p.note}</p>
+                  </div>
+                  <span class="text-[9px] font-mono px-2 py-0.5 rounded font-bold uppercase ${isFinished ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : (isLow ? 'bg-amber-400/20 text-amber-400 border border-amber-400/30' : 'bg-tertiary/20 text-tertiary')}">
+                    ${isFinished ? 'FINISHED' : (isLow ? 'LOW' : 'IN STOCK')}
+                  </span>
+                </div>
+                <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all" style="width:${p.levelPct}%;background:${isFinished ? '#f43f5e' : (isLow ? '#f59e0b' : '#6af7ba')}"></div>
+                </div>
+                <button onclick="window.markPantryItemFinished(${p.id}, '${p.item.replace(/'/g, "\\'")}')" 
+                        class="w-full py-1.5 rounded-lg font-mono text-[10px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${isFinished ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25' : 'bg-surface-container hover:bg-amber-400/20 text-outline hover:text-amber-400 border border-outline-variant/20'}">
+                  <span class="material-symbols-outlined text-[14px]">add_shopping_cart</span>
+                  <span>${isFinished ? '⚠️ Already on D-Mart List' : '⚠️ Mark Finished → Add to D-Mart'}</span>
+                </button>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -2130,39 +2679,134 @@
   // --- 12. RELATIONSHIPS ---
   function renderRelationshipsDomain(s) {
     const contacts = s.relationships || [
-      { name: 'Mom', role: 'Family', cadence: 'Daily', last: 'Yesterday', birthday: 'Today! 🎉' },
-      { name: 'Dad', role: 'Family', cadence: '2x / week', last: '2 days ago' },
-      { name: 'Rohan Sharma', role: 'Friend', cadence: 'Weekly', last: '6 days ago' },
-      { name: 'Vikram (Mentor)', role: 'Career', cadence: 'Monthly', last: '12 days ago' }
+      {
+        id: 1,
+        name: 'Mom',
+        role: 'Family / Core',
+        phone: '+91 98765 43210',
+        whatsapp: '919876543210',
+        instagram: '@mom_family',
+        howIKnow: 'Mother & Anchor. Daily evening health & wellbeing check-in call.',
+        cadence: 'Daily',
+        lastContact: 'Today',
+        birthday: 'Today! 🎉'
+      },
+      {
+        id: 2,
+        name: 'Dad',
+        role: 'Family / Anchor',
+        phone: '+91 98765 43211',
+        whatsapp: '919876543211',
+        instagram: '@dad_family',
+        howIKnow: 'Father. Weekly family financial and career update discussions.',
+        cadence: '2x / week',
+        lastContact: 'Yesterday'
+      },
+      {
+        id: 3,
+        name: 'Rohan Sharma',
+        role: 'Close Friend & Gym Partner',
+        phone: '+91 98234 56789',
+        whatsapp: '919823456789',
+        instagram: '@rohan_lifts',
+        howIKnow: 'Best friend from high school & daily heavy gym lifting partner for Push/Pull/Legs.',
+        cadence: 'Weekly',
+        lastContact: '2 days ago'
+      },
+      {
+        id: 4,
+        name: 'Vikram Joshi',
+        role: 'Career Mentor / Staff Engineer',
+        phone: '+91 97123 45678',
+        whatsapp: '919712345678',
+        instagram: '@vikram_tech',
+        howIKnow: 'Senior Mentor from Open Source Hackathon. Advises on distributed systems architecture & FAANG prep.',
+        cadence: 'Bi-weekly',
+        lastContact: '6 days ago'
+      },
+      {
+        id: 5,
+        name: 'Priya Patel',
+        role: 'College Tech Lead Batchmate',
+        phone: '+91 96543 21098',
+        whatsapp: '919654321098',
+        instagram: '@priya_codes',
+        howIKnow: 'Operating Systems study partner and lead teammate for CS final year capstone project.',
+        cadence: 'Weekly',
+        lastContact: '3 days ago'
+      }
     ];
 
     return `
-      <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
-          <h4 class="text-sm font-bold text-white flex items-center gap-2">
-            <span class="material-symbols-outlined text-pink-400 text-[18px]">favorite</span>
-            Key Relationships &amp; Cadence Telemetry
-          </h4>
-          <span class="text-[10px] font-mono text-pink-400">Never let important bonds drift</span>
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-pink-400">group</span>
+              Key Relationships &amp; Direct Connection Hub
+            </h3>
+            <p class="text-xs text-outline font-mono mt-0.5">Phone, direct WhatsApp, Instagram, connection context, and interaction cadence</p>
+          </div>
+          <button onclick="window.promptAddContact()" class="px-3.5 py-2 rounded-xl bg-pink-500 text-white font-mono text-xs font-bold hover:bg-pink-400 transition-all active:scale-95 flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
+            <span class="material-symbols-outlined text-[16px]">person_add</span>
+            <span>+ Add Contact</span>
+          </button>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           ${contacts.map(c => `
-            <div class="p-3.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-pink-400/15 text-pink-400 flex items-center justify-center font-bold text-sm">
-                  ${c.name.slice(0, 1)}
-                </div>
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <p class="text-xs font-bold text-white">${c.name}</p>
-                    ${c.birthday ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 font-mono font-bold">${c.birthday}</span>` : ''}
+            <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 hover:border-pink-400/40 transition-all space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-400 flex items-center justify-center font-bold text-base shadow-md">
+                    ${c.name.slice(0, 1)}
                   </div>
-                  <p class="text-[10px] text-outline font-mono">${c.role} · Cadence: ${c.cadence}</p>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <h4 class="text-sm font-bold text-white">${c.name}</h4>
+                      ${c.birthday ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 font-mono font-bold">${c.birthday}</span>` : ''}
+                    </div>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-container text-pink-400 border border-pink-400/20 font-semibold uppercase mt-0.5 inline-block">
+                      ${c.role}
+                    </span>
+                  </div>
                 </div>
+                <button onclick="window.logRelationshipCall(${c.id}, '${c.name.replace(/'/g, "\\'")}')" 
+                        class="px-2.5 py-1 rounded-lg glass-surface hover:bg-surface-container text-[10px] font-mono text-outline hover:text-white border border-outline-variant/25 transition-all">
+                  Log Call
+                </button>
               </div>
-              <button onclick="if(window.showToast) showToast('Interaction logged with ${c.name}!');" class="px-2.5 py-1 rounded-lg glass-surface hover:bg-surface-container text-[10px] font-mono text-outline hover:text-white border border-outline-variant/25">
-                Log Call
-              </button>
+
+              <!-- "How I Know Them" Connection Context (User explicit request) -->
+              <div class="p-2.5 rounded-lg bg-surface-container/50 border border-outline-variant/10 text-xs">
+                <span class="text-[9px] font-mono text-outline uppercase block font-semibold mb-0.5">How I Know Them / Relationship:</span>
+                <p class="text-white/90 font-mono text-[11px] leading-relaxed">${c.howIKnow || 'Friend and connection.'}</p>
+              </div>
+
+              <!-- Quick Communication Links Bar -->
+              <div class="flex items-center justify-between pt-1 border-t border-outline-variant/10 text-xs font-mono">
+                <div class="flex items-center gap-2">
+                  ${c.phone ? `
+                    <a href="tel:${c.phone.replace(/\s+/g,'')}" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors">
+                      <span class="material-symbols-outlined text-[14px]">call</span>
+                      <span class="text-[10px]">${c.phone}</span>
+                    </a>
+                  ` : ''}
+                  ${c.whatsapp ? `
+                    <a href="https://wa.me/${c.whatsapp.replace(/\D/g,'')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 transition-colors">
+                      <span class="material-symbols-outlined text-[14px]">chat</span>
+                      <span class="text-[10px]">WhatsApp</span>
+                    </a>
+                  ` : ''}
+                  ${c.instagram ? `
+                    <a href="https://instagram.com/${c.instagram.replace('@','')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-pink-500/20 text-pink-400 border border-pink-500/30 transition-colors">
+                      <span class="material-symbols-outlined text-[14px]">photo_camera</span>
+                      <span class="text-[10px]">${c.instagram}</span>
+                    </a>
+                  ` : ''}
+                </div>
+                <span class="text-[10px] text-outline font-mono">Cadence: ${c.cadence}</span>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -2228,62 +2872,273 @@
     `;
   }
 
-  // --- 14. VEHICLE CARE ---
+  // --- 14. VEHICLE CARE (ROYAL ENFIELD CLASSIC 350) ---
   function renderVehicleDomain(s) {
-    const v = s.vehicle || { make: 'Yamaha MT-15 (2023)', fuel: 72, odometer: 8420, nextService: 10000 };
+    const v = s.vehicle || {
+      make: 'Royal Enfield',
+      model: 'Classic 350',
+      engine: '349cc J-Series Air-Oil Cooled SOHC Single Cylinder',
+      fuel: 72,
+      odometer: 8420,
+      lastWashDate: '2026-09-18',
+      washIntervalDays: 15,
+      nextServiceOdo: 10000,
+      washHistory: [
+        { date: '2026-09-18', type: 'Pressure Wash + Chain Degrease & Motul Lube', cost: 350 },
+        { date: '2026-09-03', type: 'Home Foam Pressure Wash + Chrome Polish', cost: 0 },
+        { date: '2026-08-19', type: 'Full Service Wash & Chain Tightening', cost: 450 }
+      ],
+      leaveRideReminders: [
+        {
+          ride: 'Lonavala & Tiger Point Monsoon/Winter Ride',
+          distance: '140 km roundtrip',
+          plannedDate: '2026-10-10',
+          leaveAlert: 'Apply for 1 Day Casual Leave (Friday) to get a 3-day riding window!',
+          status: 'Planned'
+        },
+        {
+          ride: 'Goa Coastal Bike Tour (Enfield Riders Meet)',
+          distance: '580 km',
+          plannedDate: '2026-11-20',
+          leaveAlert: 'Apply for 3 Days Leave (Thurs-Mon) in advance for the long expedition.',
+          status: 'Upcoming'
+        }
+      ]
+    };
+
+    // Calculate 15-day pressure wash countdown
+    const todayDate = new Date();
+    const lastWash = v.lastWashDate ? new Date(v.lastWashDate) : new Date(todayDate.getTime() - 6 * 86400000);
+    const diffDays = Math.max(0, Math.floor((todayDate - lastWash) / (1000 * 60 * 60 * 24)));
+    const intervalDays = v.washIntervalDays || 15;
+    const daysLeft = Math.max(0, intervalDays - diffDays);
+    const isDue = daysLeft === 0;
+
     return `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="glass-surface p-4 rounded-xl border border-primary-container/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Vehicle Profile</p>
-          <div class="text-base font-bold text-white mt-1 truncate">${v.make}</div>
-          <p class="text-[10px] text-primary-container font-mono">Motorcycle</p>
+      <!-- Royal Enfield Classic 350 Hero Strip -->
+      <div class="glass-surface p-5 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-surface-container-lowest to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-3xl font-bold shrink-0 border border-amber-400/30">
+            <span class="material-symbols-outlined text-[32px]">two_wheeler</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xl font-black text-white font-mono uppercase">Royal Enfield Classic 350</h3>
+              <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-mono font-bold">J-SERIES 349cc</span>
+            </div>
+            <p class="text-xs text-outline font-mono mt-0.5">
+              Plate: MH12-RE-3500 · Stealth Black / Halcyon Edition · 20.2 bhp @ 6100 rpm · 27 Nm torque
+            </p>
+          </div>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-tertiary/20">
+        <button onclick="window.markBikePressureWashed()" class="px-4 py-2.5 rounded-xl bg-cyan-400 text-black font-mono text-xs font-bold hover:bg-cyan-300 transition-all active:scale-95 flex items-center gap-1.5 shadow-[0_0_18px_rgba(0,212,255,0.35)] shrink-0">
+          <span class="material-symbols-outlined text-[18px]">water_drop</span>
+          <span>💧 Mark Bike Washed Today</span>
+        </button>
+      </div>
+
+      <!-- 15-Day Pressure Wash & Chain Lube Countdown Card (User Core Request) -->
+      <div class="glass-surface p-5 rounded-2xl border ${isDue ? 'border-rose-500/40 bg-rose-500/10' : 'border-cyan-400/30 bg-cyan-400/5'} space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isDue ? 'bg-rose-500/20 text-rose-400' : 'bg-cyan-400/20 text-cyan-400'} font-bold">
+              💧
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-base font-bold text-white font-mono">15-Day Pressure Wash &amp; Motul Chain Lube Cycle</h4>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold uppercase ${isDue ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-tertiary/20 text-tertiary border border-tertiary/30'}">
+                  ${isDue ? '🔴 DUE NOW' : `🟢 ${daysLeft} DAYS REMAINING`}
+                </span>
+              </div>
+              <p class="text-xs text-outline font-mono mt-0.5">
+                Last pressure washed on <strong>${v.lastWashDate || '2026-09-18'}</strong> (${diffDays} days ago). AI triggers reminder every 15 days.
+              </p>
+            </div>
+          </div>
+          <button onclick="window.markBikePressureWashed()" class="px-4 py-2 rounded-xl bg-cyan-400 text-black font-mono text-xs font-bold hover:bg-cyan-300 transition-colors active:scale-95 shrink-0">
+            Reset 15-Day Cycle
+          </button>
+        </div>
+
+        <!-- 15-Day Progress Bar -->
+        <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden mt-1">
+          <div class="h-full rounded-full transition-all" style="width:${Math.min(100, Math.round((diffDays / intervalDays) * 100))}%;background:${isDue ? '#f43f5e' : '#00d4ff'}"></div>
+        </div>
+        <div class="flex items-center justify-between text-[10px] font-mono text-outline">
+          <span>Day 0 (Washed &amp; Lubed)</span>
+          <span>${diffDays} / 15 days elapsed</span>
+          <span>Day 15 (Next Cycle Target)</span>
+        </div>
+      </div>
+
+      <!-- Quick Telemetry Specs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="glass-surface p-4 rounded-xl border border-tertiary/25">
           <p class="text-[10px] font-mono uppercase text-outline">Fuel Tank Gauge</p>
-          <div class="text-2xl font-bold text-tertiary mt-1">${v.fuel}%</div>
-          <p class="text-[10px] text-outline font-mono">~280 km range remaining</p>
+          <div class="text-2xl font-black text-tertiary mt-1 font-mono">${v.fuel || 72}%</div>
+          <p class="text-[10px] text-outline font-mono">13.5L Tank · ~340 km range</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-secondary/20">
+        <div class="glass-surface p-4 rounded-xl border border-secondary/25">
           <p class="text-[10px] font-mono uppercase text-outline">Odometer Reading</p>
-          <div class="text-2xl font-bold text-secondary mt-1">${v.odometer} km</div>
-          <p class="text-[10px] text-outline font-mono">Next service in ${v.nextService - v.odometer} km</p>
+          <div class="text-2xl font-black text-secondary mt-1 font-mono">${(v.odometer||8420).toLocaleString()} km</div>
+          <p class="text-[10px] text-outline font-mono">Service in ${(v.nextServiceOdo || 10000) - (v.odometer || 8420)} km</p>
         </div>
-        <div class="glass-surface p-4 rounded-xl border border-amber-400/20">
-          <p class="text-[10px] font-mono uppercase text-outline">Insurance &amp; PUC</p>
-          <div class="text-2xl font-bold text-amber-400 mt-1">Valid</div>
-          <p class="text-[10px] text-outline font-mono">Expires in 142 days</p>
+        <div class="glass-surface p-4 rounded-xl border border-primary-container/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Engine Oil &amp; Chain</p>
+          <div class="text-base font-bold text-white mt-1">Motul 15W-50</div>
+          <p class="text-[10px] text-primary-container font-mono">C2 Road Lube Applied</p>
+        </div>
+        <div class="glass-surface p-4 rounded-xl border border-amber-400/25">
+          <p class="text-[10px] font-mono uppercase text-outline">Tyres &amp; PUC</p>
+          <div class="text-base font-bold text-amber-400 mt-1">32 Front / 36 Rear</div>
+          <p class="text-[10px] text-outline font-mono">PUC Valid until Dec 2026</p>
+        </div>
+      </div>
+
+      <!-- Weekend Rides & Work Leave Reminders (User Request) -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+          <div>
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400 text-[18px]">explore</span>
+              Royal Enfield Weekend Rides &amp; Work Leave Reminders
+            </h4>
+            <p class="text-[10px] text-outline font-mono">AI tracks upcoming long distance bike rides and alerts you to apply for leave in advance</p>
+          </div>
+          <span class="text-[10px] font-mono text-tertiary">2 Rides Planned</span>
+        </div>
+
+        <div class="space-y-3">
+          ${(v.leaveRideReminders || []).map(r => `
+            <div class="p-4 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/15 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h5 class="text-xs font-bold text-white">${r.ride}</h5>
+                  <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-primary-container/15 text-primary-container font-bold">${r.distance}</span>
+                </div>
+                <p class="text-[11px] text-amber-400 font-mono mt-1 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px]">notification_important</span>
+                  <strong>${r.leaveAlert}</strong>
+                </p>
+              </div>
+              <div class="text-left md:text-right shrink-0">
+                <span class="text-[10px] font-mono text-outline block">Planned Date: ${r.plannedDate}</span>
+                <span class="text-[10px] font-mono px-2.5 py-0.5 rounded bg-amber-400/20 text-amber-400 font-bold uppercase">${r.status}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Past Wash & Maintenance History -->
+      <div class="glass-surface p-5 rounded-2xl border border-outline-variant/20 space-y-3">
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400 text-[18px]">history</span>
+          Recent Wash &amp; Service History
+        </h4>
+        <div class="space-y-2">
+          ${(v.washHistory || []).map(w => `
+            <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold text-white">${w.type}</p>
+                <p class="text-[10px] text-outline font-mono">📅 ${w.date} · High-Pressure Foam &amp; Chain Maintenance</p>
+              </div>
+              <span class="text-xs font-mono font-bold text-cyan-400">₹${w.cost || 0}</span>
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
   }
 
-  // --- 15. TRAVEL & TRIPS ---
+  // --- 15. TRAVEL & TRIPS (INTEGRATED WITH FINANCE SAVINGS POOL) ---
   function renderTravelDomain(s) {
     const travel = s.travel || {};
-    const trip = (travel.trips && travel.trips[0]) || { name: 'Goa Coastal Retreat', dates: 'October 18 - 22, 2026', progress: 57 };
+    const trip = (travel.trips && travel.trips[0]) || {
+      name: 'Goa Coastal Retreat',
+      dates: 'October 18 - 22, 2026',
+      progress: 63,
+      budget: 35000,
+      savedFromFinance: 22000
+    };
+    const savedAmount = trip.savedFromFinance || 22000;
+    const totalBudget = trip.budget || 35000;
+    const fundPct = Math.min(100, Math.round((savedAmount / totalBudget) * 100));
+    const remainingToSave = Math.max(0, totalBudget - savedAmount);
+
     const packing = [
-      { item: 'Beachwear & Towel', done: true },
-      { item: 'MacBook & Type-C GaN Charger', done: true },
+      { item: 'Beachwear & Swim Shorts', done: true },
+      { item: 'MacBook Pro & 65W GaN Charger', done: true },
       { item: 'Sunglasses & Sunscreen SPF 50', done: false },
-      { item: 'Identity Docs & Driving License', done: true },
-      { item: 'First Aid & Motion Sickness Meds', done: false }
+      { item: 'Identity Docs, Driving License & RC', done: true },
+      { item: 'Goa Resort Booking Confirmation', done: true },
+      { item: 'Motion Sickness & First Aid Kit', done: false }
     ];
 
     return `
-      <div class="glass-surface p-5 rounded-xl border border-primary-container/20 space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10">
+      <!-- Trip Hero Banner -->
+      <div class="glass-surface p-5 rounded-2xl border border-primary-container/25 relative overflow-hidden space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
           <div>
-            <span class="text-[10px] font-mono text-primary-container uppercase font-bold">UPCOMING EXPEDITION</span>
-            <h3 class="text-lg font-bold text-white">${trip.name}</h3>
-            <p class="text-xs text-outline font-mono">${trip.dates} · Flight Confirmed</p>
+            <span class="text-[10px] font-mono text-primary-container uppercase font-bold tracking-wider">UPCOMING EXPEDITION</span>
+            <h3 class="text-xl font-black text-white font-mono">${trip.name}</h3>
+            <p class="text-xs text-outline font-mono mt-0.5">📅 ${trip.dates} · Direct Flight &amp; Coastal Stay Confirmed</p>
           </div>
-          <span class="text-xs font-mono font-bold text-primary-container px-3 py-1 rounded-lg bg-primary-container/10 border border-primary-container/30">
+          <span class="text-xs font-mono font-bold text-primary-container px-3.5 py-1.5 rounded-xl bg-primary-container/10 border border-primary-container/30 shrink-0">
             26 Days Countdown
           </span>
         </div>
 
-        <div>
-          <p class="text-[11px] font-mono text-outline uppercase tracking-wider mb-2">Packing Checklist (Click to check off)</p>
+        <!-- Direct Finance Domain Integration Card (User Core Request) -->
+        <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-tertiary/30 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-tertiary text-[20px]">account_balance_wallet</span>
+                <h4 class="text-sm font-bold text-white">Direct Finance Integration · Trip Savings Pool</h4>
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-tertiary/20 text-tertiary font-mono font-bold">CONNECTED</span>
+              </div>
+              <p class="text-xs text-outline font-mono mt-0.5">
+                Automatically funded from your liquid savings in the Finance Domain to ensure zero trip debt.
+              </p>
+            </div>
+            <button onclick="window.promptAllocateTravelSavings()" class="px-3.5 py-2 rounded-xl bg-tertiary text-black font-mono text-xs font-bold hover:bg-tertiary/80 transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-[0_0_12px_rgba(106,247,186,0.3)]">
+              <span class="material-symbols-outlined text-[16px]">add_circle</span>
+              <span>+ Allocate Funds from Finance</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-1">
+            <div class="p-2.5 rounded-lg bg-surface-container/60">
+              <span class="text-[10px] text-outline uppercase block">Total Trip Budget Needed</span>
+              <strong class="text-white text-base">₹${totalBudget.toLocaleString()}</strong>
+            </div>
+            <div class="p-2.5 rounded-lg bg-surface-container/60">
+              <span class="text-[10px] text-outline uppercase block">Funded from Finance Savings</span>
+              <strong class="text-tertiary text-base">₹${savedAmount.toLocaleString()}</strong>
+            </div>
+            <div class="p-2.5 rounded-lg bg-surface-container/60">
+              <span class="text-[10px] text-outline uppercase block">Remaining to Allocate</span>
+              <strong class="text-amber-400 text-base">₹${remainingToSave.toLocaleString()}</strong>
+            </div>
+          </div>
+
+          <!-- Funding Progress Bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-[10px] font-mono">
+              <span class="text-tertiary font-bold">${fundPct}% Funded from Savings</span>
+              <span class="text-outline">Goal: ₹${totalBudget.toLocaleString()}</span>
+            </div>
+            <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+              <div class="bg-gradient-to-r from-primary-container to-tertiary h-full rounded-full transition-all" style="width:${fundPct}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Packing Checklist -->
+        <div class="space-y-2 pt-2">
+          <p class="text-[11px] font-mono text-outline uppercase tracking-wider font-semibold">Goa Trip Packing Checklist (Click to toggle)</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${packing.map(p => `
               <div onclick="this.querySelector('.check-box').innerText = this.querySelector('.check-box').innerText==='✓'?'':'✓'; this.classList.toggle('opacity-50')" 
@@ -2337,7 +3192,7 @@
       { name: 'Passport (Republic of India)', exp: 'Valid until 2031', cat: 'Identity' },
       { name: 'Aadhaar Card (Verified)', exp: 'Permanent', cat: 'Identity' },
       { name: 'University Grade Transcripts', exp: 'Semester 1-6', cat: 'Academic' },
-      { name: 'Yamaha Two-Wheeler Insurance Policy', exp: 'Expires in 142 days', cat: 'Vehicle' }
+      { name: 'Royal Enfield Classic 350 Insurance Policy', exp: 'Expires in 142 days', cat: 'Vehicle' }
     ];
 
     return `
@@ -2572,7 +3427,7 @@
     if (window.DB && typeof window.DB.onChange === 'function') {
       window.DB.onChange((change) => {
         const page = document.getElementById('view-domain-page');
-        if (page && !page.classList.contains('hidden') && currentDomainId) {
+        if (page && !page.classList.contains('hidden') && !page.classList.contains('panel-hidden') && currentDomainId) {
           renderDomainPage(currentDomainId);
         }
       });
