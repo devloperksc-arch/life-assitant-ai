@@ -317,6 +317,7 @@
   <script src="js/lib/voice.js"></script>
   <script src="js/domain-pages.js?v=5.2"></script>
   <script src="js/assistant/reactor-ui.js"></script>
+  <script src="js/assistant/tool-registry.js"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
   <!-- Skip to main content (a11y) -->
@@ -2612,6 +2613,12 @@
       manage_digital_life:{ icon: 'laptop',          label: 'Digital Life',        color: '#a8e8ff' },
       get_domain_data:    { icon: 'query_stats',     label: 'Reading Data',        color: '#00d4ff' },
       undo_last_action:   { icon: 'undo',            label: 'Undo Action',         color: '#f59e0b' },
+      get_current_context:{ icon: 'info',            label: 'System Context',      color: '#00d4ff' },
+      navigate_to_page:   { icon: 'explore',         label: 'Navigation',          color: '#a8e8ff' },
+      search_lifeos:      { icon: 'search',          label: 'LifeOS Search',       color: '#6af7ba' },
+      get_today_agenda:   { icon: 'today',           label: 'Daily Agenda',        color: '#6af7ba' },
+      get_sync_status:    { icon: 'sync',            label: 'Sync Status',         color: '#00d4ff' },
+      reset_all_data:     { icon: 'warning',         label: 'Reset All Data',      color: '#ffb4ab' },
     };
 
     function _renderToolCard(chatFeed, toolName, args, result) {
@@ -2706,6 +2713,18 @@
             _renderToolCard(chatFeed, toolName, args, result);
             // Refresh visible stats if needed
             _refreshDashboardStats();
+          },
+          onApprovalRequest: (proposal) => {
+            return new Promise((resolve) => {
+              if (window.ReactorUI && typeof window.ReactorUI.renderProposalCard === 'function') {
+                window.ReactorUI.setState('awaiting_approval', 'Awaiting approval: ' + (proposal.title || proposal.tool));
+                window.ReactorUI.renderProposalCard(chatFeed, proposal, (approved) => {
+                  resolve(approved);
+                });
+              } else {
+                resolve(window.confirm('TADASHI requests permission: ' + proposal.title + '\n' + (proposal.summary || '')));
+              }
+            });
           }
         });
 
@@ -2937,7 +2956,21 @@
 
           if (statusEl) statusEl.innerHTML = '<span class="text-primary-container animate-pulse">TADASHI thinking...</span>';
           try {
-            const aiReply = await AI.chat(finalText, chatHistory);
+            const aiReply = await AI.chat(finalText, chatHistory, {
+              onApprovalRequest: (proposal) => {
+                return new Promise((resolve) => {
+                  const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+                  if (chatFeed && window.ReactorUI && typeof window.ReactorUI.renderProposalCard === 'function') {
+                    window.ReactorUI.setState('awaiting_approval', 'Awaiting approval: ' + (proposal.title || proposal.tool));
+                    window.ReactorUI.renderProposalCard(chatFeed, proposal, (approved) => {
+                      resolve(approved);
+                    });
+                  } else {
+                    resolve(window.confirm('TADASHI requests permission: ' + proposal.title + '\n' + (proposal.summary || '')));
+                  }
+                });
+              }
+            });
             if (transcriptEl) transcriptEl.innerHTML = `<span class="text-tertiary font-semibold">TADASHI: </span>"${Utils.md(aiReply)}"`;
             if (statusEl) statusEl.innerHTML = '<span class="text-tertiary">TADASHI speaking...</span>';
 

@@ -10,6 +10,9 @@ index.html          text eol=crlf
 js/domain-pages.js  text eol=crlf
 
 # Force LF for all other JS/CSS/JSON
+*.js                text eol=lf
+js/assistant/*.js   text eol=lf
+scripts/*.js        text eol=lf
 js/data.js          text eol=lf
 js/db.js            text eol=lf
 js/utils.js         text eol=lf

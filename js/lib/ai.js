@@ -288,7 +288,10 @@ IMPORTANT RULES:
   // ================================================================
   // TOOL EXECUTOR — maps tool calls to DB operations
   // ================================================================
-  executeTool(name, args) {
+  async executeTool(name, args, options) {
+    if (typeof window !== 'undefined' && window.ToolRegistry && window.ToolRegistry.getTool(name)) {
+      return await window.ToolRegistry.execute(name, args, options);
+    }
     try {
       switch(name) {
 
@@ -517,11 +520,11 @@ IMPORTANT RULES:
   },
 
   // ================================================================
-  // MAIN CHAT — with function calling loop
+  // MAIN CHAT — with function calling loop & policy approval gate
   // onToolCall(name, args, result) is called for each tool execution
-  // so the UI can show action confirmation cards
+  // onApprovalRequest(proposal) returns Promise<boolean>
   // ================================================================
-  async chat(message, history, { onToolCall } = {}) {
+  async chat(message, history, { onToolCall, onApprovalRequest } = {}) {
     const key   = this.getKey();
     if (!key) throw new Error('No API key configured');
     const model = this.getModel();
@@ -529,9 +532,13 @@ IMPORTANT RULES:
     // Build conversation turns
     const turns = this._buildTurns(history, message);
 
-    // Tool declarations for Gemini
+    // Tool declarations for Gemini (pulled dynamically from typed registry if available)
+    const availableTools = (typeof window !== 'undefined' && window.ToolRegistry)
+      ? window.ToolRegistry.getGeminiDeclarations()
+      : this.TOOLS;
+
     const toolDeclarations = [{
-      functionDeclarations: this.TOOLS.map(t => ({
+      functionDeclarations: availableTools.map(t => ({
         name: t.name,
         description: t.description,
         parameters: t.parameters
@@ -557,9 +564,30 @@ IMPORTANT RULES:
 
       if (!fnCall) break; // No tool call — we have the final text answer
 
-      // Execute the tool
+      // Execute the tool through Policy Layer
       const { name, args } = fnCall.functionCall;
-      const toolResult = this.executeTool(name, args);
+      let toolResult;
+
+      if (typeof window !== 'undefined' && window.ToolRegistry && window.ToolRegistry.getTool(name)) {
+        // Evaluate approval gate first
+        const check = await window.ToolRegistry.execute(name, args, { isApproved: false });
+        if (check.approvalRequired) {
+          if (typeof onApprovalRequest === 'function') {
+            const approved = await onApprovalRequest(check.proposal);
+            if (approved) {
+              toolResult = await window.ToolRegistry.execute(name, args, { isApproved: true, idempotencyKey: check.proposal.id });
+            } else {
+              toolResult = { ok: false, rejected: true, error: 'User declined the action proposal.' };
+            }
+          } else {
+            toolResult = { ok: false, approvalRequired: true, error: 'Action requires explicit user confirmation before executing.' };
+          }
+        } else {
+          toolResult = check;
+        }
+      } else {
+        toolResult = await this.executeTool(name, args);
+      }
 
       // Notify UI
       if (onToolCall) {
@@ -570,7 +598,7 @@ IMPORTANT RULES:
       const functionResponsePart = {
         functionResponse: {
           name,
-          response: { content: JSON.stringify(toolResult.result ?? toolResult.error ?? {}) }
+          response: { content: JSON.stringify(toolResult.result ?? toolResult.error ?? toolResult) }
         }
       };
 
