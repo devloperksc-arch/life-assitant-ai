@@ -16,12 +16,22 @@
     DESTRUCTIVE: 'destructive'
   };
 
+  // Honest Action Outcome Classifications per Mark LVI core/outcome.py
+  const OUTCOME = {
+    VERIFIED_DONE: 'verified_done',
+    UNVERIFIED: 'unverified',
+    FAILED: 'failed',
+    PENDING_APPROVAL: 'pending_approval',
+    CANCELLED: 'cancelled'
+  };
+
   const AUDIT_STORAGE_KEY = 'tadashi_tool_audit_log';
   const MAX_AUDIT_RECORDS = 60;
 
-  // Registered Tools Store & Idempotency Cache
+  // Registered Tools Store, Idempotency Cache, and Pending Approval Proposals
   const registry = new Map();
   const idempotencyCache = new Map();
+  const pendingProposals = new Map();
 
   // Audit Logger
   function recordAuditEvent(entry) {
@@ -98,6 +108,184 @@
     });
   }
 
+  // --- MARK LVI PATTERNS: Hashing, Approval Tokens, Normalization & Honest Outcomes ---
+
+  function hashArgs(args) {
+    try {
+      const keys = Object.keys(args || {}).sort();
+      const str = JSON.stringify(args || {}, keys);
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'h_' + Math.abs(hash).toString(16);
+    } catch(e) {
+      return 'h_fallback';
+    }
+  }
+
+  function createProposal(name, args, opt = {}) {
+    const proposalId = opt.proposalId || opt.id || `prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const token = `tok_${Date.now()}_${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 10)}`;
+    const argsHash = hashArgs(args);
+    const expiresAt = Date.now() + (opt.ttlMs || 5 * 60 * 1000); // 5 minute validity
+
+    const proposal = {
+      id: proposalId,
+      token,
+      tool: name,
+      args: args || {},
+      argsHash,
+      risk: opt.risk || RISK.DESTRUCTIVE,
+      domain: (name.startsWith('manage_') ? name.replace('manage_', '') : name),
+      title: opt.title || `Execute ${name.replace(/_/g, ' ')}`,
+      summary: opt.summary || (args && args.action ? `${args.action.toUpperCase().replace(/_/g, ' ')}: ${args.title || args.name || args.item || name}` : `Run ${name}`),
+      consequence: opt.consequence || 'Modifies your LifeOS state.',
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(expiresAt).toISOString(),
+      status: 'pending'
+    };
+
+    pendingProposals.set(token, { proposal, expiresAt, argsHash, toolName: name });
+    return proposal;
+  }
+
+  function verifyApprovalToken(token, name, args) {
+    if (!token || typeof token !== 'string') return false;
+    const record = pendingProposals.get(token);
+    if (!record) return false;
+    if (Date.now() > record.expiresAt) {
+      pendingProposals.delete(token);
+      return false;
+    }
+    if (record.toolName !== name) return false;
+    if (record.argsHash !== hashArgs(args)) return false;
+    // Single-use token: consume upon verification
+    pendingProposals.delete(token);
+    return true;
+  }
+
+  // Canonical Tool Call Normalization (Mark LVI providers/schema.py)
+  function normalizeToolCall(raw) {
+    if (!raw) return null;
+    let name = '';
+    let args = {};
+    let id = raw.id || `call_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+    // Format A: Ollama / OpenAI ({ function: { name, arguments } })
+    if (raw.function) {
+      name = raw.function.name || '';
+      const rawArgs = raw.function.arguments;
+      if (typeof rawArgs === 'string') {
+        try { args = JSON.parse(rawArgs); } catch(e) { args = {}; }
+      } else if (rawArgs && typeof rawArgs === 'object') {
+        args = rawArgs;
+      }
+    }
+    // Format B: Gemini ({ functionCall: { name, args } })
+    else if (raw.functionCall) {
+      name = raw.functionCall.name || '';
+      args = raw.functionCall.args || {};
+    }
+    // Format C: Direct standard ({ name, args })
+    else if (raw.name) {
+      name = raw.name;
+      args = raw.args || raw.parameters || raw.arguments || {};
+      if (typeof args === 'string') {
+        try { args = JSON.parse(args); } catch(e) { args = {}; }
+      }
+    }
+    // Format D: Legacy action ({ tool, input })
+    else if (raw.tool) {
+      name = raw.tool;
+      args = raw.input || {};
+      if (typeof args === 'string') {
+        try { args = JSON.parse(args); } catch(e) { args = {}; }
+      }
+    }
+
+    if (!name) return null;
+    return {
+      id,
+      name,
+      args: (args && typeof args === 'object') ? args : {},
+      raw
+    };
+  }
+
+  // Extract Tool Calls from Text Output (for edge models)
+  function extractToolCallsFromText(text) {
+    if (!text || typeof text !== 'string') return [];
+    const calls = [];
+
+    // Pattern 1: <tool_call>{"name":"...", "args":{...}}</tool_call>
+    const xmlRegex = /<tool_call>([\s\S]*?)<\/tool_call>/gi;
+    let match;
+    while ((match = xmlRegex.exec(text)) !== null) {
+      try {
+        const parsed = JSON.parse(match[1].trim());
+        const norm = normalizeToolCall(parsed);
+        if (norm) calls.push(norm);
+      } catch(e) {}
+    }
+
+    if (calls.length > 0) return calls;
+
+    // Pattern 2: ```json { "name": "...", "args": { ... } } ```
+    const codeBlockRegex = /```(?:json)?\s*(\{[\s\S]*?\})\s*```/gi;
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      try {
+        const parsed = JSON.parse(match[1].trim());
+        if (parsed.name || parsed.tool || parsed.function || parsed.functionCall) {
+          const norm = normalizeToolCall(parsed);
+          if (norm) calls.push(norm);
+        }
+      } catch(e) {}
+    }
+
+    return calls;
+  }
+
+  // Honest Action Outcome Evaluation (Mark LVI core/outcome.py)
+  function evaluateOutcome(toolRisk, result, err) {
+    if (err) {
+      return {
+        status: OUTCOME.FAILED,
+        verified: false,
+        details: err.message || 'Execution threw an error'
+      };
+    }
+    if (toolRisk === RISK.READ || toolRisk === RISK.NAVIGATION) {
+      return {
+        status: OUTCOME.VERIFIED_DONE,
+        verified: true,
+        details: 'Read/navigation completed successfully'
+      };
+    }
+    if (result && typeof result === 'object') {
+      if (result.verified === true) {
+        return {
+          status: OUTCOME.VERIFIED_DONE,
+          verified: true,
+          details: result.verificationDetails || 'Record confirmed in storage'
+        };
+      }
+      if (result.verified === false) {
+        return {
+          status: OUTCOME.UNVERIFIED,
+          verified: false,
+          details: result.verificationDetails || 'Action executed but state verification is pending or unconfirmed'
+        };
+      }
+    }
+    return {
+      status: OUTCOME.VERIFIED_DONE,
+      verified: true,
+      details: 'Operation completed without errors'
+    };
+  }
+
   // Execution Pipeline
   async function executeTool(name, args, options) {
     const startTime = performance.now();
@@ -110,20 +298,27 @@
     // 1. Unknown tool check (Enforce allowed tools only)
     if (!tool) {
       const err = `Unknown or unregistered tool: "${name}". Execution blocked.`;
-      recordAuditEvent({ requestId, idempotencyKey, tool: name, risk: 'unknown', status: 'rejected_unknown', error: err });
-      return { ok: false, error: err };
+      recordAuditEvent({ requestId, idempotencyKey, tool: name, risk: 'unknown', status: OUTCOME.FAILED, error: err });
+      return { ok: false, status: OUTCOME.FAILED, error: err };
     }
 
     // 2. Idempotency cache check (prevent duplicate execution within short window)
     if (idempotencyCache.has(idempotencyKey)) {
-      return { ok: true, cached: true, result: idempotencyCache.get(idempotencyKey) };
+      const cachedResult = idempotencyCache.get(idempotencyKey);
+      return {
+        ok: true,
+        cached: true,
+        status: OUTCOME.VERIFIED_DONE,
+        result: cachedResult,
+        verification: { verified: true, details: 'Cached idempotent execution' }
+      };
     }
 
     // 3. Schema validation
     const valResult = validateInput(tool.parameters, args);
     if (!valResult.valid) {
-      recordAuditEvent({ requestId, idempotencyKey, tool: name, risk: typeof tool.risk === 'function' ? 'dynamic' : tool.risk, status: 'validation_error', error: valResult.error, args });
-      return { ok: false, error: `Validation error in ${name}: ${valResult.error}` };
+      recordAuditEvent({ requestId, idempotencyKey, tool: name, risk: typeof tool.risk === 'function' ? 'dynamic' : tool.risk, status: OUTCOME.FAILED, error: valResult.error, args });
+      return { ok: false, status: OUTCOME.FAILED, error: `Validation error in ${name}: ${valResult.error}` };
     }
 
     // 4. Policy & Approval Evaluation
@@ -132,22 +327,49 @@
     const isExternal = toolRisk === RISK.EXTERNAL_EFFECT;
     const needsApproval = (typeof tool.requiresApproval === 'function' ? tool.requiresApproval(args) : tool.requiresApproval) || isDestructive || isExternal;
 
-    if (needsApproval && !opt.isApproved) {
-      const proposal = {
-        id: idempotencyKey,
-        tool: name,
-        args: args || {},
-        risk: toolRisk,
-        domain: (name.startsWith('manage_') ? name.replace('manage_', '') : name),
-        title: opt.title || `Execute ${name.replace(/_/g, ' ')}`,
-        summary: opt.summary || (args && args.action ? `${args.action.toUpperCase().replace(/_/g, ' ')}: ${args.title || args.name || args.item || name}` : `Run ${name}`),
-        consequence: isDestructive ? 'This action permanently modifies or deletes stored data.' : (isExternal ? 'This action initiates external communication.' : 'Modifies your LifeOS state.'),
-        createdAt: new Date().toISOString()
-      };
+    if (needsApproval) {
+      let approved = false;
+      if (opt.approvalToken && verifyApprovalToken(opt.approvalToken, name, args)) {
+        approved = true;
+      } else if (opt.isApproved === true) {
+        approved = true;
+      }
+
+      if (!approved) {
+        const proposal = createProposal(name, args, {
+          proposalId: idempotencyKey,
+          risk: toolRisk,
+          title: opt.title,
+          summary: opt.summary,
+          consequence: isDestructive ? 'This action permanently modifies or deletes stored data.' : (isExternal ? 'This action initiates external communication.' : 'Modifies your LifeOS state.')
+        });
+
+        recordAuditEvent({
+          requestId,
+          idempotencyKey,
+          tool: name,
+          risk: toolRisk,
+          status: OUTCOME.PENDING_APPROVAL,
+          proposalId: proposal.id,
+          args
+        });
+
+        return {
+          ok: false,
+          status: OUTCOME.PENDING_APPROVAL,
+          approvalRequired: true,
+          proposal
+        };
+      }
+    }
+
+    // Check cancellation
+    if (opt.abortSignal && opt.abortSignal.aborted) {
+      recordAuditEvent({ requestId, idempotencyKey, tool: name, risk: toolRisk, status: OUTCOME.CANCELLED });
       return {
         ok: false,
-        approvalRequired: true,
-        proposal
+        status: OUTCOME.CANCELLED,
+        error: `Tool "${name}" execution cancelled before start.`
       };
     }
 
@@ -157,18 +379,46 @@
       deviceId: 'device_browser',
       requestId,
       idempotencyKey,
-      isOnline: navigator.onLine,
+      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
       abortSignal: opt.abortSignal || null
     };
 
-    // 6. Execute through domain service
+    // 6. Execute through domain service with timeout guard
+    const timeoutMs = opt.timeoutMs || 15000;
     try {
-      const result = await tool.execute(args, ctx);
+      const execPromise = tool.execute(args, ctx);
+      let timeoutHandle;
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          const toErr = new Error(`Tool "${name}" execution timed out after ${timeoutMs}ms.`);
+          toErr.name = 'TimeoutError';
+          reject(toErr);
+        }, timeoutMs);
+      });
+
+      let abortPromise = null;
+      if (opt.abortSignal) {
+        abortPromise = new Promise((_, reject) => {
+          opt.abortSignal.addEventListener('abort', () => {
+            const abErr = new Error(`Tool "${name}" was cancelled.`);
+            abErr.name = 'AbortError';
+            reject(abErr);
+          }, { once: true });
+        });
+      }
+
+      const promises = [execPromise, timeoutPromise];
+      if (abortPromise) promises.push(abortPromise);
+
+      const rawResult = await Promise.race(promises);
+      clearTimeout(timeoutHandle);
+
       const durationMs = Math.round(performance.now() - startTime);
+      const outcome = evaluateOutcome(toolRisk, rawResult, null);
 
       // Cache idempotent result
-      if (toolRisk !== RISK.READ) {
-        idempotencyCache.set(idempotencyKey, result);
+      if (toolRisk !== RISK.READ && outcome.status !== OUTCOME.FAILED) {
+        idempotencyCache.set(idempotencyKey, rawResult);
         if (idempotencyCache.size > 100) {
           const firstKey = idempotencyCache.keys().next().value;
           idempotencyCache.delete(firstKey);
@@ -180,25 +430,108 @@
         idempotencyKey,
         tool: name,
         risk: toolRisk,
-        status: 'success',
-        result,
+        status: outcome.status,
+        result: rawResult,
         durationMs
       });
 
-      return { ok: true, result, tool: name, durationMs };
+      return {
+        ok: outcome.status === OUTCOME.VERIFIED_DONE || outcome.status === OUTCOME.UNVERIFIED,
+        status: outcome.status,
+        result: rawResult,
+        verification: {
+          verified: outcome.verified,
+          details: outcome.details
+        },
+        tool: name,
+        durationMs
+      };
     } catch(err) {
       const durationMs = Math.round(performance.now() - startTime);
+      const isAbort = err.name === 'AbortError';
+      const status = isAbort ? OUTCOME.CANCELLED : OUTCOME.FAILED;
+
       recordAuditEvent({
         requestId,
         idempotencyKey,
         tool: name,
         risk: toolRisk,
-        status: 'execution_error',
+        status,
         error: err.message,
         durationMs
       });
-      return { ok: false, error: err.message };
+
+      return {
+        ok: false,
+        status,
+        error: err.message,
+        tool: name,
+        durationMs
+      };
     }
+  }
+
+  // Multi-Turn Execution Pipeline Guard (Mark LVI providers/engine_pipeline.py)
+  const MAX_TOOL_ROUNDS = 5;
+  const MAX_IDENTICAL_CALLS = 3;
+
+  async function executePipeline(rawCalls, options = {}) {
+    const round = options.round || 1;
+    const maxRounds = options.maxRounds || MAX_TOOL_ROUNDS;
+    const history = options.history || [];
+
+    if (round > maxRounds) {
+      return {
+        ok: false,
+        status: OUTCOME.FAILED,
+        error: `Exceeded maximum tool execution rounds (${maxRounds}). Stopped to prevent runaway loop.`,
+        completedCalls: [],
+        round
+      };
+    }
+
+    if (!Array.isArray(rawCalls) || rawCalls.length === 0) {
+      return { ok: true, status: OUTCOME.VERIFIED_DONE, results: [] };
+    }
+
+    const normalizedCalls = rawCalls.map(normalizeToolCall).filter(Boolean);
+    const results = [];
+
+    for (const call of normalizedCalls) {
+      const callHash = hashArgs(call.args);
+      const identicalCount = history.filter(h => h.name === call.name && h.argsHash === callHash).length;
+      if (identicalCount >= MAX_IDENTICAL_CALLS - 1) {
+        return {
+          ok: false,
+          status: OUTCOME.CANCELLED,
+          error: `Runaway loop detected: tool "${call.name}" was invoked repeatedly with identical arguments.`,
+          completedCalls: results,
+          round
+        };
+      }
+
+      history.push({ name: call.name, argsHash: callHash, round });
+      const execRes = await executeTool(call.name, call.args, options);
+      results.push({
+        id: call.id,
+        name: call.name,
+        ...execRes
+      });
+
+      if (execRes.approvalRequired || execRes.status === OUTCOME.CANCELLED) {
+        break;
+      }
+    }
+
+    return {
+      ok: results.every(r => r.ok),
+      status: results.some(r => r.status === OUTCOME.PENDING_APPROVAL)
+        ? OUTCOME.PENDING_APPROVAL
+        : (results.some(r => r.status === OUTCOME.FAILED) ? OUTCOME.FAILED : OUTCOME.VERIFIED_DONE),
+      results,
+      round,
+      history
+    };
   }
 
   // ============================================================
@@ -987,8 +1320,14 @@
   // Public Interface
   const ToolRegistry = {
     RISK,
+    OUTCOME,
     register: registerTool,
     execute: executeTool,
+    executePipeline,
+    normalizeToolCall,
+    extractToolCallsFromText,
+    createProposal,
+    verifyApprovalToken,
     getTool(name) { return registry.get(name); },
     getAllTools() { return Array.from(registry.values()); },
     getAuditLog() {
