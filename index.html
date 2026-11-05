@@ -317,7 +317,7 @@
   <script src="js/utils.js"></script>
   <script src="js/lib/ai.js"></script>
   <script src="js/lib/voice.js"></script>
-  <script src="js/domain-pages.js?v=5.5"></script>
+  <script src="js/domain-pages.js?v=5.6"></script>
   <script src="js/assistant/reactor-ui.js"></script>
   <script src="js/assistant/ai-router.js"></script>
   <script src="js/assistant/scheduler.js"></script>
@@ -2465,28 +2465,47 @@
     }
     window.switchTab = switchTab;
 
+    // Unified Hash & Route Synchronizer
+    function syncRouteFromHash(pushHistory = false) {
+      const hash = (window.location.hash || '').replace('#', '').trim();
+      if (!hash || hash === 'workspace') {
+        switchTab('view-workspace', pushHistory);
+        return;
+      }
+      const normDomain = (typeof normalizeDomainId === 'function') ? normalizeDomainId(hash) : hash;
+      const domainsList = window.DOMAINS || (typeof DOMAINS !== 'undefined' ? DOMAINS : []);
+      const matchedDomain = domainsList.find(d => d.id === hash || d.id === normDomain);
+      if (matchedDomain) {
+        if (typeof window.openDomainPage === 'function') {
+          window.openDomainPage(matchedDomain.id, pushHistory);
+          return;
+        }
+      }
+      let tabId = hash;
+      if (!tabId.startsWith('view-')) tabId = 'view-' + tabId;
+      if (tabId === 'view-manage' || document.getElementById(tabId)) {
+        switchTab(tabId, pushHistory);
+      } else {
+        switchTab('view-workspace', pushHistory);
+      }
+    }
+    window.syncRouteFromHash = syncRouteFromHash;
+
     // Handle browser Back/Forward navigation (popstate)
     window.addEventListener('popstate', (e) => {
       const state = e.state;
-      const hash = window.location.hash ? window.location.hash.replace('#', '') : '';
       if (state && state.type === 'domain') {
         if (typeof window.openDomainPage === 'function') window.openDomainPage(state.id, false);
       } else if (state && state.type === 'tab') {
         switchTab(state.id, false);
-      } else if (hash) {
-        if (window.DOMAINS && window.DOMAINS.some(d => d.id === hash)) {
-          if (typeof window.openDomainPage === 'function') window.openDomainPage(hash, false);
-        } else {
-          const tabId = 'view-' + hash;
-          if (document.getElementById(tabId)) {
-            switchTab(tabId, false);
-          } else {
-            switchTab('view-workspace', false);
-          }
-        }
       } else {
-        switchTab('view-workspace', false);
+        syncRouteFromHash(false);
       }
+    });
+
+    // Handle direct URL hash changes in address bar or links
+    window.addEventListener('hashchange', () => {
+      syncRouteFromHash(false);
     });
 
     // Seed initial history state on load so Back button stays inside app
@@ -2497,19 +2516,13 @@
       }
     } catch(e) {}
 
-    window.addEventListener('load', () => {
-      const hash = window.location.hash ? window.location.hash.replace('#', '') : '';
-      if (hash && hash !== 'workspace') {
-        setTimeout(() => {
-          if (window.DOMAINS && window.DOMAINS.some(d => d.id === hash)) {
-            if (typeof window.openDomainPage === 'function') window.openDomainPage(hash, false);
-          } else {
-            const tabId = 'view-' + hash;
-            if (document.getElementById(tabId)) switchTab(tabId, false);
-          }
-        }, 60);
-      }
-    });
+    // Run router immediately and on DOM ready to guarantee correct view on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => syncRouteFromHash(false));
+    } else {
+      syncRouteFromHash(false);
+    }
+    window.addEventListener('load', () => syncRouteFromHash(false));
 
 
     // Bind nav buttons
