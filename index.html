@@ -243,6 +243,70 @@
     .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
     /* Domain modal */
     #domain-detail-modal { animation: toast-in 0.22s ease forwards; }
+
+    /* ============================================================ */
+    /* ARC REACTOR & NEURAL CORE ANIMATIONS (Phase 1)              */
+    /* ============================================================ */
+    @keyframes reactor-spin-cw {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes reactor-spin-ccw {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(-360deg); }
+    }
+    @keyframes reactor-pulse {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50%      { opacity: 0.45; transform: scale(0.96); }
+    }
+    @keyframes reactor-listening-wave {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50%      { transform: scale(1.06); opacity: 0.45; }
+    }
+    @keyframes reactor-flash {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.25; }
+    }
+    .reactor-ring-outer {
+      transform-origin: 100px 100px;
+      animation: reactor-spin-cw 26s linear infinite;
+    }
+    .reactor-ring-mid {
+      transform-origin: 100px 100px;
+      animation: reactor-spin-ccw 14s linear infinite;
+    }
+    .reactor-ring-inner {
+      transform-origin: 100px 100px;
+      animation: reactor-spin-cw 8s linear infinite;
+    }
+    .reactor-core-glow {
+      transform-origin: 100px 100px;
+      animation: reactor-pulse 3s ease-in-out infinite;
+    }
+    .reactor-state-thinking .reactor-ring-outer { animation-duration: 4s; }
+    .reactor-state-thinking .reactor-ring-mid   { animation-duration: 2.2s; }
+    .reactor-state-thinking .reactor-ring-inner { animation-duration: 1.2s; }
+    .reactor-state-listening .reactor-ring-outer { animation: reactor-listening-wave 1.2s ease-in-out infinite; }
+    .reactor-state-listening .reactor-core-glow { animation: reactor-listening-wave 0.8s ease-in-out infinite; }
+    .reactor-state-speaking .reactor-core-glow { animation: reactor-pulse 0.9s ease-in-out infinite; }
+    .reactor-state-executing .reactor-ring-outer { animation-duration: 3s; }
+    .reactor-state-awaiting_approval .reactor-core-glow { animation: reactor-flash 1.4s ease-in-out infinite; }
+    .reactor-state-offline .reactor-ring-outer,
+    .reactor-state-offline .reactor-ring-mid,
+    .reactor-state-offline .reactor-ring-inner {
+      animation-play-state: paused;
+      opacity: 0.35;
+    }
+    .reactor-state-error .reactor-ring-outer,
+    .reactor-state-error .reactor-ring-mid,
+    .reactor-state-error .reactor-ring-inner {
+      animation-play-state: paused;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reactor-ring-outer, .reactor-ring-mid, .reactor-ring-inner, .reactor-core-glow {
+        animation: none !important;
+      }
+    }
   </style>
 
   <!-- TADASHI Core Engines: Data, DB, Utilities, Gemini AI, Voice -->
@@ -252,6 +316,7 @@
   <script src="js/lib/ai.js"></script>
   <script src="js/lib/voice.js"></script>
   <script src="js/domain-pages.js?v=5.2"></script>
+  <script src="js/assistant/reactor-ui.js"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
   <!-- Skip to main content (a11y) -->
@@ -614,7 +679,67 @@
 <!-- VIEW 2: TADASHI AI (Copilot & Query Engine) -->
 <!-- ========================================== -->
 <div class="view-panel panel-hidden space-y-6" id="view-tadashi">
-<div class="glass-surface rounded-2xl p-6 sm:p-7 flex flex-col h-[78vh] border border-outline-variant/20 shadow-2xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[82vh]">
+
+  <!-- LEFT: Arc Reactor Autonomous Intelligence Core (4 cols) -->
+  <aside class="lg:col-span-4 flex flex-col gap-4 h-full">
+    <div id="tadashi-reactor-mount" class="flex-none">
+      <!-- Injected via ReactorUI.mountWidget -->
+    </div>
+
+    <!-- Telemetry & Intelligence Status Card -->
+    <div class="flex-1 glass-surface p-4 rounded-2xl border border-outline-variant/20 flex flex-col justify-between space-y-3 overflow-hidden">
+      <div>
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10 text-xs font-mono">
+          <span class="text-primary-container font-semibold uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+            NEURAL TELEMETRY
+          </span>
+          <span class="text-outline/70">OPTIMAL</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3 text-xs font-mono">
+          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+            <span class="text-[10px] text-outline block">Model Route</span>
+            <span class="text-white font-bold text-xs" id="reactor-model-badge">Gemini 1.5</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+            <span class="text-[10px] text-outline block">Memory Cores</span>
+            <span class="text-tertiary font-bold text-xs">22 Domains</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+            <span class="text-[10px] text-outline block">Execution</span>
+            <span class="text-primary-container font-bold text-xs">Reversible</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+            <span class="text-[10px] text-outline block">Device Core</span>
+            <span class="text-secondary font-bold text-xs">Local First</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Command Shortcuts -->
+      <div class="space-y-1.5 pt-2 border-t border-outline-variant/10">
+        <span class="text-[10px] font-mono uppercase text-outline tracking-wider block font-semibold">Quick Commands:</span>
+        <div class="flex flex-col gap-1.5">
+          <button onclick="populatePrompt('Find free time today and schedule study block')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>📅 Find Free Time</span>
+            <span class="text-outline text-[10px]">→</span>
+          </button>
+          <button onclick="populatePrompt('Review OS Assignment 3 tests before submission')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>📚 OS Exam Prep (6d)</span>
+            <span class="text-outline text-[10px]">→</span>
+          </button>
+          <button onclick="populatePrompt('Summarize pending actions across all 22 domains')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>⚡ 22 Domains Synthesis</span>
+            <span class="text-outline text-[10px]">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Full Conversation & Tool Action Feed (8 cols) -->
+  <div class="lg:col-span-8 glass-surface rounded-2xl p-6 sm:p-7 flex flex-col h-full border border-outline-variant/20 shadow-2xl overflow-hidden">
 <!-- Copilot Header -->
 <div class="flex items-center justify-between pb-4 border-b border-outline-variant/10">
 <div class="flex items-center gap-3">
@@ -1825,12 +1950,16 @@
       </div>
       <h3 id="voice-modal-status" class="text-xl font-bold text-white mb-6">Listening... Speak naturally</h3>
 
-      <!-- Holographic Audio Wave Orb -->
-      <div class="relative w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-        <div class="absolute inset-0 rounded-full border border-primary-container/20 animate-ping opacity-40"></div>
-        <div class="absolute inset-2 rounded-full border border-secondary/30 animate-pulse"></div>
-        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-container via-surface-tint to-secondary flex items-center justify-center text-3xl shadow-[0_0_35px_rgba(0,212,255,0.6)] relative z-10">
-          <span class="material-symbols-outlined text-surface-container-lowest text-4xl" style="font-variation-settings: 'FILL' 1;">neurology</span>
+      <!-- Arc Reactor Core in Voice Modal -->
+      <div id="voice-modal-reactor-widget" class="arc-reactor-widget reactor-state-listening my-2 flex flex-col items-center justify-center">
+        <div class="relative flex items-center justify-center cursor-pointer group" onclick="if(window.ReactorUI) window.ReactorUI.interruptSpeech();" title="Tap to interrupt">
+          <div id="voice-modal-reactor-svg"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="material-symbols-outlined reactor-state-icon text-primary-container text-3xl">mic</span>
+          </div>
+        </div>
+        <div class="mt-2 text-center">
+          <span class="reactor-state-label text-xs font-mono font-bold uppercase tracking-wider text-primary-container">LISTENING</span>
         </div>
       </div>
 
@@ -2528,6 +2657,8 @@
       input.value = '';
       input.disabled = true;
 
+      if (window.ReactorUI) window.ReactorUI.setState('thinking', 'TADASHI reasoning across 22 domains...');
+
       const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
       if (!chatFeed) { input.disabled = false; return; }
 
@@ -2567,6 +2698,10 @@
       try {
         const aiReply = await AI.chat(userText, chatHistory, {
           onToolCall: (toolName, args, result) => {
+            if (window.ReactorUI) {
+              const label = (TOOL_LABELS[toolName] && TOOL_LABELS[toolName].label) || toolName;
+              window.ReactorUI.setState('executing', 'Executing ' + label + '...');
+            }
             // Render action card in chat feed
             _renderToolCard(chatFeed, toolName, args, result);
             // Refresh visible stats if needed
@@ -2598,8 +2733,15 @@
         chatFeed.appendChild(aiDiv);
         chatFeed.scrollTop = chatFeed.scrollHeight;
 
+        if (window.Voice && window.Voice.isVoiceOutputEnabled()) {
+          Voice.speak(aiReply);
+        } else {
+          if (window.ReactorUI) window.ReactorUI.setState('idle', 'Response delivered');
+        }
+
       } catch(err) {
         thinkingDiv.remove();
+        if (window.ReactorUI) window.ReactorUI.setState('error', err.message);
         const errDiv = document.createElement('div');
         errDiv.className = 'flex gap-3 max-w-3xl';
         errDiv.innerHTML = `
@@ -2678,6 +2820,19 @@
     document.addEventListener('DOMContentLoaded', () => {
       const qai = document.getElementById('quick-add-input');
       if (qai) qai.addEventListener('keydown', e => { if (e.key === 'Enter') submitQuickAdd(); });
+
+      // Initialize Arc Reactor Widgets
+      if (window.ReactorUI) {
+        const mount = document.getElementById('tadashi-reactor-mount');
+        if (mount) {
+          window.ReactorUI.mountWidget(mount, { size: 160, showControls: true });
+        }
+        const modalSvg = document.getElementById('voice-modal-reactor-svg');
+        if (modalSvg) {
+          modalSvg.innerHTML = window.ReactorUI.renderReactorSVG(130);
+        }
+        window.ReactorUI.setState('idle', 'Standing by · Neural telemetry optimal');
+      }
     });
 
     // --- Schedule: Mark Task Complete ---
@@ -2725,6 +2880,7 @@
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         isVoiceCallActive = true;
+        if (window.ReactorUI) window.ReactorUI.setState('listening', 'Listening... Speak naturally');
         startVoiceSpeechLoop();
       }
     }
@@ -2735,6 +2891,10 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         isVoiceCallActive = false;
+        if (window.ReactorUI) {
+          window.ReactorUI.interruptSpeech();
+          window.ReactorUI.setState('idle', 'Standing by');
+        }
         Voice.stopListening();
         Voice.stopSpeaking();
       }
