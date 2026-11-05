@@ -134,6 +134,17 @@ async function requestHandler(req, res) {
       return sendJson(res, 200, { ok: true, telemetry: result });
     }
 
+    // 9. PC Agent Heartbeat
+    if (method === 'POST' && path === '/agent/heartbeat') {
+      const body = await parseJsonBody(req);
+      return sendJson(res, 200, {
+        ok: true,
+        acknowledged: true,
+        deviceId: device.id,
+        serverTime: new Date().toISOString()
+      });
+    }
+
     // Not found
     return sendJson(res, 404, { ok: false, error: `Route not found: ${method} ${path}` });
 
