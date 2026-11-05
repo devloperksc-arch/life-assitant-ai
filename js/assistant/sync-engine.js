@@ -14,6 +14,24 @@
   const SERVER_URL_STORAGE_KEY = 'tadashi_sync_server_url';
   const DEFAULT_SERVER_URL = 'http://127.0.0.1:3000';
 
+  // Approved Offline Domains (Mark LVI Phase 3 scoped offline access)
+  const APPROVED_OFFLINE_DOMAINS = ['tasks', 'calendar', 'routines', 'wellbeing', 'user', 'memory'];
+
+  function getApprovedOfflineScope() {
+    return [...APPROVED_OFFLINE_DOMAINS];
+  }
+
+  function filterOfflineData(fullData) {
+    if (!fullData || typeof fullData !== 'object') return {};
+    const filtered = {};
+    for (const domain of APPROVED_OFFLINE_DOMAINS) {
+      if (fullData[domain] !== undefined) {
+        filtered[domain] = fullData[domain];
+      }
+    }
+    return filtered;
+  }
+
   let idbInstance = null;
 
   // Simple UUID generator for browser / node
@@ -68,10 +86,12 @@
       if (typeof indexedDB === 'undefined') {
         const memOutbox = new Map();
         const memState = new Map();
+        const memConflicts = new Map();
         idbInstance = {
           _isMock: true,
           memOutbox,
-          memState
+          memState,
+          memConflicts
         };
         return resolve(idbInstance);
       }
@@ -208,33 +228,111 @@
       return { ok: false, error: 'No session token configured. Please register device.' };
     }
 
-    const res = await fetch(`${sUrl}/sync/push`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sToken}`
-      },
-      body: JSON.stringify({ operations: pendingOps })
-    });
+    try {
+      const res = await fetch(`${sUrl}/sync/push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sToken}`
+        },
+        body: JSON.stringify({ operations: pendingOps })
+      });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      return { ok: false, status: res.status, error: errText };
-    }
+      if (!res.ok) {
+        const errText = await res.text();
+        return { ok: false, status: res.status, error: errText };
+      }
 
-    const data = await res.json();
+      const data = await res.json();
 
-    // Clean up successfully applied or duplicate operations from outbox
-    if (Array.isArray(data.processed)) {
-      for (const p of data.processed) {
-        if (p.status === 'applied' || p.status === 'duplicate') {
-          await removeOutboxOperation(p.opId);
+      // Clean up successfully applied or duplicate operations from outbox
+      if (Array.isArray(data.processed)) {
+        for (const p of data.processed) {
+          if (p.status === 'applied' || p.status === 'duplicate') {
+            await removeOutboxOperation(p.opId);
+          }
         }
       }
+
+      // Preserve unresolved conflicts in outbox with status 'conflict' and record visible conflict
+      if (Array.isArray(data.conflicts)) {
+        const db = await openDatabase();
+        for (const c of data.conflicts) {
+          if (db._isMock) {
+            db.memConflicts.set(c.opId, c);
+            if (db.memOutbox.has(c.opId)) {
+              const op = db.memOutbox.get(c.opId);
+              op.status = 'conflict';
+              op.conflictDetails = c;
+              db.memOutbox.set(c.opId, op);
+            }
+          }
+        }
+      }
+
+      await setSyncState('lastSyncAt', new Date().toISOString());
+      return { ok: true, result: data };
+    } catch(err) {
+      return { ok: false, error: `Network push failed: ${err.message}` };
+    }
+  }
+
+  // Conflict Inspection and Resolution (Mark LVI Phase 3 visible conflicts)
+  async function getConflicts() {
+    const db = await openDatabase();
+    if (db._isMock) {
+      return Array.from(db.memConflicts.values());
+    }
+    const ops = await getPendingOperations();
+    return ops.filter(op => op.status === 'conflict');
+  }
+
+  async function resolveConflict(opId, resolution, mergedPayload = null) {
+    const db = await openDatabase();
+    let op = null;
+    if (db._isMock) {
+      op = db.memOutbox.get(opId);
+    } else {
+      const ops = await getPendingOperations();
+      op = ops.find(o => o.opId === opId);
     }
 
-    await setSyncState('lastSyncAt', new Date().toISOString());
-    return { ok: true, result: data };
+    if (!op) return { ok: false, error: 'Conflict operation not found' };
+
+    if (resolution === 'keep_server') {
+      await removeOutboxOperation(opId);
+      if (db._isMock) db.memConflicts.delete(opId);
+      return { ok: true, resolution: 'keep_server', message: 'Local edit dropped; server version retained' };
+    }
+
+    if (resolution === 'keep_local') {
+      op.baseVersion = null; // force overwrite on next sync
+      op.status = 'pending_sync';
+      if (db._isMock) {
+        db.memOutbox.set(opId, op);
+        db.memConflicts.delete(opId);
+      } else {
+        const tx = db.transaction(['outbox'], 'readwrite');
+        tx.objectStore('outbox').put(op);
+      }
+      return { ok: true, resolution: 'keep_local', message: 'Local edit re-queued to overwrite on next sync' };
+    }
+
+    if (resolution === 'merge' && mergedPayload) {
+      op.payload = mergedPayload;
+      op.baseVersion = null;
+      op.status = 'pending_sync';
+      if (db._isMock) {
+        db.memOutbox.set(opId, op);
+        db.memConflicts.delete(opId);
+      } else {
+        const tx = db.transaction(['outbox'], 'readwrite');
+        tx.objectStore('outbox').put(op);
+      }
+      return { ok: true, resolution: 'merge', message: 'Merged payload re-queued for next sync' };
+    }
+
+    return { ok: false, error: `Invalid resolution: "${resolution}"` };
   }
 
   // Network Sync: Pull Updates
@@ -344,6 +442,8 @@
     setSessionToken,
     getServerUrl,
     setServerUrl,
+    getApprovedOfflineScope,
+    filterOfflineData,
     queueOperation,
     getPendingOperations,
     removeOutboxOperation,
@@ -352,6 +452,8 @@
     push,
     pull,
     syncAll,
+    getConflicts,
+    resolveConflict,
     migrateLegacyToCloud,
     getStatus
   };

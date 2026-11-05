@@ -40,12 +40,20 @@
     if (!content || typeof content !== 'string') throw new Error('Memory content must be a non-empty string');
     const memories = loadMemories();
 
+    const isConfirmed = options.isConfirmed !== undefined
+      ? Boolean(options.isConfirmed)
+      : (source === 'user_direct' || source === 'user_correction');
+    const confidence = typeof options.confidence === 'number'
+      ? Math.max(0, Math.min(1, options.confidence))
+      : (source === 'inferred' ? 0.7 : 1.0);
+
     const item = {
       id: `mem_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       type: Object.values(MEMORY_TYPE).includes(type) ? type : MEMORY_TYPE.FACT,
       content: content.trim(),
       source: String(source),
-      confidence: typeof options.confidence === 'number' ? Math.max(0, Math.min(1, options.confidence)) : 1.0,
+      confidence,
+      isConfirmed,
       privacy: options.privacy === 'local_only' ? 'local_only' : 'cloud_syncable',
       status: 'active',
       createdAt: new Date().toISOString(),
@@ -56,6 +64,11 @@
     if (memories.length > MAX_MEMORIES) memories.length = MAX_MEMORIES;
     saveMemories(memories);
     return item;
+  }
+
+  // Confirm an inferred memory
+  function confirmMemory(id) {
+    return updateMemory(id, { isConfirmed: true, confidence: 1.0 });
   }
 
   // List memories with optional filtering
@@ -78,6 +91,7 @@
     if (patch.status !== undefined) item.status = patch.status;
     if (patch.privacy !== undefined) item.privacy = patch.privacy;
     if (patch.confidence !== undefined) item.confidence = patch.confidence;
+    if (patch.isConfirmed !== undefined) item.isConfirmed = Boolean(patch.isConfirmed);
     item.updatedAt = new Date().toISOString();
 
     saveMemories(memories);
@@ -99,7 +113,7 @@
     return !!updateMemory(id, { status: 'deleted' });
   }
 
-  // Build Context for LLM prompt with privacy filtering
+  // Build Context for LLM prompt with privacy filtering and explicit inference notices
   function formatContextForPrompt(privacyMode = 'cloud_allowed', maxTokensEstimate = 500) {
     const active = listMemories({ status: 'active' });
     const allowed = privacyMode === 'local_only'
@@ -108,7 +122,12 @@
 
     if (allowed.length === 0) return '';
 
-    const lines = allowed.slice(0, 15).map(m => `- [${m.type.toUpperCase()}] ${m.content} (source: ${m.source})`);
+    const lines = allowed.slice(0, 15).map(m => {
+      if (m.isConfirmed === false || m.source === 'inferred') {
+        return `- [INFERRED ${m.type.toUpperCase()}] (Unconfirmed hypothesis, confidence: ${m.confidence}): ${m.content} (source: ${m.source}) [Note: Treat as unverified hypothesis, not confirmed fact]`;
+      }
+      return `- [${m.type.toUpperCase()}] ${m.content} (source: ${m.source})`;
+    });
     return `\nUSER PROFILE & MEMORY CONTEXT:\n${lines.join('\n')}\n`;
   }
 
@@ -148,25 +167,54 @@
     };
   }
 
-  // Export / Import
+  // Export / Import / Wipe
   function exportMemories() {
     return {
       version: '1.0',
       exportedAt: new Date().toISOString(),
-      memories: loadMemories()
+      memories: listMemories({ status: 'active' })
     };
+  }
+
+  function importMemories(data) {
+    const items = Array.isArray(data) ? data : (data && Array.isArray(data.memories) ? data.memories : []);
+    const imported = [];
+    for (const item of items) {
+      if (item.content && typeof item.content === 'string') {
+        const added = addMemory(
+          item.type || MEMORY_TYPE.FACT,
+          item.content,
+          item.source || 'imported',
+          {
+            confidence: item.confidence,
+            isConfirmed: item.isConfirmed,
+            privacy: item.privacy
+          }
+        );
+        imported.push(added);
+      }
+    }
+    return imported;
+  }
+
+  function clearMemories() {
+    saveMemories([]);
+    return true;
   }
 
   // Public Interface
   const Memory = {
     MEMORY_TYPE,
     add: addMemory,
+    confirm: confirmMemory,
     list: listMemories,
     update: updateMemory,
     delete: deleteMemory,
     formatContextForPrompt,
     searchKnowledgeWithCitations,
-    export: exportMemories
+    export: exportMemories,
+    import: importMemories,
+    clear: clearMemories
   };
 
   window.Memory = Memory;

@@ -205,6 +205,29 @@ class PCAgent {
     }
     this.isConnected = false;
   }
+
+  // Approved Offline Scope (Mark LVI Phase 3)
+  getApprovedOfflineScope() {
+    return ['tasks', 'calendar', 'routines', 'wellbeing', 'user', 'memory'];
+  }
+
+  // Scoped Offline Data Access
+  getOfflineData(domain, localDatabase = {}) {
+    const approvedScope = this.getApprovedOfflineScope();
+    if (!approvedScope.includes(domain)) {
+      return {
+        ok: false,
+        error: `Scope Violation: Access to "${domain}" is not permitted under approved offline PC agent scope.`
+      };
+    }
+
+    const data = localDatabase[domain] || null;
+    return {
+      ok: true,
+      domain,
+      data
+    };
+  }
 }
 
 module.exports = {
