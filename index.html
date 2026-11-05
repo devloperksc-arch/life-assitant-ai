@@ -96,6 +96,13 @@
   </script>
 
   <style>
+    /* Phase 0: define accent tokens referenced by Utils helpers.
+       Kept on :root so both layouts inherit them without linking the dead css/main.css */
+    :root {
+      --accent-cyan:  #00d4ff;
+      --accent-red:   #f43f5e;
+      --accent-amber: #f59e0b;
+    }
     body {
       background-color: #06080e;
       color: #e2e2eb;
@@ -244,7 +251,7 @@
   <script src="js/utils.js"></script>
   <script src="js/lib/ai.js"></script>
   <script src="js/lib/voice.js"></script>
-  <script src="js/domain-pages.js?v=5.1"></script>
+  <script src="js/domain-pages.js?v=5.2"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
   <!-- Skip to main content (a11y) -->
@@ -1912,7 +1919,7 @@
       { id: 'tasks', num: '04', name: 'Tasks & Projects', cat: 'core', icon: 'check_circle', emoji: '✅', tag: '3 Urgent Pending', color: '#00d4ff' },
       { id: 'goals', num: '05', name: 'Goals & OKRs', cat: 'core', icon: 'flag', emoji: '🎯', tag: '3 Goals Active', color: '#00d4ff' },
       { id: 'study', num: '06', name: 'Study & Learning', cat: 'core', icon: 'school', emoji: '📚', tag: 'Exam in 6d', color: '#00d4ff' },
-      { id: 'fitness', num: '07', name: 'Heavy · Fitness & Workout', cat: 'vitality', icon: 'fitness_center', emoji: '🏋️‍♂️', tag: 'HEAVY ENGINE', color: '#00d4ff' },
+      { id: 'fitness', num: '07', name: 'Heavy · Fitness & Workout', cat: 'vitality', icon: 'fitness_center', emoji: '🏋️‍♂️', tag: 'HEAVY WORKOUT TRACKER', color: '#00d4ff' },
       { id: 'nutrition', num: '08', name: 'Nutrition & Diet', cat: 'vitality', icon: 'restaurant', emoji: '🥗', tag: '1,840 kcal', color: '#6af7ba' },
       { id: 'finance', num: '09', name: 'Finance & Wealth', cat: 'vitality', icon: 'payments', emoji: '💰', tag: '₹36.8k spend', color: '#6af7ba' },
       { id: 'wellbeing', num: '10', name: 'Wellbeing & Mood', cat: 'vitality', icon: 'self_improvement', emoji: '🧘', tag: 'Optimal (4/5)', color: '#6af7ba' },

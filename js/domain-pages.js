@@ -613,6 +613,7 @@
 
   window.toggleGoalMilestone = function(goalId, milestoneTitle) {
     if (!window.DB) return;
+    try { milestoneTitle = decodeURIComponent(milestoneTitle); } catch(e) {}
     window.DB.goals.completeMilestone(goalId, milestoneTitle);
     renderDomainPage('goals');
   };
@@ -625,12 +626,14 @@
 
   window.toggleChoreItem = function(name) {
     if (!window.DB) return;
+    try { name = decodeURIComponent(name); } catch(e) {}
     window.DB.homeModule.markChoreDone(name);
     renderDomainPage('home-module');
   };
 
   window.toggleRoutineItem = function(type, step) {
     if (!window.DB) return;
+    try { step = decodeURIComponent(step); } catch(e) {}
     window.DB.routines.markDone(type, step);
     renderDomainPage('routines');
   };
@@ -768,8 +771,9 @@
   window.markPantryItemFinished = function(id, itemName) {
     if (window.DB && window.DB.shopping) {
       window.DB.shopping.markPantryFinished(id);
+      try { if (itemName) itemName = decodeURIComponent(itemName); } catch(e) {}
       if (typeof window.showToast === 'function') {
-        window.showToast(`⚠️ Marked "${itemName}" finished! Added directly to D-Mart shopping list! 🛒`);
+        window.showToast(`⚠️ Marked "${itemName || 'item'}" finished! Added directly to D-Mart shopping list! 🛒`);
       }
     }
     renderDomainPage('shopping');
@@ -804,7 +808,16 @@
   window.logRelationshipCall = function(id, name) {
     if (window.DB && window.DB.relationships) {
       window.DB.relationships.markContacted(id);
-      if (typeof window.showToast === 'function') window.showToast(`📞 Logged conversation with ${name}! Cadence reset.`);
+      let contactName = name;
+      try {
+        if (!contactName) {
+          const c = window.DB.relationships.list().find(r => r.id == id);
+          if (c) contactName = c.name;
+        } else {
+          contactName = decodeURIComponent(contactName);
+        }
+      } catch(e) {}
+      if (typeof window.showToast === 'function') window.showToast(`📞 Logged conversation with ${contactName || 'contact'}! Cadence reset.`);
     }
     renderDomainPage('relationships');
   };
@@ -1086,8 +1099,8 @@
               <div class="flex items-center gap-3">
                 <span class="w-3 h-3 rounded-full" style="background:${ev.color||'#00d4ff'}"></span>
                 <div>
-                  <p class="text-xs font-semibold text-white">${ev.title}</p>
-                  <p class="text-[10px] text-outline font-mono">${ev.time} · ${ev.domain||'Life'}</p>
+                  <p class="text-xs font-semibold text-white">${Utils.escapeHtml(ev.title)}</p>
+                  <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(ev.time)} · ${Utils.escapeHtml(ev.domain||'Life')}</p>
                 </div>
               </div>
               <span class="text-[10px] font-mono px-2 py-0.5 rounded" style="background:${ev.color||'#00d4ff'}15;color:${ev.color||'#00d4ff'}">
@@ -1136,8 +1149,8 @@
                 <div class="flex items-center gap-3 min-w-0">
                   <input type="checkbox" onchange="toggleTaskItem(${t.id})" class="w-4 h-4 rounded bg-surface-container border-outline-variant/40 text-primary-container focus:ring-0 cursor-pointer" />
                   <div class="min-w-0">
-                    <p class="text-xs font-semibold text-white truncate">${t.title}</p>
-                    <p class="text-[10px] text-outline font-mono">${t.project||'General'} · Due: ${t.deadline||'Today'}</p>
+                    <p class="text-xs font-semibold text-white truncate">${Utils.escapeHtml(t.title)}</p>
+                    <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(t.project||'General')} · Due: ${Utils.escapeHtml(t.deadline||'Today')}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -1165,7 +1178,7 @@
               <div class="p-3 rounded-xl bg-surface-container-lowest/40 border border-outline-variant/10 flex items-center justify-between gap-3 opacity-70">
                 <div class="flex items-center gap-3 min-w-0">
                   <input type="checkbox" checked onchange="toggleTaskItem(${t.id})" class="w-4 h-4 rounded bg-tertiary border-tertiary text-surface-container-lowest focus:ring-0 cursor-pointer" />
-                  <p class="text-xs line-through text-outline truncate">${t.title}</p>
+                  <p class="text-xs line-through text-outline truncate">${Utils.escapeHtml(t.title)}</p>
                 </div>
                 <span class="text-[9px] px-2 py-0.5 rounded bg-tertiary/20 text-tertiary font-mono">DONE</span>
               </div>
@@ -1192,8 +1205,8 @@
                 <div class="flex items-center gap-3">
                   <span class="text-2xl">${g.emoji||'🎯'}</span>
                   <div>
-                    <h4 class="text-base font-bold text-white">${g.title}</h4>
-                    <p class="text-[10px] text-outline font-mono">Target: ${g.target||'2026'} · ${g.category||'General'}</p>
+                    <h4 class="text-base font-bold text-white">${Utils.escapeHtml(g.title)}</h4>
+                    <p class="text-[10px] text-outline font-mono">Target: ${Utils.escapeHtml(g.target||'2026')} · ${Utils.escapeHtml(g.category||'General')}</p>
                   </div>
                 </div>
                 <span class="text-xs font-mono font-bold text-primary-container px-2.5 py-1 rounded-lg bg-primary-container/10 border border-primary-container/30">
@@ -1210,13 +1223,13 @@
               <div class="space-y-2 pt-1">
                 <p class="text-[10px] font-mono text-outline uppercase tracking-wider">Key Milestones (Click to toggle)</p>
                 ${milestones.map(m => `
-                  <div onclick="toggleGoalMilestone(${g.id}, '${m.title.replace(/'/g, "\\'")}')" 
+                  <div onclick="toggleGoalMilestone(${g.id}, '${encodeURIComponent(m.title)}')" 
                        class="p-2 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                     <div class="flex items-center gap-2.5">
                       <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done?'bg-tertiary text-black':'border border-outline-variant'}">
                         ${m.done ? '✓' : ''}
                       </span>
-                      <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${m.title}</span>
+                      <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(m.title)}</span>
                     </div>
                     <span class="text-[9px] font-mono text-outline">${m.done?'DONE':'PENDING'}</span>
                   </div>
@@ -1261,14 +1274,14 @@
         ${subjects.map(sub => `
           <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono text-outline">${sub.code||'CS'}</span>
-              <span class="text-xs font-mono font-bold text-primary-container">${sub.progress}% Ready</span>
+              <span class="text-xs font-mono text-outline">${Utils.escapeHtml(sub.code||'CS')}</span>
+              <span class="text-xs font-mono font-bold text-primary-container">${Math.round(Number(sub.progress)||0)}% Ready</span>
             </div>
-            <h4 class="text-base font-bold text-white">${sub.name}</h4>
+            <h4 class="text-base font-bold text-white">${Utils.escapeHtml(sub.name)}</h4>
             <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-              <div class="bg-primary-container h-full rounded-full" style="width:${sub.progress}%"></div>
+              <div class="bg-primary-container h-full rounded-full" style="width:${Math.max(0, Math.min(100, Number(sub.progress)||0))}%"></div>
             </div>
-            <p class="text-[10px] font-mono text-outline">Target: ${sub.examDate||'Upcoming'}</p>
+            <p class="text-[10px] font-mono text-outline">Target: ${Utils.escapeHtml(sub.examDate||'Upcoming')}</p>
           </div>
         `).join('')}
       </div>
@@ -2615,9 +2628,9 @@
                   ${item.checked ? '✓' : ''}
                 </div>
                 <div>
-                  <p class="text-xs font-bold text-white ${item.checked ? 'line-through text-outline' : ''}">${item.item}</p>
+                  <p class="text-xs font-bold text-white ${item.checked ? 'line-through text-outline' : ''}">${Utils.escapeHtml(item.item)}</p>
                   <p class="text-[10px] text-outline font-mono mt-0.5">
-                    ${item.category} · Qty: <strong>${item.qty}</strong> · Est: ₹${item.estPrice}
+                    ${Utils.escapeHtml(item.category)} · Qty: <strong>${Utils.escapeHtml(item.qty)}</strong> · Est: ₹${Number(item.estPrice) || 0}
                   </p>
                 </div>
               </div>
@@ -2653,17 +2666,17 @@
               <div class="p-4 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/15 space-y-3">
                 <div class="flex items-start justify-between">
                   <div>
-                    <h5 class="text-xs font-bold text-white">${p.item}</h5>
-                    <p class="text-[10px] text-outline font-mono mt-0.5">${p.category} · ${p.note}</p>
+                    <h5 class="text-xs font-bold text-white">${Utils.escapeHtml(p.item)}</h5>
+                    <p class="text-[10px] text-outline font-mono mt-0.5">${Utils.escapeHtml(p.category)} · ${Utils.escapeHtml(p.note)}</p>
                   </div>
                   <span class="text-[9px] font-mono px-2 py-0.5 rounded font-bold uppercase ${isFinished ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : (isLow ? 'bg-amber-400/20 text-amber-400 border border-amber-400/30' : 'bg-tertiary/20 text-tertiary')}">
                     ${isFinished ? 'FINISHED' : (isLow ? 'LOW' : 'IN STOCK')}
                   </span>
                 </div>
                 <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-                  <div class="h-full rounded-full transition-all" style="width:${p.levelPct}%;background:${isFinished ? '#f43f5e' : (isLow ? '#f59e0b' : '#6af7ba')}"></div>
+                  <div class="h-full rounded-full transition-all" style="width:${Math.max(0, Math.min(100, Number(p.levelPct) || 0))}%;background:${isFinished ? '#f43f5e' : (isLow ? '#f59e0b' : '#6af7ba')}"></div>
                 </div>
-                <button onclick="window.markPantryItemFinished(${p.id}, '${p.item.replace(/'/g, "\\'")}')" 
+                <button onclick="window.markPantryItemFinished(${p.id}, '${encodeURIComponent(p.item)}')" 
                         class="w-full py-1.5 rounded-lg font-mono text-[10px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${isFinished ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25' : 'bg-surface-container hover:bg-amber-400/20 text-outline hover:text-amber-400 border border-outline-variant/20'}">
                   <span class="material-symbols-outlined text-[14px]">add_shopping_cart</span>
                   <span>${isFinished ? '⚠️ Already on D-Mart List' : '⚠️ Mark Finished → Add to D-Mart'}</span>
@@ -2759,19 +2772,19 @@
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-400 flex items-center justify-center font-bold text-base shadow-md">
-                    ${c.name.slice(0, 1)}
+                    ${Utils.escapeHtml(c.name.slice(0, 1))}
                   </div>
                   <div>
                     <div class="flex items-center gap-1.5">
-                      <h4 class="text-sm font-bold text-white">${c.name}</h4>
-                      ${c.birthday ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 font-mono font-bold">${c.birthday}</span>` : ''}
+                      <h4 class="text-sm font-bold text-white">${Utils.escapeHtml(c.name)}</h4>
+                      ${c.birthday ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 font-mono font-bold">${Utils.escapeHtml(c.birthday)}</span>` : ''}
                     </div>
                     <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-container text-pink-400 border border-pink-400/20 font-semibold uppercase mt-0.5 inline-block">
-                      ${c.role}
+                      ${Utils.escapeHtml(c.role)}
                     </span>
                   </div>
                 </div>
-                <button onclick="window.logRelationshipCall(${c.id}, '${c.name.replace(/'/g, "\\'")}')" 
+                <button onclick="window.logRelationshipCall(${c.id}, '${encodeURIComponent(c.name)}')" 
                         class="px-2.5 py-1 rounded-lg glass-surface hover:bg-surface-container text-[10px] font-mono text-outline hover:text-white border border-outline-variant/25 transition-all">
                   Log Call
                 </button>
@@ -2780,7 +2793,7 @@
               <!-- "How I Know Them" Connection Context (User explicit request) -->
               <div class="p-2.5 rounded-lg bg-surface-container/50 border border-outline-variant/10 text-xs">
                 <span class="text-[9px] font-mono text-outline uppercase block font-semibold mb-0.5">How I Know Them / Relationship:</span>
-                <p class="text-white/90 font-mono text-[11px] leading-relaxed">${c.howIKnow || 'Friend and connection.'}</p>
+                <p class="text-white/90 font-mono text-[11px] leading-relaxed">${Utils.escapeHtml(c.howIKnow || 'Friend and connection.')}</p>
               </div>
 
               <!-- Quick Communication Links Bar -->
@@ -2805,7 +2818,7 @@
                     </a>
                   ` : ''}
                 </div>
-                <span class="text-[10px] text-outline font-mono">Cadence: ${c.cadence}</span>
+                <span class="text-[10px] text-outline font-mono">Cadence: ${Utils.escapeHtml(c.cadence)}</span>
               </div>
             </div>
           `).join('')}
@@ -2832,15 +2845,15 @@
           </h4>
           <div class="space-y-2">
             ${chores.map(c => `
-              <div onclick="toggleChoreItem('${c.task.replace(/'/g, "\\'")}')" 
+              <div onclick="toggleChoreItem('${encodeURIComponent(c.task)}')" 
                    class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                 <div class="flex items-center gap-2.5">
                   <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${c.done?'bg-tertiary text-black':'border border-outline-variant'}">
                     ${c.done ? '✓' : ''}
                   </span>
-                  <span class="text-xs ${c.done?'line-through text-outline':'text-white'}">${c.task}</span>
+                  <span class="text-xs ${c.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(c.task)}</span>
                 </div>
-                <span class="text-[9px] font-mono ${c.done?'text-tertiary':'text-outline'}">${c.frequency}</span>
+                <span class="text-[9px] font-mono ${c.done?'text-tertiary':'text-outline'}">${Utils.escapeHtml(c.frequency)}</span>
               </div>
             `).join('')}
           </div>
@@ -3237,8 +3250,8 @@
           ${notes.map(n => `
             <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
               <div>
-                <p class="text-xs font-bold text-white">${n.title}</p>
-                <p class="text-[10px] text-primary-container font-mono">${n.tags}</p>
+                <p class="text-xs font-bold text-white">${Utils.escapeHtml(n.title)}</p>
+                <p class="text-[10px] text-primary-container font-mono">${Utils.escapeHtml(n.tags)}</p>
               </div>
               <button onclick="if(window.showToast) showToast('Opening note...');" class="text-outline hover:text-white text-xs font-mono">View →</button>
             </div>
@@ -3269,13 +3282,13 @@
           </div>
           <div class="space-y-2">
             ${morning.map(m => `
-              <div onclick="toggleRoutineItem('morning', '${m.step.replace(/'/g, "\\'")}')" 
+              <div onclick="toggleRoutineItem('morning', '${encodeURIComponent(m.step)}')" 
                    class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                 <div class="flex items-center gap-2.5">
                   <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done?'bg-tertiary text-black':'border border-outline-variant'}">
                     ${m.done ? '✓' : ''}
                   </span>
-                  <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${m.step}</span>
+                  <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(m.step)}</span>
                 </div>
                 <span class="text-[9px] font-mono ${m.done?'text-tertiary':'text-outline'}">${m.done?'DONE':'PENDING'}</span>
               </div>

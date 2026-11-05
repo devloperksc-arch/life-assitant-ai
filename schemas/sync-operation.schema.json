@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tadashi.local/schemas/sync-operation.schema.json",
+  "title": "TADASHI Sync Operation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["opId", "deviceId", "entityType", "entityId", "operation", "baseVersion", "createdAt", "payload"],
+  "properties": {
+    "opId": {"type": "string", "format": "uuid"},
+    "deviceId": {"type": "string", "minLength": 1, "maxLength": 128},
+    "entityType": {"type": "string", "pattern": "^[a-z][a-z0-9_]{1,63}$"},
+    "entityId": {"type": "string", "minLength": 1, "maxLength": 128},
+    "operation": {"enum": ["create", "update", "archive", "delete"]},
+    "baseVersion": {"type": ["integer", "null"], "minimum": 0},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "payload": {"type": "object"}
+  }
+}

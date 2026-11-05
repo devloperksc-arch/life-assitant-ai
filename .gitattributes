@@ -1,0 +1,29 @@
+# Git line-ending policy for TADASHI LifeOS
+# Prevents silent CRLF/LF conversions that break search/replace tooling.
+# index.html and domain-pages.js must stay CRLF (match existing authoring).
+# All other live JS files stay LF.
+
+* text=auto
+
+# Force CRLF for files that have always been CRLF
+index.html          text eol=crlf
+js/domain-pages.js  text eol=crlf
+
+# Force LF for all other JS/CSS/JSON
+js/data.js          text eol=lf
+js/db.js            text eol=lf
+js/utils.js         text eol=lf
+js/lib/ai.js        text eol=lf
+js/lib/voice.js     text eol=lf
+*.json              text eol=lf
+*.yaml              text eol=lf
+*.yml               text eol=lf
+*.md                text eol=lf
+
+# Binary — never alter
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.woff2 binary
+

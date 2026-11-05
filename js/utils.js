@@ -45,14 +45,14 @@ const Utils = {
     return map[s] || 'cyan';
   },
 
-  // Days until color
+  // Days until color — uses real hex values (--accent-* vars not defined in live app)
   deadlineColor(dateStr) {
     const days = Utils.daysUntil(dateStr);
-    if (days === null) return 'text-muted';
-    if (days < 0) return 'var(--accent-red)';
-    if (days <= 2) return 'var(--accent-red)';
-    if (days <= 5) return 'var(--accent-amber)';
-    return 'var(--text-muted)';
+    if (days === null) return '#859398';
+    if (days < 0) return '#f43f5e';
+    if (days <= 2) return '#f43f5e';
+    if (days <= 5) return '#f59e0b';
+    return '#859398';
   },
 
   // HTML helpers
@@ -82,8 +82,8 @@ const Utils = {
   },
   setHTML(el, str) { el.innerHTML = str; return el; },
 
-  // Progress arc SVG
-  arc(pct, size=60, stroke=4, color='var(--accent-cyan)') {
+  // Progress arc SVG — default colour uses real hex (#00d4ff) since --accent-cyan is not defined in live app
+  arc(pct, size=60, stroke=4, color='#00d4ff') {
     const r = (size-stroke*2)/2;
     const circ = 2*Math.PI*r;
     const offset = circ - (pct/100)*circ;
@@ -100,7 +100,7 @@ const Utils = {
     const esc = this.escapeHtml(text);
     return esc
       .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.45);padding:10px 12px;border-radius:6px;overflow-x:auto;margin:8px 0;font-family:Consolas,monospace;font-size:12px;border:1px solid rgba(255,255,255,0.08)"><code>$1</code></pre>')
-      .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.12);padding:2px 6px;border-radius:4px;font-size:11px;font-family:Consolas,monospace;color:var(--accent-cyan)">$1</code>')
+      .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.12);padding:2px 6px;border-radius:4px;font-size:11px;font-family:Consolas,monospace;color:#00d4ff">$1</code>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br>');
@@ -118,8 +118,8 @@ const Utils = {
     requestAnimationFrame(update);
   },
 
-  // Simple chart bars
-  miniChart(data, color='var(--accent-cyan)') {
+  // Simple chart bars — default colour uses real hex since --accent-cyan is not defined in live app
+  miniChart(data, color='#00d4ff') {
     const max = Math.max(...data);
     return data.map(v => {
       const h = max ? Math.round((v/max)*60) : 4;

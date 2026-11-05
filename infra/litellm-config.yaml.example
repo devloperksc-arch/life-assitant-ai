@@ -1,0 +1,23 @@
+# EXAMPLE ONLY — validate current LiteLLM configuration syntax and provider identifiers
+# against https://docs.litellm.ai/docs/ before using it.
+# Keep this behind a private network. Do not commit real API keys.
+
+model_list:
+  - model_name: tadashi-cloud-default
+    litellm_params:
+      # Replace with an actual provider/model identifier supported by your account.
+      model: openai/REPLACE_WITH_CURRENT_MODEL_ID
+      api_key: os.environ/OPENAI_API_KEY
+
+# Additional providers can be added after they are configured and tested.
+# - model_name: tadashi-cloud-secondary
+#   litellm_params:
+#     model: gemini/REPLACE_WITH_CURRENT_MODEL_ID
+#     api_key: os.environ/GEMINI_API_KEY
+
+# Keep admin and runtime identities separate. The master key is server-side only.
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+# Add database-backed virtual keys/budgets only after a PostgreSQL database and
+# the current LiteLLM proxy version have been configured. Do not put secrets here.

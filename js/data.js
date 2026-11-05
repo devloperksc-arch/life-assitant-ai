@@ -377,7 +377,6 @@ const DATA = {
       }
     ]
   },
-  },
 
   documents: [
     { id:1, name:'Aadhaar Card', type:'Identity', expiry:null, size:'2.4 MB', icon:'🪪', tags:['identity','govt'] },

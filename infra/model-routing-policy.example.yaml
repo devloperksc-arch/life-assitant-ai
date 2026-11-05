@@ -1,0 +1,40 @@
+# Policy template only. The TADASHI Agent Router must enforce this server-side.
+# Model identifiers and capability flags must be verified for each deployed model.
+
+routing:
+  deterministic_first:
+    - navigation
+    - simple_crud
+    - availability_calculation
+    - validation
+
+  local_preferred:
+    - private_context
+    - simple_intent
+    - offline_summarization
+
+  cloud_allowed:
+    - complex_planning
+    - online_research_synthesis
+    - large_context_tasks
+
+privacy:
+  local_only_domains: []       # Owner configures domains that may never be sent to cloud.
+  ask_before_cloud: true
+  minimize_context: true
+
+limits:
+  max_retries: 1
+  request_timeout_seconds: 45
+  max_tool_calls_per_turn: 8
+  max_agent_steps_per_turn: 12
+  monthly_spend_limit_usd: 0   # Set a positive amount only after owner approval.
+
+fallback:
+  when_cloud_unavailable: local_if_capable_else_explain
+  when_local_unavailable: cloud_only_if_policy_allows_else_deterministic
+  never_invent_tool_success: true
+
+models:
+  local_default: ""            # Configure after PC hardware benchmark.
+  cloud_default: ""            # Configure after provider account/cost/privacy review.
