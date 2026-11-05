@@ -228,6 +228,18 @@ class PCAgent {
       data
     };
   }
+
+  // Local Skills Inventory (Mark LVI Phase 4)
+  listLocalSkills(installedSkills = []) {
+    return (installedSkills || []).map(s => ({
+      id: s.id,
+      name: s.name,
+      version: s.version,
+      runtime: s.runtime,
+      status: s.status,
+      permissions: s.permissions || []
+    }));
+  }
 }
 
 module.exports = {
