@@ -7,6 +7,11 @@
 (function(window) {
   'use strict';
 
+  // Local alias for Utils with fallback
+  const Utils = window.Utils || (typeof globalThis !== 'undefined' ? globalThis.Utils : null) || {
+    escapeHtml: (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])))
+  };
+
   // Domain Category Colors & Names
   const CATEGORY_META = {
     core:     { label: 'Core & Execution', color: '#00d4ff', bg: 'rgba(0,212,255,0.12)' },

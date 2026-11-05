@@ -138,3 +138,14 @@ const Utils = {
       .replace(/'/g, '&#39;');
   }
 };
+
+// Expose on window & globalThis for all modules & domain pages
+if (typeof window !== 'undefined') {
+  window.Utils = Utils;
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.Utils = Utils;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Utils;
+}
