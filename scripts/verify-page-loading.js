@@ -204,6 +204,40 @@ async function verifyPageLoading() {
     console.log(`  ✓ Element id="${cid}" present`);
   }
 
+  // Verify DOM panel hierarchy and sibling structure
+  console.log('\n[Step 5] Checking view-panel hierarchy and Manage hub cards...');
+  const mainContentIndex = html.indexOf('id="main-content"');
+  const mainContentEnd = html.indexOf('</main>', mainContentIndex);
+  assert(mainContentIndex !== -1 && mainContentEnd !== -1, 'main#main-content must exist');
+
+  const mainChunk = html.substring(mainContentIndex, mainContentEnd);
+
+  // Ensure each panel is an independent sibling, not nested inside another panel
+  const panels = ['view-workspace', 'view-tadashi', 'view-manage', 'view-briefings', 'view-schedule', 'view-domain-page'];
+  for (const pid of panels) {
+    const pIdx = mainChunk.indexOf(`id="${pid}"`);
+    assert(pIdx !== -1, `Panel "${pid}" must exist inside #main-content`);
+  }
+
+  // Ensure view-manage is not nested inside view-tadashi
+  const tadashiIdx = mainChunk.indexOf('id="view-tadashi"');
+  const manageIdx = mainChunk.indexOf('id="view-manage"');
+  assert(manageIdx > tadashiIdx, 'view-manage must be after view-tadashi');
+
+  // Verify that between tadashiIdx and manageIdx, all opened divs inside view-tadashi are closed
+  const tadashiChunk = mainChunk.substring(tadashiIdx, manageIdx);
+  const tadashiOpens = (tadashiChunk.match(/<div(\s|>)/g) || []).length;
+  const tadashiCloses = (tadashiChunk.match(/<\/div>/g) || []).length;
+  assert.strictEqual(tadashiOpens, tadashiCloses, `view-tadashi must be fully closed before view-manage (opens: ${tadashiOpens}, closes: ${tadashiCloses})`);
+  console.log(`  ✓ view-tadashi is cleanly closed before view-manage (${tadashiOpens} divs balanced)`);
+
+  // Count 22 domain cards in view-manage
+  const briefingsIdx = mainChunk.indexOf('id="view-briefings"');
+  const manageChunk = mainChunk.substring(manageIdx, briefingsIdx);
+  const cardMatches = manageChunk.match(/class="[^"]*domain-card[^"]*"/g) || [];
+  assert.strictEqual(cardMatches.length, 22, `view-manage must contain exactly 22 domain cards, found ${cardMatches.length}`);
+  console.log(`  ✓ view-manage contains all 22 domain cards in #domains-grid`);
+
   console.log('\n======================================================');
   console.log(`ALL ASSETS, CONTAINERS, AND ${renderedCount} DOMAIN PAGES LOADED CLEANLY`);
   console.log(`Local Web Server: ${BASE_URL}`);
