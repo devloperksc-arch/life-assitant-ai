@@ -317,7 +317,7 @@
   <script src="js/utils.js"></script>
   <script src="js/lib/ai.js"></script>
   <script src="js/lib/voice.js"></script>
-  <script src="js/domain-pages.js?v=5.3"></script>
+  <script src="js/domain-pages.js?v=5.4"></script>
   <script src="js/assistant/reactor-ui.js"></script>
   <script src="js/assistant/ai-router.js"></script>
   <script src="js/assistant/scheduler.js"></script>
@@ -349,7 +349,7 @@
 <!-- LEFT: Sleek TADASHI Neural Logo & System Tag -->
 <div class="flex items-center gap-3 shrink-0"><a class="flex items-center gap-3.5 group" href="#" onclick="switchTab('view-workspace'); return false;"><div class="relative w-11 h-11 rounded-xl bg-gradient-to-br from-primary-container/20 to-secondary-container/20 border border-primary-container/35 flex items-center justify-center text-primary-container shadow-[0_0_14px_rgba(0,212,255,0.25)] group-hover:border-primary-container transition-colors"><span class="material-symbols-outlined text-primary-container text-[24px]" style="font-variation-settings: 'FILL' 1;">neurology</span><span class="absolute -top-1 -right-1 flex h-2.5 w-2.5"><span class="logo-dot relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-container"></span></span></div><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-mono text-sm font-bold tracking-widest text-white">TADASHI</span><span class="text-[10px] px-2 py-0.5 rounded font-mono bg-primary-container/15 text-primary border border-primary-container/30 font-semibold tracking-wider">v4.2 AI-OS</span></div><span class="text-[11px] font-mono text-outline/75 flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 rounded-full bg-tertiary"></span>NEURAL ENGINE</span></div></a></div>
 <!-- CENTER: Segmented Floating Neural Dock Buttons -->
-<nav class="hidden md:flex items-center gap-1.5 bg-surface-container-lowest/60 p-1.5 rounded-xl border border-outline-variant/20 shadow-inner" id="nav-tabs"><button class="nav-btn relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-white bg-gradient-to-r from-primary-container/25 via-primary-container/20 to-primary-container/10 border border-primary-container/40 shadow-[0_0_14px_-2px_rgba(0,212,255,0.4)] transition-all active:scale-95" data-target="view-workspace"><span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">space_dashboard</span><span class="">Workspace</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-tadashi"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span class="">TADASHI AI</span><span class="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary-container/40 text-secondary border border-secondary/40 font-mono font-bold tracking-wider">COPILOT</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-manage"><span class="material-symbols-outlined text-[20px]">apps</span><span class="">Manage</span><span class="text-[10px] px-2 py-0.5 rounded font-mono bg-surface-container text-primary-container border border-primary-container/30 font-semibold">22</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-briefings"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="">Briefings</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-schedule"><span class="material-symbols-outlined text-[20px]">event_available</span><span class="">Schedule &amp; Tasks</span></button></nav>
+<nav class="hidden md:flex items-center gap-1.5 bg-surface-container-lowest/60 p-1.5 rounded-xl border border-outline-variant/20 shadow-inner" id="nav-tabs"><button class="nav-btn relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-white bg-gradient-to-r from-primary-container/25 via-primary-container/20 to-primary-container/10 border border-primary-container/40 shadow-[0_0_14px_-2px_rgba(0,212,255,0.4)] transition-all active:scale-95" data-target="view-workspace" onclick="switchTab('view-workspace')"><span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">space_dashboard</span><span class="">Workspace</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-tadashi" onclick="switchTab('view-tadashi')"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span class="">TADASHI AI</span><span class="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary-container/40 text-secondary border border-secondary/40 font-mono font-bold tracking-wider">COPILOT</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-manage" onclick="switchTab('view-manage')"><span class="material-symbols-outlined text-[20px]">apps</span><span class="">Manage</span><span class="text-[10px] px-2 py-0.5 rounded font-mono bg-surface-container text-primary-container border border-primary-container/30 font-semibold">22</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-briefings" onclick="switchTab('view-briefings')"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="">Briefings</span></button><button class="nav-btn flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium font-mono text-outline hover:text-white hover:bg-surface-container/60 transition-all active:scale-95" data-target="view-schedule" onclick="switchTab('view-schedule')"><span class="material-symbols-outlined text-[20px]">event_available</span><span class="">Schedule &amp; Tasks</span></button></nav>
 <!-- RIGHT: Telemetry Indicators + Voice Link + Execute Briefing Action -->
 <div class="flex items-center gap-2 shrink-0"><div class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/20 text-xs font-mono text-outline"><span class="material-symbols-outlined text-[16px]">schedule</span><span class="text-on-surface font-semibold text-sm" id="live-clock">--:--</span><span class="text-[11px] text-outline/80">IST</span></div><div class="hidden sm:flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface-container-lowest/70 border border-tertiary/25 text-xs font-mono"><span class="text-[11px] uppercase tracking-wider text-outline">LifeScore</span><span class="font-bold text-tertiary text-sm">84</span><span class="text-outline/60 text-[11px]">/100</span><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#6af7ba]"></span></div><button class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest/70 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all active:scale-95 group" onclick="openVoiceModal()"><span class="material-symbols-outlined text-primary-container text-[18px] group-hover:animate-pulse">graphic_eq</span><span class="hidden lg:inline text-xs font-medium">Voice Link</span></button><button class="flex items-center gap-2 py-2 px-4 rounded-xl bg-gradient-to-r from-primary-container via-surface-tint to-primary-container text-surface-container-lowest font-mono text-xs font-bold cyan-glow hover:shadow-[0_0_26px_rgba(0,212,255,0.6)] transition-all active:scale-95 shrink-0" onclick="togglePlayAudio()"><span class="material-symbols-outlined text-surface-container-lowest text-[18px]" style="font-variation-settings: 'FILL' 1;">bolt</span><span class="">Execute Briefing</span></button><button aria-label="Toggle navigation menu" class="md:hidden flex items-center justify-center p-2 rounded-xl bg-surface-container text-outline hover:text-white" onclick="toggleMobileMenu()"><span class="material-symbols-outlined text-[24px]">menu</span></button></div>
 </header>
@@ -2374,16 +2374,30 @@
 
     // --- Desktop Tab Switching ---
     function switchTab(viewId, pushHistory = true) {
+      if (!viewId) return;
+      if (!viewId.startsWith('view-') && document.getElementById('view-' + viewId)) {
+        viewId = 'view-' + viewId;
+      }
+      if (viewId === 'manage') viewId = 'view-manage';
+
+      // Mobile screen handler: if on mobile screen, route manage to mobile domains sheet
+      if (window.innerWidth < 1024 && (viewId === 'view-manage' || viewId === 'manage')) {
+        if (typeof openMobileDomains === 'function') {
+          openMobileDomains();
+          return;
+        }
+      }
+
       document.querySelectorAll('.view-panel').forEach(panel => {
         panel.classList.add('panel-hidden');
-        panel.style.display = '';
+        panel.style.display = 'none';
       });
 
       const targetPanel = document.getElementById(viewId);
       if (targetPanel) {
         targetPanel.classList.remove('panel-hidden');
         targetPanel.classList.remove('hidden');
-        targetPanel.style.display = '';
+        targetPanel.style.display = 'block';
       }
 
       // Update active nav button

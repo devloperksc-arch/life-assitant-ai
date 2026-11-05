@@ -68,6 +68,10 @@
 
   // Master open function
   function openDomainPage(id, pushHistory = true) {
+    const cleanId = (id || '').toLowerCase().trim();
+    if (cleanId === 'manage' || cleanId === 'domains' || cleanId === 'view-manage' || cleanId === 'all-domains') {
+      return returnToDomainsHub(pushHistory);
+    }
     const domainId = normalizeDomainId(id);
     currentDomainId = domainId;
 
