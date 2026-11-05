@@ -8,6 +8,7 @@ const http = require('http');
 const url = require('url');
 const { authenticateRequest, registerDevice, revokeDevice } = require('./auth');
 const { handleSyncPush, handleSyncPull, handleLegacyMigration } = require('./sync');
+const { handleAIChat, getAITelemetry } = require('./ai/router');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -118,6 +119,19 @@ async function requestHandler(req, res) {
       const body = await parseJsonBody(req);
       const result = await handleLegacyMigration(user, device, body);
       return sendJson(res, 200, result);
+    }
+
+    // 7. AI Chat (Server-side LiteLLM / Gateway)
+    if (method === 'POST' && path === '/ai/chat') {
+      const body = await parseJsonBody(req);
+      const result = await handleAIChat(user, device, body);
+      return sendJson(res, result.status || 200, result);
+    }
+
+    // 8. AI Telemetry
+    if (method === 'GET' && path === '/ai/telemetry') {
+      const result = getAITelemetry(user.id);
+      return sendJson(res, 200, { ok: true, telemetry: result });
     }
 
     // Not found
