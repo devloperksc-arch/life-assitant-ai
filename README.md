@@ -72,6 +72,74 @@ start index.html
 
 ---
 
+## 🧠 Next-Gen & Mark LVI Local Core Architecture
+
+TADASHI features an advanced hybrid intelligence system inspired by clean-room patterns adapted from [FatihMakes/Mark-LVI](https://github.com/FatihMakes/Mark-LVI) and the TADASHI Founder Vision:
+
+1. **Local Ollama Provider & Capability Profiling**:
+   - Loopback connection validation (`127.0.0.1:11434`), deep health checks, and runtime model discovery.
+   - Dynamic parameter-scale capability profiling (compact ≤3B / standard 8B / large ≥14B) with tool exposure budgeting.
+   - `local_only` zero-cloud-leakage guarantee with streaming token chunk handling and `AbortSignal` cancellation.
+2. **Provider-Neutral Tool Policy & Honest Outcomes**:
+   - Unified tool schema across Ollama, Gemini, and OpenAI-compatible gateways.
+   - Explicit action outcomes (`verified_done`, `unverified`, `failed`, `pending_approval`, `cancelled`).
+   - Single-use, hash-bound proposal tokens preventing AI self-approval.
+   - Replay protection, duplicate tool loop detection (capped at 5 rounds), and execution timeouts.
+3. **Offline Sync & Provenance-Tracked Memory**:
+   - Explicit approved offline domain scope (`tasks`, `calendar`, `routines`, `wellbeing`, `user`, `memory`).
+   - Durable outbox preventing premature deletion until explicit server acknowledgement.
+   - Visible concurrency conflict detection and interactive resolution.
+   - Memory provenance tracking (`user_direct`, `inferred`, `imported`, `system`) with confidence scores and unconfirmed hypothesis warnings.
+4. **Skills Catalogue & Local Sandboxing**:
+   - Verified local skills catalogue (`lecture-notes-summarizer`, `flashcard-generator`, `daily-agenda-planner`, `habit-streak-tracker`).
+   - Package integrity verification with SHA-256 digests.
+   - Explicit permission expansion gates requiring human consent.
+   - Complete lifecycle: inspect, execute, toggle, rollback, and uninstall.
+5. **Provider-Neutral Voice Architecture**:
+   - STT & TTS provider registry supporting Web Speech API, Local Whisper / Piper adapters, and cloud voice gateways.
+   - 7-state visible voice HUD (`idle`, `listening`, `transcribing`, `speaking`, `muted`, `offline`, `error`).
+   - Instant barge-in / speech cancellation and push-to-talk controls.
+   - Guaranteed text-only fallback on unavailable audio or denied permissions.
+6. **Trusted PC Local Agent & Persistent Presence**:
+   - Device pairing gate requiring mutual authorization before device operations can execute.
+   - Narrowly scoped, zero-arbitrary-shell OS tools with explicit per-action permissions (`pc.system.read`, `pc.window.read`, `pc.clipboard.read`, `pc.files.stat`).
+   - Workspace filesystem sandbox preventing path traversal.
+   - Instant emergency stop control pausing autonomous and device actions.
+
+---
+
+## 🧪 Automated Verification Suite
+
+Run all 12 comprehensive acceptance test suites:
+
+```bash
+# Run complete test verification
+node -e "
+const { execSync } = require('child_process');
+const testFiles = [
+  'scripts/test-phase2.js',
+  'scripts/test-phase3.js',
+  'scripts/test-phase4.js',
+  'scripts/test-phase5.js',
+  'scripts/test-phase6.js',
+  'scripts/test-phase7.js',
+  'scripts/test-mark-lvi-milestone1.js',
+  'scripts/test-mark-lvi-milestone2.js',
+  'scripts/test-mark-lvi-milestone3.js',
+  'scripts/test-mark-lvi-milestone4.js',
+  'scripts/test-mark-lvi-milestone5.js',
+  'scripts/test-mark-lvi-milestone6.js'
+];
+testFiles.forEach(f => {
+  process.stdout.write('Testing ' + f + '... ');
+  execSync('node ' + f, { stdio: 'inherit' });
+});
+console.log('\nMaster Verification: 12 / 12 Test Suites Passed Cleanly!');
+"
+```
+
+---
+
 ## 🎨 Design System
 
 - **Theme**: Obsidian Dark Glassmorphism
