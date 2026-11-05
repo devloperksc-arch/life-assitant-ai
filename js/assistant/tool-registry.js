@@ -926,6 +926,50 @@
     }
   });
 
+  // 17b. Memory & Skills (Phase 6)
+  registerTool({
+    name: 'manage_memory',
+    description: 'Add, list, update, or delete personal preferences and durable facts from TADASHI long-term memory.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        action:  { type: 'STRING', enum: ['add','list','update','delete'], description: 'Operation to perform' },
+        type:    { type: 'STRING', enum: ['preference','fact','episodic'], description: 'Memory classification' },
+        content: { type: 'STRING', description: 'Memory statement or fact' },
+        id:      { type: 'STRING', description: 'Memory ID for update/delete' }
+      },
+      required: ['action']
+    },
+    risk: (args) => (args && args.action === 'delete' ? RISK.DESTRUCTIVE : RISK.REVERSIBLE_WRITE),
+    requiresApproval: (args) => (args && args.action === 'delete'),
+    execute: async (args) => {
+      if (!window.Memory) throw new Error('Memory engine not loaded');
+      if (args.action === 'add') return { memory: window.Memory.add(args.type || 'fact', args.content, 'assistant_learned'), verified: true };
+      if (args.action === 'list') return { memories: window.Memory.list({ type: args.type }) };
+      if (args.action === 'update') return { updated: window.Memory.update(args.id, { content: args.content }), verified: true };
+      if (args.action === 'delete') return { deleted: window.Memory.delete(args.id), verified: true };
+      throw new Error(`Unsupported memory action: ${args.action}`);
+    }
+  });
+
+  registerTool({
+    name: 'run_skill',
+    description: 'Execute an approved installed TADASHI skill capability (e.g. lecture-notes-summarizer, flashcard-generator).',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        skill_id: { type: 'STRING', description: 'Identifier of installed skill' },
+        inputs:   { type: 'OBJECT', description: 'Input parameters dictionary for the skill' }
+      },
+      required: ['skill_id']
+    },
+    risk: RISK.READ,
+    execute: async (args) => {
+      if (!window.SkillRuntime) throw new Error('Skill runtime not loaded');
+      return window.SkillRuntime.execute(args.skill_id, args.inputs || {});
+    }
+  });
+
   // 18. Reset All Data (Destructive Action - Always Requires Confirmation)
   registerTool({
     name: 'reset_all_data',

@@ -320,6 +320,8 @@
   <script src="js/assistant/ai-router.js"></script>
   <script src="js/assistant/scheduler.js"></script>
   <script src="js/assistant/sync-engine.js"></script>
+  <script src="js/assistant/memory.js"></script>
+  <script src="js/assistant/skill-runtime.js"></script>
   <script src="js/assistant/tool-registry.js"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
@@ -2626,6 +2628,8 @@
       propose_schedule_slot: { icon: 'event_available', label: 'Slot Proposal',  color: '#6af7ba' },
       apply_schedule_proposal: { icon: 'event_upcoming', label: 'Schedule Commit', color: '#6af7ba' },
       trigger_sync:       { icon: 'sync',            label: 'Cloud Sync',          color: '#00d4ff' },
+      manage_memory:      { icon: 'psychology_alt',  label: 'Memory Bank',         color: '#d0bcff' },
+      run_skill:          { icon: 'extension',       label: 'Skill Execution',     color: '#6af7ba' },
     };
 
     function _renderToolCard(chatFeed, toolName, args, result) {
