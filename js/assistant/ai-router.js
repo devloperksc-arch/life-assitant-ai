@@ -1,7 +1,7 @@
 // ============================================================
-// TADASHI LifeOS — Hybrid AI Router (Phase 5)
+// TADASHI LifeOS — Hybrid AI Router (Phase 5 & Mark LVI Milestone 1)
 // Routes across local Ollama (127.0.0.1:11434) and hosted cloud models
-// enforcing local-only privacy policies, latency budgets, and fallbacks.
+// enforcing local-only privacy policies, capability budgets, and fallbacks.
 // ============================================================
 
 (function(window) {
@@ -44,7 +44,7 @@
     } catch(e) {}
   }
 
-  // --- 1. LOCAL OLLAMA PROVIDER (Loopback Only) ---
+  // --- 1. LOCAL OLLAMA PROVIDER (Loopback Hardened & Capability Budgeted) ---
   const OllamaProvider = {
     id: 'ollama_local',
     name: 'Ollama (Local PC)',
@@ -53,13 +53,40 @@
       try { return localStorage.getItem(OLLAMA_HOST_KEY) || DEFAULT_OLLAMA_HOST; } catch(e) { return DEFAULT_OLLAMA_HOST; }
     },
 
+    setHost(host) {
+      try { localStorage.setItem(OLLAMA_HOST_KEY, host); } catch(e) {}
+    },
+
     getModel() {
       try { return localStorage.getItem(OLLAMA_MODEL_KEY) || DEFAULT_OLLAMA_MODEL; } catch(e) { return DEFAULT_OLLAMA_MODEL; }
     },
 
-    // Check if Ollama is running locally with quick timeout
-    async isAvailable(timeoutMs = 1500) {
+    setModel(model) {
+      try { localStorage.setItem(OLLAMA_MODEL_KEY, model); } catch(e) {}
+    },
+
+    getTimeout() {
+      try { return parseInt(localStorage.getItem('tadashi_ollama_timeout_ms'), 10) || 30000; } catch(e) { return 30000; }
+    },
+
+    setTimeout(ms) {
+      try { localStorage.setItem('tadashi_ollama_timeout_ms', String(ms)); } catch(e) {}
+    },
+
+    // Identify if endpoint is strictly local loopback
+    isLoopback(host) {
+      const target = (host || this.getHost()).toLowerCase();
+      return target.includes('127.0.0.1') || target.includes('localhost') || target.includes('[::1]');
+    },
+
+    classifyEndpoint(host) {
+      return this.isLoopback(host) ? 'local' : 'remote_online';
+    },
+
+    // Check detailed connection health and model availability
+    async checkHealth(timeoutMs = 1500) {
       const host = this.getHost();
+      const configuredModel = this.getModel();
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -69,10 +96,213 @@
           signal: controller.signal
         });
         clearTimeout(timer);
-        return res.ok;
-      } catch(e) {
+
+        if (!res.ok) {
+          return {
+            ok: false,
+            status: 'unsupported',
+            host,
+            error: `Ollama returned HTTP ${res.status}`,
+            models: [],
+            version: null
+          };
+        }
+
+        const data = await res.json();
+        const models = Array.isArray(data.models) ? data.models : [];
+
+        // Check version if available
+        let version = null;
+        try {
+          const vRes = await fetch(`${host}/api/version`, { method: 'GET' });
+          if (vRes.ok) {
+            const vData = await vRes.json();
+            version = vData.version || null;
+          }
+        } catch(ve) {}
+
+        if (models.length === 0) {
+          return {
+            ok: true,
+            status: 'no_models',
+            host,
+            version,
+            models: [],
+            warning: 'Ollama is running, but no models are installed. Run "ollama run llama3.2" to install one.'
+          };
+        }
+
+        const hasModel = models.some(m => {
+          const mName = m.name || '';
+          return mName === configuredModel || mName.split(':')[0] === configuredModel.split(':')[0];
+        });
+
+        if (!hasModel) {
+          return {
+            ok: true,
+            status: 'model_missing',
+            host,
+            version,
+            models,
+            configuredModel,
+            warning: `Configured model "${configuredModel}" is not installed in local Ollama.`
+          };
+        }
+
+        return {
+          ok: true,
+          status: 'ready',
+          host,
+          version,
+          models,
+          configuredModel
+        };
+
+      } catch(err) {
         clearTimeout(timer);
-        return false;
+        const isTimeout = err.name === 'AbortError';
+        return {
+          ok: false,
+          status: isTimeout ? 'timeout' : 'offline',
+          host,
+          error: isTimeout
+            ? `Connection to local Ollama (${host}) timed out after ${timeoutMs}ms.`
+            : `Ollama daemon is not running on ${host}. Launch Ollama on your PC.`,
+          models: [],
+          version: null
+        };
+      }
+    },
+
+    // Check if Ollama is running locally with quick timeout (backward-compatible)
+    async isAvailable(timeoutMs = 1500) {
+      const health = await this.checkHealth(timeoutMs);
+      return health.ok;
+    },
+
+    // Enumerate installed models
+    async listModels(timeoutMs = 2000) {
+      const health = await this.checkHealth(timeoutMs);
+      if (!health.ok || !health.models) return [];
+      return health.models.map(m => ({
+        name: m.name,
+        size: m.size,
+        modifiedAt: m.modified_at,
+        parameterSize: m.details?.parameter_size,
+        family: m.details?.family,
+        quantization: m.details?.quantization_level
+      }));
+    },
+
+    // Capability profile based on model family and parameter scale
+    getModelProfile(modelName) {
+      const name = (modelName || this.getModel()).toLowerCase();
+      
+      // Parse parameter size if available (e.g. 3b, 8b, 32b, 70b)
+      const match = name.match(/(\d+)b/);
+      if (match) {
+        const paramSize = parseInt(match[1], 10);
+        if (paramSize <= 3) {
+          return {
+            tier: 'compact',
+            contextBudget: 4096,
+            maxTools: 5,
+            supportsTools: true,
+            supportsStreaming: true
+          };
+        }
+        if (paramSize <= 9) {
+          return {
+            tier: 'standard',
+            contextBudget: 8192,
+            maxTools: 12,
+            supportsTools: true,
+            supportsStreaming: true
+          };
+        }
+        return {
+          tier: 'large',
+          contextBudget: 32768,
+          maxTools: 30,
+          supportsTools: true,
+          supportsStreaming: true
+        };
+      }
+
+      // Fallback heuristics based on name keywords
+      if (name.includes('tiny') || name.includes('mini')) {
+        return {
+          tier: 'compact',
+          contextBudget: 4096,
+          maxTools: 5,
+          supportsTools: true,
+          supportsStreaming: true
+        };
+      }
+      if (name.includes('mistral') || name.includes('llama')) {
+        return {
+          tier: 'standard',
+          contextBudget: 8192,
+          maxTools: 12,
+          supportsTools: true,
+          supportsStreaming: true
+        };
+      }
+
+      // Default fallback profile
+      return {
+        tier: 'standard',
+        contextBudget: 4096,
+        maxTools: 8,
+        supportsTools: true,
+        supportsStreaming: true
+      };
+    },
+
+    // Prune and budget tools to prevent small local model hallucination/context overflow
+    pruneToolsForModel(tools, modelName) {
+      if (!Array.isArray(tools) || tools.length === 0) return [];
+      const profile = this.getModelProfile(modelName);
+      if (!profile.supportsTools) return [];
+
+      if (tools.length <= profile.maxTools) {
+        return tools;
+      }
+
+      // Prioritize essential frequent tools (tasks, calendar, wellbeing)
+      const priorityOrder = ['manage_tasks', 'manage_calendar', 'get_wellbeing', 'search_knowledge'];
+      const prioritized = [...tools].sort((a, b) => {
+        const aPri = priorityOrder.indexOf(a.name) !== -1 ? priorityOrder.indexOf(a.name) : 99;
+        const bPri = priorityOrder.indexOf(b.name) !== -1 ? priorityOrder.indexOf(b.name) : 99;
+        return aPri - bPri;
+      });
+
+      return prioritized.slice(0, profile.maxTools);
+    },
+
+    // Warm-up ping to preload weights into VRAM
+    async warmUp(modelName, timeoutMs = 5000) {
+      const host = this.getHost();
+      const model = modelName || this.getModel();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const res = await fetch(`${host}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model,
+            prompt: '',
+            keep_alive: '5m'
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        return { ok: res.ok, warmed: res.ok, model };
+      } catch(err) {
+        clearTimeout(timer);
+        return { ok: false, warmed: false, model, error: err.message };
       }
     },
 
@@ -89,13 +319,170 @@
       }));
     },
 
-    // Execute Chat Request against local Ollama API
-    async generate(messages, tools, options = {}) {
+    // Stream response chunk by chunk with cancellation
+    async generateStream(messages, tools, options = {}, onChunk = null) {
       const startTime = performance.now();
       const host = this.getHost();
       const model = options.model || this.getModel();
-      const timeoutMs = options.timeoutMs || 30000;
+      const timeoutMs = options.timeoutMs || this.getTimeout();
       const controller = new AbortController();
+
+      if (options.signal) {
+        if (options.signal.aborted) {
+          controller.abort();
+        } else {
+          options.signal.addEventListener('abort', () => controller.abort());
+        }
+      }
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const formattedMessages = messages.map(m => ({
+        role: m.role === 'tadashi' || m.role === 'model' ? 'assistant' : m.role,
+        content: m.content || (m.parts ? m.parts[0]?.text : '') || ''
+      }));
+
+      if (formattedMessages.length === 0 && options.prompt) {
+        formattedMessages.push({ role: 'user', content: options.prompt });
+      }
+
+      const prunedTools = this.pruneToolsForModel(tools, model);
+
+      const body = {
+        model,
+        messages: formattedMessages,
+        stream: true,
+        options: { temperature: options.temperature || 0.7 }
+      };
+
+      if (prunedTools.length > 0) {
+        body.tools = this.formatTools(prunedTools);
+      }
+
+      try {
+        const res = await fetch(`${host}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Ollama HTTP ${res.status}: ${errText}`);
+        }
+
+        let fullText = '';
+        const toolCalls = [];
+
+        if (res.body && typeof res.body.getReader === 'function') {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              try {
+                const chunkData = JSON.parse(trimmed);
+                const chunkText = chunkData.message?.content || '';
+                if (chunkText) {
+                  fullText += chunkText;
+                  if (typeof onChunk === 'function') {
+                    onChunk({
+                      chunk: chunkText,
+                      accumulated: fullText,
+                      done: chunkData.done || false
+                    });
+                  }
+                }
+                if (Array.isArray(chunkData.message?.tool_calls)) {
+                  for (const tc of chunkData.message.tool_calls) {
+                    if (tc.function) {
+                      toolCalls.push({
+                        name: tc.function.name,
+                        args: tc.function.arguments || {}
+                      });
+                    }
+                  }
+                }
+              } catch(pe) {}
+            }
+          }
+        } else {
+          const data = await res.json();
+          fullText = data.message?.content || '';
+          if (Array.isArray(data.message?.tool_calls)) {
+            for (const tc of data.message.tool_calls) {
+              if (tc.function) {
+                toolCalls.push({ name: tc.function.name, args: tc.function.arguments || {} });
+              }
+            }
+          }
+          if (typeof onChunk === 'function') {
+            onChunk({ chunk: fullText, accumulated: fullText, done: true });
+          }
+        }
+
+        const latencyMs = performance.now() - startTime;
+        recordTelemetry({
+          provider: 'ollama',
+          model,
+          latencyMs,
+          status: 'success',
+          taskClass: options.taskClass
+        });
+
+        return {
+          ok: true,
+          provider: 'ollama',
+          model,
+          text: fullText,
+          toolCalls,
+          latencyMs
+        };
+
+      } catch(err) {
+        clearTimeout(timer);
+        const latencyMs = performance.now() - startTime;
+        recordTelemetry({
+          provider: 'ollama',
+          model,
+          latencyMs,
+          status: 'error',
+          error: err.message,
+          taskClass: options.taskClass
+        });
+        throw err;
+      }
+    },
+
+    // Execute Chat Request against local Ollama API
+    async generate(messages, tools, options = {}) {
+      if (options.stream && typeof options.onChunk === 'function') {
+        return this.generateStream(messages, tools, options, options.onChunk);
+      }
+
+      const startTime = performance.now();
+      const host = this.getHost();
+      const model = options.model || this.getModel();
+      const timeoutMs = options.timeoutMs || this.getTimeout();
+      const controller = new AbortController();
+
+      if (options.signal) {
+        if (options.signal.aborted) {
+          controller.abort();
+        } else {
+          options.signal.addEventListener('abort', () => controller.abort());
+        }
+      }
       const timer = setTimeout(() => controller.abort(), timeoutMs);
 
       // Convert messages to standard format
@@ -104,15 +491,22 @@
         content: m.content || (m.parts ? m.parts[0]?.text : '') || ''
       }));
 
+      if (formattedMessages.length === 0 && options.prompt) {
+        formattedMessages.push({ role: 'user', content: options.prompt });
+      }
+
+      // Prune tools for model capability budget
+      const prunedTools = this.pruneToolsForModel(tools, model);
+
       const body = {
         model,
         messages: formattedMessages,
         stream: false,
-        options: { temperature: 0.7 }
+        options: { temperature: options.temperature || 0.7 }
       };
 
-      if (Array.isArray(tools) && tools.length > 0) {
-        body.tools = this.formatTools(tools);
+      if (prunedTools.length > 0) {
+        body.tools = this.formatTools(prunedTools);
       }
 
       try {
@@ -174,6 +568,13 @@
           error: err.message,
           taskClass: options.taskClass
         });
+
+        if (err.name === 'AbortError') {
+          throw new Error(`Local Ollama request timed out after ${timeoutMs}ms or was cancelled.`);
+        }
+        if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED'))) {
+          throw new Error(`Cannot connect to local Ollama on ${host}. Ensure Ollama is running on your PC.`);
+        }
         throw err;
       }
     }
@@ -195,7 +596,6 @@
       const model = window.AI.getModel();
 
       try {
-        // Direct call through AI module
         const text = await window.AI.chat(
           options.prompt || (messages[messages.length - 1]?.content || ''),
           messages,
@@ -271,6 +671,15 @@
 
       // Rule 1: Local-only privacy policy strictly enforced
       if (privacy === 'local_only') {
+        const host = OllamaProvider.getHost();
+        if (!OllamaProvider.isLoopback(host)) {
+          return {
+            selectedProvider: null,
+            routeDecision: 'blocked_privacy_remote_host',
+            error: `Local-only privacy mode requires a local loopback Ollama host (127.0.0.1 or localhost). Configured host "${host}" is classified as remote online.`
+          };
+        }
+
         if (!ollamaAvailable) {
           return {
             selectedProvider: null,
@@ -335,9 +744,14 @@
         throw new Error(route.error || 'No viable AI provider route');
       }
 
-      const tools = (typeof window.ToolRegistry !== 'undefined')
+      const rawTools = (typeof window.ToolRegistry !== 'undefined')
         ? window.ToolRegistry.getGeminiDeclarations()
         : [];
+
+      // If routed to local Ollama, apply model-specific exposure budgeting
+      const tools = (route.selectedProvider.id === 'ollama_local' && typeof OllamaProvider.pruneToolsForModel === 'function')
+        ? OllamaProvider.pruneToolsForModel(rawTools, options.model || OllamaProvider.getModel())
+        : rawTools;
 
       try {
         return await route.selectedProvider.generate(
@@ -349,9 +763,12 @@
         // Fallback execution if configured
         if (route.fallbackProvider) {
           console.warn(`Primary provider ${route.selectedProvider.id} failed; attempting fallback to ${route.fallbackProvider.id}`);
+          const fallbackTools = (route.fallbackProvider.id === 'ollama_local' && typeof OllamaProvider.pruneToolsForModel === 'function')
+            ? OllamaProvider.pruneToolsForModel(rawTools, options.model || OllamaProvider.getModel())
+            : rawTools;
           return await route.fallbackProvider.generate(
             history,
-            tools,
+            fallbackTools,
             { ...options, prompt }
           );
         }
@@ -360,6 +777,7 @@
     }
   };
 
+  window.OllamaProvider = OllamaProvider;
   window.AIRouter = AIRouter;
 
 })(typeof window !== 'undefined' ? window : global);
