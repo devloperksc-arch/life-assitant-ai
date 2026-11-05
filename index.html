@@ -318,6 +318,7 @@
   <script src="js/domain-pages.js?v=5.2"></script>
   <script src="js/assistant/reactor-ui.js"></script>
   <script src="js/assistant/scheduler.js"></script>
+  <script src="js/assistant/sync-engine.js"></script>
   <script src="js/assistant/tool-registry.js"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
@@ -2623,6 +2624,7 @@
       find_free_time:     { icon: 'schedule',        label: 'Availability Search', color: '#00d4ff' },
       propose_schedule_slot: { icon: 'event_available', label: 'Slot Proposal',  color: '#6af7ba' },
       apply_schedule_proposal: { icon: 'event_upcoming', label: 'Schedule Commit', color: '#6af7ba' },
+      trigger_sync:       { icon: 'sync',            label: 'Cloud Sync',          color: '#00d4ff' },
     };
 
     function _renderToolCard(chatFeed, toolName, args, result) {

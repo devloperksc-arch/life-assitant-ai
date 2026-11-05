@@ -896,19 +896,34 @@
     }
   });
 
-  // 17. Sync Status
+  // 17. Sync Status & Control (Phase 4)
   registerTool({
     name: 'get_sync_status',
     description: 'Check local storage outbox, device capability, and sync state.',
     parameters: { type: 'OBJECT', properties: {} },
     risk: RISK.READ,
-    execute: async () => ({
-      mode: navigator.onLine ? 'online_connected' : 'offline_local_core',
-      storageEngine: 'localStorage (Phase 4 IndexedDB outbox queued)',
-      activeDomains: 22,
-      pendingOutboxCount: 0,
-      lastSync: new Date().toISOString()
-    })
+    execute: async () => {
+      if (window.SyncEngine) {
+        return window.SyncEngine.getStatus();
+      }
+      return {
+        isOnline: navigator.onLine,
+        storageEngine: 'IndexedDB + localStorage fallback',
+        pendingOutboxCount: 0,
+        lastSync: new Date().toISOString()
+      };
+    }
+  });
+
+  registerTool({
+    name: 'trigger_sync',
+    description: 'Trigger a synchronization cycle: push pending outbox mutations and pull updates from the cloud.',
+    parameters: { type: 'OBJECT', properties: {} },
+    risk: RISK.REVERSIBLE_WRITE,
+    execute: async () => {
+      if (!window.SyncEngine) throw new Error('Sync engine not initialized');
+      return window.SyncEngine.syncAll();
+    }
   });
 
   // 18. Reset All Data (Destructive Action - Always Requires Confirmation)
