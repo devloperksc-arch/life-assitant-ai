@@ -178,6 +178,11 @@ class PCAgent {
           ollamaOnline: ollamaCheck.ok,
           ollamaVersion: ollamaCheck.version || null,
           ollamaModels: Array.isArray(ollamaCheck.models) ? ollamaCheck.models.map(m => m.name) : [],
+          voiceCapabilities: {
+            stt: ['web_speech', 'local_whisper'],
+            tts: ['web_speech', 'local_piper'],
+            textFallback: true
+          },
           timestamp: new Date().toISOString()
         })
       });
@@ -239,6 +244,35 @@ class PCAgent {
       status: s.status,
       permissions: s.permissions || []
     }));
+  }
+
+  // Voice & Audio Capabilities (Mark LVI Phase 5)
+  async checkVoiceCapabilities(localVoiceUrl = 'http://127.0.0.1:11435') {
+    let whisperAvailable = false;
+    let piperAvailable = false;
+
+    try {
+      const res = await fetch(`${localVoiceUrl}/health`, { method: 'GET' });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        whisperAvailable = Boolean(data.whisper);
+        piperAvailable = Boolean(data.piper);
+      }
+    } catch (e) {
+      // Local voice server not running; text fallback active
+    }
+
+    return {
+      stt: {
+        webSpeech: true,
+        localWhisper: whisperAvailable
+      },
+      tts: {
+        webSpeech: true,
+        localPiper: piperAvailable
+      },
+      textOnlyFallback: true
+    };
   }
 }
 
