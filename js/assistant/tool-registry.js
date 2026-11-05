@@ -436,6 +436,87 @@
     }
   });
 
+  // 4b. Deterministic Free-Time & Availability (Phase 3)
+  registerTool({
+    name: 'find_free_time',
+    description: 'Find free time slots and availability on a specific date, accounting for classes, workouts, meals, and buffers.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        date:         { type: 'STRING', description: 'Target date in YYYY-MM-DD format (defaults to today)' },
+        min_duration: { type: 'NUMBER', description: 'Minimum slot duration in minutes (defaults to 30)' }
+      }
+    },
+    risk: RISK.READ,
+    execute: async (args) => {
+      if (!window.Scheduler) throw new Error('Scheduling engine not loaded');
+      const targetDate = args.date || (typeof Utils !== 'undefined' ? Utils.today() : new Date().toISOString().slice(0, 10));
+      return window.Scheduler.calculateFreeIntervals(targetDate, { minSlotMinutes: args.min_duration || 30 });
+    }
+  });
+
+  registerTool({
+    name: 'propose_schedule_slot',
+    description: 'Draft a smart schedule proposal for a task, workout, or study block without mutating the calendar.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        title:          { type: 'STRING', description: 'Title of the event or task to schedule' },
+        duration:       { type: 'NUMBER', description: 'Duration in minutes (e.g. 45, 60, 90)' },
+        date:           { type: 'STRING', description: 'Target date in YYYY-MM-DD format' },
+        preferred_time: { type: 'STRING', enum: ['morning','afternoon','evening','night'], description: 'Preferred time of day' },
+        energy_level:   { type: 'STRING', enum: ['high','medium','low'], description: 'Required energy level' }
+      },
+      required: ['title']
+    },
+    risk: RISK.READ,
+    execute: async (args) => {
+      if (!window.Scheduler) throw new Error('Scheduling engine not loaded');
+      const targetDate = args.date || (typeof Utils !== 'undefined' ? Utils.today() : new Date().toISOString().slice(0, 10));
+      return window.Scheduler.proposeScheduleSlot({
+        title: args.title,
+        duration: args.duration || 60,
+        preferredTimeOfDay: args.preferred_time || 'morning',
+        energyRequirement: args.energy_level || 'high'
+      }, targetDate);
+    }
+  });
+
+  registerTool({
+    name: 'apply_schedule_proposal',
+    description: 'Commit an approved schedule proposal to the calendar with version concurrency verification.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        proposal_id:     { type: 'STRING', description: 'ID of the proposal being committed' },
+        date:            { type: 'STRING', description: 'Date of the slot' },
+        calendar_version:{ type: 'STRING', description: 'Calendar state version token' },
+        title:           { type: 'STRING', description: 'Title of the event' },
+        start_time:      { type: 'STRING', description: 'HH:MM start time' },
+        duration:        { type: 'NUMBER', description: 'Duration in minutes' },
+        type:            { type: 'STRING', description: 'Event type' }
+      },
+      required: ['title', 'date', 'start_time', 'duration']
+    },
+    risk: RISK.REVERSIBLE_WRITE,
+    requiresApproval: true,
+    execute: async (args) => {
+      if (!window.Scheduler) throw new Error('Scheduling engine not loaded');
+      const proposalObj = {
+        id: args.proposal_id || `prop_manual_${Date.now()}`,
+        date: args.date,
+        calendarVersion: args.calendar_version,
+        item: { title: args.title, duration: args.duration, type: args.type || 'study' },
+        proposedSlot: {
+          startTime: args.start_time,
+          endTime: window.Scheduler.minutesToTime(window.Scheduler.timeToMinutes(args.start_time) + args.duration),
+          durationMinutes: args.duration
+        }
+      };
+      return window.Scheduler.applyScheduleProposal(proposalObj);
+    }
+  });
+
   // 5. Finance & Wealth
   registerTool({
     name: 'manage_finance',
