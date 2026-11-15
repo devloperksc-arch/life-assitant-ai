@@ -15,45 +15,44 @@ Both tools run on your local machine and expose a standard OpenAI-compatible API
 
 ---
 
-## 2. How to Launch Them on Your PC
+## 2. How to Launch Them on Windows PC
+
+> [!TIP]
+> **Windows PowerShell Note**: If PowerShell displays an error like `PSSecurityException: running scripts is disabled on this system`, use `npm.cmd` instead of `npm`, or run:
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+> Also make sure you run your commands from your Desktop or project directory (`C:\Users\HP\Desktop`), **not** from `C:\WINDOWS\system32`.
 
 ### Option A: Launching OmniRoute
-Requirements: Node.js (v18+) and Git.
 
-```bash
-# 1. Clone the OmniRoute repository
-git clone https://github.com/cheaper-inference/OmniRoute.git
-cd OmniRoute
+Both source and zero-install `npx` options are supported:
 
-# 2. Install dependencies
-npm install
-
-# 3. Start the gateway server
-npm run start
+**Method 1: Zero-Install NPX (Fastest)**
+```powershell
+npx --yes omniroute
 ```
-*OmniRoute starts listening on `http://localhost:8080/v1`.*
+*Starts OmniRoute on `http://localhost:20128/v1` (or `8080`).*
+
+**Method 2: From Cloned Source**
+Repository is cloned at `C:\Users\HP\Desktop\OmniRoute`:
+```powershell
+cd C:\Users\HP\Desktop\OmniRoute
+npm.cmd install
+npm.cmd run dev
+```
 
 ---
 
 ### Option B: Launching FreeLLMAPI
-Requirements: Node.js (v20+) or Docker.
 
-**Via Node.js:**
-```bash
-# 1. Clone the FreeLLMAPI repository
-git clone https://github.com/tashfeenahmed/freellmapi.git
-cd freellmapi
-
-# 2. Install dependencies and start
-npm install
-npm run dev
+Repository is cloned at `C:\Users\HP\Desktop\freellmapi`:
+```powershell
+cd C:\Users\HP\Desktop\freellmapi
+npm.cmd install
+npm.cmd run dev
 ```
-
-**Via Docker (One-liner):**
-```bash
-curl -fsSL https://freellmapi.co/install.sh | bash
-```
-*FreeLLMAPI starts listening on `http://localhost:3001/v1` with a dashboard on `http://localhost:3001`.*
+*FreeLLMAPI starts listening on `http://localhost:3001/v1` with a web dashboard at `http://localhost:3001`.*
 
 ---
 
