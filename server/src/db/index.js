@@ -99,7 +99,7 @@ const deviceRepo = {
     const { pool, mem } = await getClient();
     const now = new Date().toISOString();
     const d = {
-      id: device.id,
+      id: device.id || `dev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       user_id: device.user_id,
       name: device.name || 'Unnamed Device',
       platform: device.platform || 'web',

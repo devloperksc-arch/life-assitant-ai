@@ -4,7 +4,7 @@
 // action proposal cards, and barge-in / speech interrupt control.
 // ============================================================
 
-(function(window) {
+(function (window) {
   'use strict';
 
   // 10 Distinct States per TADASHI Spec Section 4
@@ -123,7 +123,7 @@
         <!-- Outer Segmented Ring (Rotating CW) -->
         <g class="reactor-ring-outer">
           <circle cx="100" cy="100" r="74" fill="none" stroke="#00d4ff" stroke-width="2.5"
-                  stroke-dasharray="16 8 4 8 28 12" stroke-linecap="round" opacity="0.85" filter="url(#reactorBloom)" />
+                  stroke-dasharray="16 8 4 8 28 12" stroke-linecap="round" opacity="0.85" />
           <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"
                   stroke-dasharray="3 9" />
         </g>
@@ -214,7 +214,7 @@
         window.dispatchEvent(new CustomEvent('tadashi:reactor-state', {
           detail: { state: meta.id, meta, details: activeDetails }
         }));
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -286,7 +286,7 @@
 
     // Synchronize speaking events
     const origSpeakingChange = voiceObj._onSpeakingChange;
-    voiceObj._onSpeakingChange = function(isSpeaking) {
+    voiceObj._onSpeakingChange = function (isSpeaking) {
       if (isSpeaking) {
         applyStateDOM('speaking', 'TADASHI speaking · Click or speak to interrupt');
       } else if (currentState === 'speaking') {
@@ -297,7 +297,7 @@
 
     // Synchronize listening events
     const origListeningChange = voiceObj._onListeningChange;
-    voiceObj._onListeningChange = function(isListening) {
+    voiceObj._onListeningChange = function (isListening) {
       if (isListening) {
         applyStateDOM('listening', 'Listening... Speak naturally');
       } else if (currentState === 'listening') {
@@ -379,7 +379,7 @@
 
   // Expose to window
   window.ReactorUI = ReactorUI;
-  window.setReactorState = function(stateId, details) {
+  window.setReactorState = function (stateId, details) {
     ReactorUI.setState(stateId, details);
   };
 

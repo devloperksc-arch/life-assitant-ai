@@ -8,23 +8,44 @@ const http = require('http');
 const url = require('url');
 const { authenticateRequest, registerDevice, revokeDevice } = require('./auth');
 const { handleSyncPush, handleSyncPull, handleLegacyMigration } = require('./sync');
-const { handleAIChat, getAITelemetry } = require('./ai/router');
+const { handleAIChat, getAITelemetry, getGatewayStatus } = require('./ai/router');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '127.0.0.1';
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:8000,http://127.0.0.1:8000')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
 
-// CORS headers helper
+// CORS headers helper (strictly validates origin against configured allowlist in production)
 function setCorsHeaders(res, req) {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  const origin = req.headers.origin;
+  if (origin && (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*') || process.env.NODE_ENV !== 'production')) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Device-Id');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
 
-// JSON body parser helper
+// JSON body parser helper (supports raw streams and Vercel pre-parsed bodies)
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
+    // If body was already parsed by a serverless runtime (e.g. Vercel)
+    if (req.body !== undefined && req.body !== null) {
+      if (typeof req.body === 'object') return resolve(req.body);
+      if (typeof req.body === 'string') {
+        if (!req.body.trim()) return resolve({});
+        try {
+          return resolve(JSON.parse(req.body));
+        } catch(e) {
+          return reject(new Error('Invalid JSON'));
+        }
+      }
+    }
+
     let data = '';
     req.on('data', chunk => {
       data += chunk;
@@ -45,6 +66,9 @@ function parseJsonBody(req) {
 }
 
 function sendJson(res, statusCode, body) {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    return res.status(statusCode).json(body);
+  }
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(body));
 }
@@ -55,13 +79,20 @@ async function requestHandler(req, res) {
 
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
+    if (typeof res.status === 'function') {
+      return res.status(204).end();
+    }
     res.writeHead(204);
     res.end();
     return;
   }
 
   const parsedUrl = url.parse(req.url, true);
-  const path = parsedUrl.pathname;
+  // Normalize path: supports both /path and /api/path seamlessly
+  let path = parsedUrl.pathname || '/';
+  if (path.startsWith('/api/') || path === '/api') {
+    path = path.replace(/^\/api(?=\/|$)/, '') || '/';
+  }
   const method = req.method;
 
   try {
@@ -72,6 +103,16 @@ async function requestHandler(req, res) {
         timestamp: new Date().toISOString(),
         version: '1.0.0-phase4',
         service: 'tadashi-backend'
+      });
+    }
+
+    // Safe AI Gateway Status Check (Never discloses API keys or raw endpoints)
+    if (method === 'GET' && path === '/ai/health') {
+      return sendJson(res, 200, {
+        ok: true,
+        status: 'online',
+        service: 'tadashi-ai-gateway-router',
+        ...getGatewayStatus()
       });
     }
 

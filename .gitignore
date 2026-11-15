@@ -11,7 +11,12 @@ Thumbs.db
 *.code-workspace
 
 # Build outputs (if Tailwind CLI is added later)
-css/tailwind.css
 
 # Node (if npm is ever used)
 node_modules/
+
+# Secrets & Local Environment
+.env
+.env.local
+*.env
+!*.env.example

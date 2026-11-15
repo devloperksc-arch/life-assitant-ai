@@ -4,20 +4,20 @@
 // user direct editing (CRUD & toggles), and AI autonomous control.
 // ============================================================
 
-(function(window) {
+(function (window) {
   'use strict';
 
   // Local alias for Utils with fallback
   const Utils = window.Utils || (typeof globalThis !== 'undefined' ? globalThis.Utils : null) || {
-    escapeHtml: (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])))
+    escapeHtml: (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])))
   };
 
   // Domain Category Colors & Names
   const CATEGORY_META = {
-    core:     { label: 'Core & Execution', color: '#00d4ff', bg: 'rgba(0,212,255,0.12)' },
+    core: { label: 'Core & Execution', color: '#00d4ff', bg: 'rgba(0,212,255,0.12)' },
     vitality: { label: 'Vitality & Health', color: '#6af7ba', bg: 'rgba(106,247,186,0.12)' },
-    living:   { label: 'Living & Spaces',   color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    systems:  { label: 'Systems & Tools',  color: '#d0bcff', bg: 'rgba(208,188,255,0.12)' }
+    living: { label: 'Living & Spaces', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    systems: { label: 'Systems & Tools', color: '#d0bcff', bg: 'rgba(208,188,255,0.12)' }
   };
 
   // Master 22 Domains Registry fallback
@@ -77,7 +77,7 @@
 
     // Desktop view switching
     if (typeof window.switchTab === 'function') {
-      try { window.switchTab('view-domain-page', false); } catch(e) {}
+      try { window.switchTab('view-domain-page', false); } catch (e) { }
     }
     document.querySelectorAll('.view-panel').forEach(p => {
       p.classList.add('panel-hidden');
@@ -104,8 +104,8 @@
       }
     }
 
-    // Render the page contents
-    renderDomainPage(domainId);
+    // Render the page contents immediately for smooth navigation
+    _doRenderDomainPage(domainId);
 
     // Hide redundant generic HUD subbar on dedicated domain pages to remove empty top space
     const hud = document.getElementById('hud-subbar');
@@ -124,24 +124,56 @@
         if (window.location.hash !== '#' + domainId) {
           history.pushState({ type: 'domain', id: domainId }, '', '#' + domainId);
         }
-      } catch(e) {}
+      } catch (e) { }
     }
   }
 
-  // Master render function
+  // Master render function (coalesced with requestAnimationFrame)
+  let _renderRaf = null;
+  let _pendingDomainId = null;
+
   function renderDomainPage(id) {
+    _pendingDomainId = id || currentDomainId;
+    if (_renderRaf) return;
+    if (typeof requestAnimationFrame === 'function') {
+      _renderRaf = requestAnimationFrame(() => {
+        _renderRaf = null;
+        if (_pendingDomainId) _doRenderDomainPage(_pendingDomainId);
+      });
+    } else {
+      if (_pendingDomainId) _doRenderDomainPage(_pendingDomainId);
+    }
+  }
+
+  function _doRenderDomainPage(id) {
     const domainId = normalizeDomainId(id);
     const domain = (window.DOMAINS || []).find(d => d.id === domainId) || {
       id: domainId, num: '00', name: domainId.toUpperCase(), cat: 'core', icon: 'dashboard', emoji: '❖', color: '#00d4ff'
     };
 
     const container = document.getElementById('view-domain-page');
-    if (!container) return;
+    const mobileContainer = document.getElementById('mobile-domain-view-content');
+    if (!container && !mobileContainer) return;
+
+    // Preserve scroll position and active input state across renders
+    let activeInputId = null;
+    let activeInputValue = null;
+    let activeSelectionStart = null;
+    let activeSelectionEnd = null;
+    if (typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'INPUT') {
+      activeInputId = document.activeElement.id;
+      activeInputValue = document.activeElement.value;
+      try {
+        activeSelectionStart = document.activeElement.selectionStart;
+        activeSelectionEnd = document.activeElement.selectionEnd;
+      } catch (e) { }
+    }
+    const prevScrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
 
     // Build the respective domain content
     const contentHtml = getDomainSpecificHtml(domainId, domain);
 
-    container.innerHTML = `
+    const renderedHtml = `
       <!-- Domain Top Navigation Bar & Breadcrumb -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-outline-variant/15">
         <div class="flex items-center gap-3">
@@ -152,8 +184,8 @@
           <span class="text-outline/40">/</span>
           <div class="flex items-center gap-2">
             <span class="text-sm font-mono font-semibold" style="color:${domain.color}">${domain.num} · ${domain.name}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full font-mono uppercase tracking-wider font-semibold" style="background:${CATEGORY_META[domain.cat]?.bg||'rgba(0,212,255,0.1)'};color:${CATEGORY_META[domain.cat]?.color||'#00d4ff'};border:1px solid ${CATEGORY_META[domain.cat]?.color||'#00d4ff'}30">
-              ${CATEGORY_META[domain.cat]?.label||domain.cat}
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-mono uppercase tracking-wider font-semibold" style="background:${CATEGORY_META[domain.cat]?.bg || 'rgba(0,212,255,0.1)'};color:${CATEGORY_META[domain.cat]?.color || '#00d4ff'};border:1px solid ${CATEGORY_META[domain.cat]?.color || '#00d4ff'}30">
+              ${CATEGORY_META[domain.cat]?.label || domain.cat}
             </span>
           </div>
         </div>
@@ -170,9 +202,8 @@
         </div>
       </div>
 
-      <!-- Domain Hero Banner -->
-      <div class="relative rounded-2xl glass-surface p-6 border border-outline-variant/20 overflow-hidden shadow-2xl">
-        <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-20" style="background:${domain.color}"></div>
+      <!-- Domain Hero Banner (Optimized radial gradient background) -->
+      <div class="relative rounded-2xl glass-surface p-6 border border-outline-variant/20 overflow-hidden shadow-2xl" style="background: radial-gradient(240px 240px at 100% 0%, ${domain.color}25, transparent 70%), rgba(14, 18, 30, 0.92);">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-white/10 shrink-0" style="background:${domain.color}20;color:${domain.color}">
@@ -236,11 +267,54 @@
       </div>
     `;
 
-    // Also update mobile domain view if present
-    const mobileContainer = document.getElementById('mobile-domain-view-content');
-    if (mobileContainer) {
-      mobileContainer.innerHTML = container.innerHTML;
+    // Render into active container based on layout (prevents duplicate IDs between desktop & mobile)
+    let isMobile = false;
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      try { isMobile = window.matchMedia('(max-width: 1023px)').matches; } catch (e) { }
     }
+
+    if (isMobile && mobileContainer) {
+      mobileContainer.innerHTML = renderedHtml;
+      if (container) container.innerHTML = '';
+    } else if (container) {
+      container.innerHTML = renderedHtml;
+      if (mobileContainer) mobileContainer.innerHTML = '';
+    } else if (mobileContainer) {
+      mobileContainer.innerHTML = renderedHtml;
+    }
+
+    // Restore scroll position
+    if (typeof window !== 'undefined' && prevScrollY > 0) {
+      window.scrollTo(0, prevScrollY);
+    }
+
+    // Restore active input focus and text
+    if (activeInputId) {
+      const inputEl = document.getElementById(activeInputId);
+      if (inputEl) {
+        if (activeInputValue !== null && inputEl.value !== activeInputValue) {
+          inputEl.value = activeInputValue;
+        }
+        try {
+          inputEl.focus();
+          if (activeSelectionStart !== null && activeSelectionEnd !== null) {
+            inputEl.setSelectionRange(activeSelectionStart, activeSelectionEnd);
+          }
+        } catch (e) { }
+      }
+    }
+  }
+
+  // Handle screen resize across 1024px break
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    try {
+      const mq = window.matchMedia('(min-width: 1024px)');
+      if (mq.addEventListener) {
+        mq.addEventListener('change', () => {
+          if (currentDomainId) _doRenderDomainPage(currentDomainId);
+        });
+      }
+    } catch (e) { }
   }
 
   function returnToDomainsHub(pushHistory = true) {
@@ -263,7 +337,7 @@
     const mobileDomainView = document.getElementById('mobile-domain-view');
     if (mobileDomainView) mobileDomainView.classList.add('hidden');
     if (pushHistory) {
-      try { history.pushState({ type: 'tab', id: 'view-manage' }, '', '#manage'); } catch(e) {}
+      try { history.pushState({ type: 'tab', id: 'view-manage' }, '', '#manage'); } catch (e) { }
     }
   }
 
@@ -452,7 +526,7 @@
   }
 
   // Execute AI action from quick button
-  window.executeDomainAIAction = function(domainId, encodedPrompt) {
+  window.executeDomainAIAction = function (domainId, encodedPrompt) {
     const prompt = decodeURIComponent(encodedPrompt);
     const inputEl = document.getElementById(`domain-ai-prompt-${domainId}`);
     if (inputEl) inputEl.value = prompt;
@@ -460,7 +534,7 @@
   };
 
   // Execute prompt typed into input
-  window.executeDomainAIPrompt = async function(domainId) {
+  window.executeDomainAIPrompt = async function (domainId) {
     const inputEl = document.getElementById(`domain-ai-prompt-${domainId}`);
     if (!inputEl) return;
     const prompt = inputEl.value.trim();
@@ -538,7 +612,7 @@
   }
 
   // Quick Help Trigger
-  window.quickDomainAIHelp = function(domainId) {
+  window.quickDomainAIHelp = function (domainId) {
     if (typeof window.switchTab === 'function') {
       if (typeof window.populatePrompt === 'function') {
         window.populatePrompt(`Analyze my current ${domainId} domain status and provide 3 immediate autonomous optimizations.`);
@@ -548,7 +622,7 @@
   };
 
   // Quick Add Item Modal for any domain
-  window.openDomainAddModal = function(domainId) {
+  window.openDomainAddModal = function (domainId) {
     const label = getDomainAddLabel(domainId);
     const title = prompt(`Enter new ${label} for ${domainId.toUpperCase()}:`, `New ${label}`);
     if (!title) return;
@@ -602,7 +676,7 @@
   };
 
   // Checkbox togglers that update DB and re-render
-  window.toggleTaskItem = function(id) {
+  window.toggleTaskItem = function (id) {
     if (!window.DB) return;
     const task = window.DB.tasks.get(id);
     if (task) {
@@ -612,7 +686,7 @@
     }
   };
 
-  window.deleteTaskItem = function(id) {
+  window.deleteTaskItem = function (id) {
     if (!window.DB) return;
     if (!confirm('Are you sure you want to permanently delete this task?')) return;
     window.DB.tasks.delete(id);
@@ -620,41 +694,41 @@
     renderDomainPage('tasks');
   };
 
-  window.toggleGoalMilestone = function(goalId, milestoneTitle) {
+  window.toggleGoalMilestone = function (goalId, milestoneTitle) {
     if (!window.DB) return;
-    try { milestoneTitle = decodeURIComponent(milestoneTitle); } catch(e) {}
+    try { milestoneTitle = decodeURIComponent(milestoneTitle); } catch (e) { }
     window.DB.goals.completeMilestone(goalId, milestoneTitle);
     renderDomainPage('goals');
   };
 
-  window.toggleGroceryItem = function(name) {
+  window.toggleGroceryItem = function (name) {
     if (!window.DB) return;
     window.DB.shopping.completeGrocery(name);
     renderDomainPage('shopping');
   };
 
-  window.toggleChoreItem = function(name) {
+  window.toggleChoreItem = function (name) {
     if (!window.DB) return;
-    try { name = decodeURIComponent(name); } catch(e) {}
+    try { name = decodeURIComponent(name); } catch (e) { }
     window.DB.homeModule.markChoreDone(name);
     renderDomainPage('home-module');
   };
 
-  window.toggleRoutineItem = function(type, step) {
+  window.toggleRoutineItem = function (type, step) {
     if (!window.DB) return;
-    try { step = decodeURIComponent(step); } catch(e) {}
+    try { step = decodeURIComponent(step); } catch (e) { }
     window.DB.routines.markDone(type, step);
     renderDomainPage('routines');
   };
 
-  window.logQuickMood = function(score) {
+  window.logQuickMood = function (score) {
     if (!window.DB) return;
     window.DB.wellbeing.setMood(score);
     if (typeof window.showToast === 'function') window.showToast(`Logged mood: ${score}/5 ✨`);
     renderDomainPage('wellbeing');
   };
 
-  window.addQuickWater = function(liters) {
+  window.addQuickWater = function (liters) {
     if (!window.DB) return;
     const cur = (window.DB.nutrition.get().today?.water || 2.4);
     window.DB.nutrition.setWater(Math.round((cur + liters) * 10) / 10);
@@ -663,7 +737,7 @@
   };
 
   // Nutrition helpers
-  window.logCustomMeal = function() {
+  window.logCustomMeal = function () {
     const name = prompt('Enter meal description (e.g. 4 Boiled Eggs + 2 Brown Bread Toasts):', 'Whey Protein + Banana');
     if (!name) return;
     const cal = parseInt(prompt('Estimated calories (kcal):', '320')) || 300;
@@ -685,7 +759,7 @@
     renderDomainPage('nutrition');
   };
 
-  window.quickAddMealPreset = function(name, cal, pro, carbs, fat) {
+  window.quickAddMealPreset = function (name, cal, pro, carbs, fat) {
     if (window.DB && window.DB.nutrition) {
       window.DB.nutrition.logMeal({
         name,
@@ -701,7 +775,7 @@
   };
 
   // Finance helpers
-  window.promptEditBudget = function(category, currentLimit) {
+  window.promptEditBudget = function (category, currentLimit) {
     const newLimit = parseInt(prompt(`Set monthly budget cap for "${category}" (₹):`, currentLimit || 5000));
     if (isNaN(newLimit) || newLimit < 0) return;
     if (window.DB && window.DB.finance) {
@@ -711,7 +785,7 @@
     renderDomainPage('finance');
   };
 
-  window.promptAddTransaction = function() {
+  window.promptAddTransaction = function () {
     const name = prompt('Transaction description (e.g. Gym Supplements, Petrol Classic 350, D-Mart Grocery):', 'Supermarket Grocery');
     if (!name) return;
     const amtStr = prompt('Amount (Use minus - for expense, plus for income, e.g. -1450 or +15000):', '-850');
@@ -732,7 +806,7 @@
     renderDomainPage('finance');
   };
 
-  window.deleteFinanceTransaction = function(id) {
+  window.deleteFinanceTransaction = function (id) {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
     if (window.DB && window.DB.finance) {
       window.DB.finance.deleteTransaction(id);
@@ -742,14 +816,14 @@
   };
 
   // Shopping / D-Mart helpers
-  window.toggleDmartCheck = function(id) {
+  window.toggleDmartCheck = function (id) {
     if (window.DB && window.DB.shopping) {
       window.DB.shopping.toggleDmartItem(id);
     }
     renderDomainPage('shopping');
   };
 
-  window.promptAddDmartItem = function() {
+  window.promptAddDmartItem = function () {
     const item = prompt('Enter item to buy at D-Mart (e.g. Peanut Butter, Rolled Oats, Surf Excel):', 'Dark Chocolate 85%');
     if (!item) return;
     const qty = prompt('Quantity / Pack size (e.g. 1 kg, 500g, 2 packs):', '1 pack') || '1 unit';
@@ -769,7 +843,7 @@
     renderDomainPage('shopping');
   };
 
-  window.clearCheckedDmartItems = function() {
+  window.clearCheckedDmartItems = function () {
     if (window.DB && window.DB.shopping) {
       window.DB.shopping.clearCheckedDmart();
       if (typeof window.showToast === 'function') window.showToast('Cleared purchased items from D-Mart list');
@@ -777,10 +851,10 @@
     renderDomainPage('shopping');
   };
 
-  window.markPantryItemFinished = function(id, itemName) {
+  window.markPantryItemFinished = function (id, itemName) {
     if (window.DB && window.DB.shopping) {
       window.DB.shopping.markPantryFinished(id);
-      try { if (itemName) itemName = decodeURIComponent(itemName); } catch(e) {}
+      try { if (itemName) itemName = decodeURIComponent(itemName); } catch (e) { }
       if (typeof window.showToast === 'function') {
         window.showToast(`⚠️ Marked "${itemName || 'item'}" finished! Added directly to D-Mart shopping list! 🛒`);
       }
@@ -789,7 +863,7 @@
   };
 
   // Relationships helpers
-  window.promptAddContact = function() {
+  window.promptAddContact = function () {
     const name = prompt('Contact full name (e.g. Rohan Sharma):');
     if (!name) return;
     const role = prompt('Relationship / Connection (e.g. Friend, College Batchmate, Tech Mentor, Gym Bro, Family):', 'Friend') || 'Friend';
@@ -814,7 +888,7 @@
     renderDomainPage('relationships');
   };
 
-  window.logRelationshipCall = function(id, name) {
+  window.logRelationshipCall = function (id, name) {
     if (window.DB && window.DB.relationships) {
       window.DB.relationships.markContacted(id);
       let contactName = name;
@@ -825,14 +899,14 @@
         } else {
           contactName = decodeURIComponent(contactName);
         }
-      } catch(e) {}
+      } catch (e) { }
       if (typeof window.showToast === 'function') window.showToast(`📞 Logged conversation with ${contactName || 'contact'}! Cadence reset.`);
     }
     renderDomainPage('relationships');
   };
 
   // Vehicle helpers
-  window.markBikePressureWashed = function() {
+  window.markBikePressureWashed = function () {
     if (window.DB && window.DB.vehicle) {
       window.DB.vehicle.markWashed('15-Day Pressure Wash & Motul Chain Lube');
       if (typeof window.showToast === 'function') {
@@ -843,7 +917,7 @@
   };
 
   // Travel helpers
-  window.promptAllocateTravelSavings = function() {
+  window.promptAllocateTravelSavings = function () {
     const amt = parseInt(prompt('Enter amount to allocate from Finance savings to Travel Fund (₹):', '5000'));
     if (isNaN(amt) || amt <= 0) return;
     if (window.DB && window.DB.finance) {
@@ -1099,20 +1173,20 @@
         </div>
         <div class="space-y-2">
           ${(events.length ? events : [
-            { time: '19:30 - 20:30', title: 'Zone 2 Aerobic Run', domain: 'Fitness', color: '#6af7ba' },
-            { time: '22:00 - 23:15', title: 'OS Memory Management Deep Study', domain: 'Study', color: '#00d4ff' },
-            { time: '23:15 - 23:30', title: 'Mom\'s Birthday Call', domain: 'Relationships', color: '#f59e0b' },
-            { time: '23:30 - 00:00', title: 'Wind-Down & Neuro-Reset', domain: 'Routine', color: '#d0bcff' }
-          ]).map(ev => `
+        { time: '19:30 - 20:30', title: 'Zone 2 Aerobic Run', domain: 'Fitness', color: '#6af7ba' },
+        { time: '22:00 - 23:15', title: 'OS Memory Management Deep Study', domain: 'Study', color: '#00d4ff' },
+        { time: '23:15 - 23:30', title: 'Mom\'s Birthday Call', domain: 'Relationships', color: '#f59e0b' },
+        { time: '23:30 - 00:00', title: 'Wind-Down & Neuro-Reset', domain: 'Routine', color: '#d0bcff' }
+      ]).map(ev => `
             <div class="p-3 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full" style="background:${ev.color||'#00d4ff'}"></span>
+                <span class="w-3 h-3 rounded-full" style="background:${ev.color || '#00d4ff'}"></span>
                 <div>
                   <p class="text-xs font-semibold text-white">${Utils.escapeHtml(ev.title)}</p>
-                  <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(ev.time)} · ${Utils.escapeHtml(ev.domain||'Life')}</p>
+                  <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(ev.time)} · ${Utils.escapeHtml(ev.domain || 'Life')}</p>
                 </div>
               </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded" style="background:${ev.color||'#00d4ff'}15;color:${ev.color||'#00d4ff'}">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded" style="background:${ev.color || '#00d4ff'}15;color:${ev.color || '#00d4ff'}">
                 CONFIRMED
               </span>
             </div>
@@ -1159,12 +1233,12 @@
                   <input type="checkbox" onchange="toggleTaskItem(${t.id})" class="w-4 h-4 rounded bg-surface-container border-outline-variant/40 text-primary-container focus:ring-0 cursor-pointer" />
                   <div class="min-w-0">
                     <p class="text-xs font-semibold text-white truncate">${Utils.escapeHtml(t.title)}</p>
-                    <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(t.project||'General')} · Due: ${Utils.escapeHtml(t.deadline||'Today')}</p>
+                    <p class="text-[10px] text-outline font-mono">${Utils.escapeHtml(t.project || 'General')} · Due: ${Utils.escapeHtml(t.deadline || 'Today')}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold ${t.priority==='high'?'bg-rose-400/20 text-rose-400':t.priority==='medium'?'bg-amber-400/20 text-amber-400':'bg-primary-container/20 text-primary-container'}">
-                    ${(t.priority||'MED').toUpperCase()}
+                  <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold ${t.priority === 'high' ? 'bg-rose-400/20 text-rose-400' : t.priority === 'medium' ? 'bg-amber-400/20 text-amber-400' : 'bg-primary-container/20 text-primary-container'}">
+                    ${(t.priority || 'MED').toUpperCase()}
                   </span>
                   <button aria-label="Delete task" onclick="deleteTaskItem(${t.id})" class="text-outline hover:text-rose-400 text-xs p-1" title="Delete">✕</button>
                 </div>
@@ -1204,18 +1278,18 @@
     return `
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         ${goals.map(g => {
-          const milestones = g.milestones || [];
-          const doneMs = milestones.filter(m => m.done).length;
-          const pct = milestones.length ? Math.round((doneMs / milestones.length) * 100) : (g.progress || 50);
+      const milestones = g.milestones || [];
+      const doneMs = milestones.filter(m => m.done).length;
+      const pct = milestones.length ? Math.round((doneMs / milestones.length) * 100) : (g.progress || 50);
 
-          return `
+      return `
             <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-4 shadow-lg">
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-3">
-                  <span class="text-2xl">${g.emoji||'🎯'}</span>
+                  <span class="text-2xl">${g.emoji || '🎯'}</span>
                   <div>
                     <h4 class="text-base font-bold text-white">${Utils.escapeHtml(g.title)}</h4>
-                    <p class="text-[10px] text-outline font-mono">Target: ${Utils.escapeHtml(g.target||'2026')} · ${Utils.escapeHtml(g.category||'General')}</p>
+                    <p class="text-[10px] text-outline font-mono">Target: ${Utils.escapeHtml(g.target || '2026')} · ${Utils.escapeHtml(g.category || 'General')}</p>
                   </div>
                 </div>
                 <span class="text-xs font-mono font-bold text-primary-container px-2.5 py-1 rounded-lg bg-primary-container/10 border border-primary-container/30">
@@ -1235,18 +1309,18 @@
                   <div onclick="toggleGoalMilestone(${g.id}, '${encodeURIComponent(m.title)}')" 
                        class="p-2 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                     <div class="flex items-center gap-2.5">
-                      <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done?'bg-tertiary text-black':'border border-outline-variant'}">
+                      <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done ? 'bg-tertiary text-black' : 'border border-outline-variant'}">
                         ${m.done ? '✓' : ''}
                       </span>
-                      <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(m.title)}</span>
+                      <span class="text-xs ${m.done ? 'line-through text-outline' : 'text-white'}">${Utils.escapeHtml(m.title)}</span>
                     </div>
-                    <span class="text-[9px] font-mono text-outline">${m.done?'DONE':'PENDING'}</span>
+                    <span class="text-[9px] font-mono text-outline">${m.done ? 'DONE' : 'PENDING'}</span>
                   </div>
                 `).join('')}
               </div>
             </div>
           `;
-        }).join('')}
+    }).join('')}
       </div>
     `;
   }
@@ -1283,14 +1357,14 @@
         ${subjects.map(sub => `
           <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono text-outline">${Utils.escapeHtml(sub.code||'CS')}</span>
-              <span class="text-xs font-mono font-bold text-primary-container">${Math.round(Number(sub.progress)||0)}% Ready</span>
+              <span class="text-xs font-mono text-outline">${Utils.escapeHtml(sub.code || 'CS')}</span>
+              <span class="text-xs font-mono font-bold text-primary-container">${Math.round(Number(sub.progress) || 0)}% Ready</span>
             </div>
             <h4 class="text-base font-bold text-white">${Utils.escapeHtml(sub.name)}</h4>
             <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-              <div class="bg-primary-container h-full rounded-full" style="width:${Math.max(0, Math.min(100, Number(sub.progress)||0))}%"></div>
+              <div class="bg-primary-container h-full rounded-full" style="width:${Math.max(0, Math.min(100, Number(sub.progress) || 0))}%"></div>
             </div>
-            <p class="text-[10px] font-mono text-outline">Target: ${Utils.escapeHtml(sub.examDate||'Upcoming')}</p>
+            <p class="text-[10px] font-mono text-outline">Target: ${Utils.escapeHtml(sub.examDate || 'Upcoming')}</p>
           </div>
         `).join('')}
       </div>
@@ -1473,7 +1547,7 @@
     ]
   };
 
-  window.selectHeavyDay = function(dayNum) {
+  window.selectHeavyDay = function (dayNum) {
     window.heavyState.selectedDay = dayNum;
     window.heavyState.activeSession = buildRoutineSession(dayNum);
     window.heavyState.activeTab = 'logger';
@@ -1485,12 +1559,12 @@
   };
 
   // Helper functions exposed on window
-  window.setHeavyTab = function(tabName) {
+  window.setHeavyTab = function (tabName) {
     window.heavyState.activeTab = tabName;
     renderDomainPage('fitness');
   };
 
-  window.toggleHeavySet = function(exIdx, setIdx) {
+  window.toggleHeavySet = function (exIdx, setIdx) {
     const ex = window.heavyState.activeSession.exercises[exIdx];
     if (!ex) return;
     const s = ex.sets[setIdx];
@@ -1507,7 +1581,7 @@
     renderDomainPage('fitness');
   };
 
-  window.addHeavySet = function(exIdx) {
+  window.addHeavySet = function (exIdx) {
     const ex = window.heavyState.activeSession.exercises[exIdx];
     if (!ex) return;
     const lastSet = ex.sets[ex.sets.length - 1];
@@ -1525,7 +1599,7 @@
     renderDomainPage('fitness');
   };
 
-  window.deleteHeavySet = function(exIdx, setIdx) {
+  window.deleteHeavySet = function (exIdx, setIdx) {
     const ex = window.heavyState.activeSession.exercises[exIdx];
     if (!ex) return;
     if (!confirm(`Delete set ${setIdx + 1} from ${ex.name}?`)) return;
@@ -1534,7 +1608,7 @@
     renderDomainPage('fitness');
   };
 
-  window.updateHeavySetVal = function(exIdx, setIdx, field, val) {
+  window.updateHeavySetVal = function (exIdx, setIdx, field, val) {
     const ex = window.heavyState.activeSession.exercises[exIdx];
     if (!ex) return;
     const s = ex.sets[setIdx];
@@ -1542,7 +1616,7 @@
     s[field] = parseFloat(val) || val;
   };
 
-  window.startHeavyRestTimer = function(seconds) {
+  window.startHeavyRestTimer = function (seconds) {
     const hs = window.heavyState;
     if (hs.timerInterval) clearInterval(hs.timerInterval);
     hs.restTotalSeconds = seconds || hs.restTotalSeconds || 90;
@@ -1575,7 +1649,7 @@
     }, 1000);
   };
 
-  window.stopHeavyRestTimer = function() {
+  window.stopHeavyRestTimer = function () {
     const hs = window.heavyState;
     if (hs.timerInterval) clearInterval(hs.timerInterval);
     hs.restTimerRunning = false;
@@ -1586,14 +1660,14 @@
     if (barEl) barEl.style.width = '0%';
   };
 
-  window.addHeavyRestTime = function(sec) {
+  window.addHeavyRestTime = function (sec) {
     const hs = window.heavyState;
     hs.restSecondsLeft = (hs.restSecondsLeft || 0) + sec;
     hs.restTotalSeconds = Math.max(hs.restTotalSeconds, hs.restSecondsLeft);
     if (!hs.restTimerRunning) window.startHeavyRestTimer(hs.restSecondsLeft);
   };
 
-  window.calculateHeavy1RM = function() {
+  window.calculateHeavy1RM = function () {
     const wEl = document.getElementById('heavy-1rm-weight');
     const rEl = document.getElementById('heavy-1rm-reps');
     if (!wEl || !rEl) return;
@@ -1619,7 +1693,7 @@
     });
   };
 
-  window.startHeavyRoutine = function(routineId) {
+  window.startHeavyRoutine = function (routineId) {
     const r = window.heavyState.routines.find(rt => rt.id === routineId);
     if (r) {
       window.heavyState.activeSession.name = `${r.name} (${r.split})`;
@@ -1631,7 +1705,7 @@
     }
   };
 
-  window.finishHeavyWorkout = function() {
+  window.finishHeavyWorkout = function () {
     let totalVolume = 0;
     let totalSets = 0;
     window.heavyState.activeSession.exercises.forEach(ex => {
@@ -1662,7 +1736,7 @@
     renderDomainPage('fitness');
   };
 
-  window.openHeavyAddExercise = function() {
+  window.openHeavyAddExercise = function () {
     const name = prompt('Enter exercise name (e.g. Incline Bench Press, Dumbbell Row, Barbell Squat):', 'Cable Rope Face Pull');
     if (!name) return;
     const muscle = prompt('Enter primary muscle group (Chest, Back, Shoulders, Legs, Arms, Core):', 'Shoulders') || 'General';
@@ -1776,28 +1850,28 @@
         <!-- Heavy Segmented Navigation Tabs -->
         <div class="flex items-center gap-2 mt-4 pt-3 border-t border-outline-variant/15 overflow-x-auto no-scrollbar">
           <button onclick="setHeavyTab('logger')" 
-                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='logger' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab === 'logger' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">timer</span>
             <span>Live Workout Logger</span>
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           </button>
           <button onclick="setHeavyTab('routines')" 
-                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='routines' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab === 'routines' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">list_alt</span>
             <span>Routines (${hs.routines.length})</span>
           </button>
           <button onclick="setHeavyTab('prs')" 
-                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='prs' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab === 'prs' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">trophy</span>
             <span>1RM Calculator &amp; PRs</span>
           </button>
           <button onclick="setHeavyTab('heatmap')" 
-                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='heatmap' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab === 'heatmap' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">accessibility_new</span>
             <span>Muscle Heatmap</span>
           </button>
           <button onclick="setHeavyTab('history')" 
-                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab==='history' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 shrink-0 ${activeTab === 'history' ? 'bg-primary-container text-surface-container-lowest shadow-[0_0_16px_rgba(0,212,255,0.4)]' : 'glass-surface text-outline hover:text-white'}">
             <span class="material-symbols-outlined text-[16px]">history</span>
             <span>History (${hs.history.length})</span>
           </button>
@@ -2361,27 +2435,27 @@
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         <div class="glass-surface p-4 rounded-xl border border-tertiary/25">
           <p class="text-[10px] font-mono uppercase text-outline">Liquid Net Balance</p>
-          <div class="text-2xl font-black text-tertiary mt-1 font-mono">₹${(f.balance||0).toLocaleString()}</div>
+          <div class="text-2xl font-black text-tertiary mt-1 font-mono">₹${(f.balance || 0).toLocaleString()}</div>
           <p class="text-[10px] text-tertiary font-mono">Bank + Liquid Cash</p>
         </div>
         <div class="glass-surface p-4 rounded-xl border border-rose-400/25">
           <p class="text-[10px] font-mono uppercase text-outline">Monthly Spend</p>
-          <div class="text-2xl font-black text-rose-400 mt-1 font-mono">₹${(f.monthlyExpenses||0).toLocaleString()}</div>
+          <div class="text-2xl font-black text-rose-400 mt-1 font-mono">₹${(f.monthlyExpenses || 0).toLocaleString()}</div>
           <p class="text-[10px] text-outline font-mono">Across 7 Budgets</p>
         </div>
         <div class="glass-surface p-4 rounded-xl border border-primary-container/25">
           <p class="text-[10px] font-mono uppercase text-outline">Monthly Inflow</p>
-          <div class="text-2xl font-black text-primary-container mt-1 font-mono">₹${(f.monthlyIncome||0).toLocaleString()}</div>
+          <div class="text-2xl font-black text-primary-container mt-1 font-mono">₹${(f.monthlyIncome || 0).toLocaleString()}</div>
           <p class="text-[10px] text-outline font-mono">Stipend &amp; Projects</p>
         </div>
         <div class="glass-surface p-4 rounded-xl border border-amber-400/25">
           <p class="text-[10px] font-mono uppercase text-outline">Emergency Savings</p>
-          <div class="text-2xl font-black text-amber-400 mt-1 font-mono">₹${(f.savings||0).toLocaleString()}</div>
+          <div class="text-2xl font-black text-amber-400 mt-1 font-mono">₹${(f.savings || 0).toLocaleString()}</div>
           <p class="text-[10px] text-amber-400 font-mono">72% of ₹2.0L goal</p>
         </div>
         <div class="glass-surface p-4 rounded-xl border border-purple-400/25">
           <p class="text-[10px] font-mono uppercase text-outline">Travel Dedicated Fund</p>
-          <div class="text-2xl font-black text-purple-400 mt-1 font-mono">₹${(f.travelSavingsFund||22000).toLocaleString()}</div>
+          <div class="text-2xl font-black text-purple-400 mt-1 font-mono">₹${(f.travelSavingsFund || 22000).toLocaleString()}</div>
           <p class="text-[10px] text-purple-300 font-mono">Linked to Goa Trip ✈️</p>
         </div>
       </div>
@@ -2410,22 +2484,22 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           ${budgets.map(b => {
-            const pct = Math.min(100, Math.round(((b.spent || 0) / (b.limit || 1)) * 100));
-            const isNearLimit = pct >= 80;
-            const isOver = pct >= 100;
-            const barColor = isOver ? '#f43f5e' : (isNearLimit ? '#f59e0b' : (b.color || '#6af7ba'));
+      const pct = Math.min(100, Math.round(((b.spent || 0) / (b.limit || 1)) * 100));
+      const isNearLimit = pct >= 80;
+      const isOver = pct >= 100;
+      const barColor = isOver ? '#f43f5e' : (isNearLimit ? '#f59e0b' : (b.color || '#6af7ba'));
 
-            return `
+      return `
               <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-2.5">
                 <div class="flex items-start justify-between">
                   <div class="flex items-center gap-2.5">
-                    <span class="material-symbols-outlined text-[20px]" style="color:${b.color||'#00d4ff'}">${b.icon||'category'}</span>
+                    <span class="material-symbols-outlined text-[20px]" style="color:${b.color || '#00d4ff'}">${b.icon || 'category'}</span>
                     <div>
                       <h5 class="text-xs font-bold text-white">${b.category}</h5>
-                      <span class="text-[10px] text-outline font-mono">₹${(b.spent||0).toLocaleString()} of ₹${(b.limit||0).toLocaleString()}</span>
+                      <span class="text-[10px] text-outline font-mono">₹${(b.spent || 0).toLocaleString()} of ₹${(b.limit || 0).toLocaleString()}</span>
                     </div>
                   </div>
-                  <button onclick="window.promptEditBudget('${b.category}', ${b.limit||5000})" class="text-[10px] font-mono text-outline hover:text-white px-2 py-0.5 rounded hover:bg-surface-container transition-colors">
+                  <button onclick="window.promptEditBudget('${b.category}', ${b.limit || 5000})" class="text-[10px] font-mono text-outline hover:text-white px-2 py-0.5 rounded hover:bg-surface-container transition-colors">
                     Edit
                   </button>
                 </div>
@@ -2434,11 +2508,11 @@
                 </div>
                 <div class="flex items-center justify-between text-[10px] font-mono">
                   <span class="${isOver ? 'text-rose-400 font-bold' : (isNearLimit ? 'text-amber-400 font-bold' : 'text-outline')}">${pct}% spent</span>
-                  <span class="text-outline">Remaining: ₹${Math.max(0, (b.limit||0) - (b.spent||0)).toLocaleString()}</span>
+                  <span class="text-outline">Remaining: ₹${Math.max(0, (b.limit || 0) - (b.spent || 0)).toLocaleString()}</span>
                 </div>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       </div>
 
@@ -2625,7 +2699,7 @@
             </h4>
             <p class="text-[10px] text-outline font-mono">Check items as you drop them in your shopping cart at D-Mart</p>
           </div>
-          <span class="text-xs font-mono font-bold text-amber-400">${dmartList.filter(i=>i.checked).length} / ${dmartList.length} Bought</span>
+          <span class="text-xs font-mono font-bold text-amber-400">${dmartList.filter(i => i.checked).length} / ${dmartList.length} Bought</span>
         </div>
 
         <div class="space-y-2">
@@ -2668,10 +2742,10 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           ${pantry.map(p => {
-            const isFinished = p.levelPct <= 10;
-            const isLow = p.levelPct > 10 && p.levelPct <= 30;
+      const isFinished = p.levelPct <= 10;
+      const isLow = p.levelPct > 10 && p.levelPct <= 30;
 
-            return `
+      return `
               <div class="p-4 rounded-xl bg-surface-container-lowest/70 border border-outline-variant/15 space-y-3">
                 <div class="flex items-start justify-between">
                   <div>
@@ -2692,7 +2766,7 @@
                 </button>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       </div>
     `;
@@ -2809,19 +2883,19 @@
               <div class="flex items-center justify-between pt-1 border-t border-outline-variant/10 text-xs font-mono">
                 <div class="flex items-center gap-2">
                   ${c.phone ? `
-                    <a href="tel:${c.phone.replace(/\s+/g,'')}" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors">
+                    <a href="tel:${c.phone.replace(/\s+/g, '')}" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors">
                       <span class="material-symbols-outlined text-[14px]">call</span>
                       <span class="text-[10px]">${c.phone}</span>
                     </a>
                   ` : ''}
                   ${c.whatsapp ? `
-                    <a href="https://wa.me/${c.whatsapp.replace(/\D/g,'')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 transition-colors">
+                    <a href="https://wa.me/${c.whatsapp.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 transition-colors">
                       <span class="material-symbols-outlined text-[14px]">chat</span>
                       <span class="text-[10px]">WhatsApp</span>
                     </a>
                   ` : ''}
                   ${c.instagram ? `
-                    <a href="https://instagram.com/${c.instagram.replace('@','')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-pink-500/20 text-pink-400 border border-pink-500/30 transition-colors">
+                    <a href="https://instagram.com/${c.instagram.replace('@', '')}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-pink-500/20 text-pink-400 border border-pink-500/30 transition-colors">
                       <span class="material-symbols-outlined text-[14px]">photo_camera</span>
                       <span class="text-[10px]">${c.instagram}</span>
                     </a>
@@ -2857,12 +2931,12 @@
               <div onclick="toggleChoreItem('${encodeURIComponent(c.task)}')" 
                    class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                 <div class="flex items-center gap-2.5">
-                  <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${c.done?'bg-tertiary text-black':'border border-outline-variant'}">
+                  <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${c.done ? 'bg-tertiary text-black' : 'border border-outline-variant'}">
                     ${c.done ? '✓' : ''}
                   </span>
-                  <span class="text-xs ${c.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(c.task)}</span>
+                  <span class="text-xs ${c.done ? 'line-through text-outline' : 'text-white'}">${Utils.escapeHtml(c.task)}</span>
                 </div>
-                <span class="text-[9px] font-mono ${c.done?'text-tertiary':'text-outline'}">${Utils.escapeHtml(c.frequency)}</span>
+                <span class="text-[9px] font-mono ${c.done ? 'text-tertiary' : 'text-outline'}">${Utils.escapeHtml(c.frequency)}</span>
               </div>
             `).join('')}
           </div>
@@ -3003,7 +3077,7 @@
         </div>
         <div class="glass-surface p-4 rounded-xl border border-secondary/25">
           <p class="text-[10px] font-mono uppercase text-outline">Odometer Reading</p>
-          <div class="text-2xl font-black text-secondary mt-1 font-mono">${(v.odometer||8420).toLocaleString()} km</div>
+          <div class="text-2xl font-black text-secondary mt-1 font-mono">${(v.odometer || 8420).toLocaleString()} km</div>
           <p class="text-[10px] text-outline font-mono">Service in ${(v.nextServiceOdo || 10000) - (v.odometer || 8420)} km</p>
         </div>
         <div class="glass-surface p-4 rounded-xl border border-primary-container/25">
@@ -3165,7 +3239,7 @@
             ${packing.map(p => `
               <div onclick="this.querySelector('.check-box').innerText = this.querySelector('.check-box').innerText==='✓'?'':'✓'; this.classList.toggle('opacity-50')" 
                    class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center gap-2.5 cursor-pointer hover:bg-surface-container transition-all">
-                <span class="check-box w-4 h-4 rounded border border-outline-variant flex items-center justify-center text-[10px] font-bold ${p.done?'bg-tertiary text-black border-tertiary':''}">
+                <span class="check-box w-4 h-4 rounded border border-outline-variant flex items-center justify-center text-[10px] font-bold ${p.done ? 'bg-tertiary text-black border-tertiary' : ''}">
                   ${p.done ? '✓' : ''}
                 </span>
                 <span class="text-xs text-white">${p.item}</span>
@@ -3294,12 +3368,12 @@
               <div onclick="toggleRoutineItem('morning', '${encodeURIComponent(m.step)}')" 
                    class="p-2.5 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
                 <div class="flex items-center gap-2.5">
-                  <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done?'bg-tertiary text-black':'border border-outline-variant'}">
+                  <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${m.done ? 'bg-tertiary text-black' : 'border border-outline-variant'}">
                     ${m.done ? '✓' : ''}
                   </span>
-                  <span class="text-xs ${m.done?'line-through text-outline':'text-white'}">${Utils.escapeHtml(m.step)}</span>
+                  <span class="text-xs ${m.done ? 'line-through text-outline' : 'text-white'}">${Utils.escapeHtml(m.step)}</span>
                 </div>
-                <span class="text-[9px] font-mono ${m.done?'text-tertiary':'text-outline'}">${m.done?'DONE':'PENDING'}</span>
+                <span class="text-[9px] font-mono ${m.done ? 'text-tertiary' : 'text-outline'}">${m.done ? 'DONE' : 'PENDING'}</span>
               </div>
             `).join('')}
           </div>
@@ -3584,7 +3658,7 @@ cd freellmapi && npm install && npm run dev
   }
 
   // Gateway UI Handlers on window
-  window.selectGatewayPreset = function(presetId) {
+  window.selectGatewayPreset = function (presetId) {
     const presets = {
       omniroute: { endpoint: 'http://127.0.0.1:8080/v1', model: 'auto' },
       freellmapi: { endpoint: 'http://127.0.0.1:3001/v1', model: 'auto' },
@@ -3600,7 +3674,7 @@ cd freellmapi && npm install && npm run dev
     if (window.showToast) window.showToast('Selected preset: ' + presetId);
   };
 
-  window.saveGatewaySettings = function() {
+  window.saveGatewaySettings = function () {
     const epInput = document.getElementById('gw-endpoint-input');
     const modelInput = document.getElementById('gw-model-input');
     const keyInput = document.getElementById('gw-key-input');
@@ -3616,7 +3690,7 @@ cd freellmapi && npm install && npm run dev
     if (typeof openDomainPage === 'function') openDomainPage('settings', false);
   };
 
-  window.testGatewayHealthUI = async function() {
+  window.testGatewayHealthUI = async function () {
     const badge = document.getElementById('gw-health-badge');
     if (badge) {
       badge.className = 'text-xs font-mono px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-amber-400 flex items-center gap-1.5';
@@ -3674,7 +3748,7 @@ cd freellmapi && npm install && npm run dev
   });
 
   // Export LifeOS data as downloadable JSON
-  window.exportData = function() {
+  window.exportData = function () {
     if (!window.DB) return;
     const dataStr = JSON.stringify(window.DB.getAll(), null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -3689,11 +3763,11 @@ cd freellmapi && npm install && npm run dev
   };
 
   // Import LifeOS data from user JSON file with validation & backup
-  window.importData = function(event) {
+  window.importData = function (event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       try {
         const parsed = JSON.parse(e.target.result);
         if (!parsed || typeof parsed !== 'object') {
@@ -3709,7 +3783,7 @@ cd freellmapi && npm install && npm run dev
           if (typeof window.showToast === 'function') window.showToast('Data imported successfully! Reloading...');
           setTimeout(() => location.reload(), 500);
         }
-      } catch(err) {
+      } catch (err) {
         alert('Failed to import data: Invalid or corrupted JSON file (' + err.message + ')');
       }
       event.target.value = '';
@@ -3718,7 +3792,7 @@ cd freellmapi && npm install && npm run dev
   };
 
   // Safe guarded reset with pre-reset snapshot
-  window.confirmResetDB = function() {
+  window.confirmResetDB = function () {
     if (confirm('CRITICAL WARNING: This will reset all 22 TADASHI domains back to default seed data.\n\nA safety backup will be stored before reset, so you can restore if needed.\n\nDo you wish to proceed?')) {
       if (window.DB) {
         window.DB.reset();
@@ -3729,7 +3803,7 @@ cd freellmapi && npm install && npm run dev
   };
 
   // Restore pre-reset backup
-  window.restoreResetBackup = function() {
+  window.restoreResetBackup = function () {
     if (!window.DB || !window.DB.hasPreResetBackup || !window.DB.hasPreResetBackup()) {
       alert('No safety backup found.');
       return;

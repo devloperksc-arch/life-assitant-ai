@@ -849,7 +849,10 @@
         const allToolCalls = [];
 
         while (rounds < 4) {
-          const res = await fetch(`${endpoint}/chat/completions`, {
+          const targetUrl = (endpoint.endsWith('/chat') || endpoint.endsWith('/chat/completions'))
+            ? endpoint
+            : `${endpoint}/chat/completions`;
+          const res = await fetch(targetUrl, {
             method: 'POST',
             headers,
             body: JSON.stringify(body),
@@ -1055,11 +1058,20 @@
       try { localStorage.removeItem(TELEMETRY_STORAGE_KEY); } catch(e) {}
     },
 
-    // Main Policy Resolution
+    // Main Policy Resolution (Optimized with lazy provider probing)
     async resolveRoute(request = {}) {
       const privacy = request.privacy || this.getPrivacyMode();
       const isOnline = (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') ? navigator.onLine : true;
-      const ollamaAvailable = await OllamaProvider.isAvailable(1000);
+
+      let _ollamaChecked = false;
+      let _ollamaCached = false;
+      const getOllamaAvailable = async () => {
+        if (!_ollamaChecked) {
+          _ollamaChecked = true;
+          _ollamaCached = await OllamaProvider.isAvailable(1000);
+        }
+        return _ollamaCached;
+      };
 
       const gatewayEnabled = GatewayProvider.isEnabled();
       const gatewayHost = GatewayProvider.getEndpoint();
@@ -1093,7 +1105,8 @@
           };
         }
 
-        if (!ollamaAvailable) {
+        const ollamaActive = await getOllamaAvailable();
+        if (!ollamaActive) {
           return {
             selectedProvider: null,
             routeDecision: 'blocked_local_offline',
@@ -1114,7 +1127,8 @@
             routeDecision: 'gateway_offline_loopback'
           };
         }
-        if (ollamaAvailable) {
+        const ollamaActive = await getOllamaAvailable();
+        if (ollamaActive) {
           return {
             selectedProvider: OllamaProvider,
             routeDecision: 'ollama_offline_fallback'
@@ -1130,10 +1144,11 @@
       // Rule 3: Online & Cloud Allowed
       // Priority 1: AI Gateway (OmniRoute / FreeLLMAPI) if user enabled it and it is healthy
       if (gatewayEnabled && gatewayAvailable) {
-        const fallback = (await GeminiCloudProvider.isAvailable()) ? GeminiCloudProvider : (ollamaAvailable ? OllamaProvider : null);
+        // Free-only mode: Fallback strictly to local Ollama if available. NEVER automatically invoke paid Gemini cloud key.
+        const freeFallback = (await getOllamaAvailable()) ? OllamaProvider : null;
         return {
           selectedProvider: GatewayProvider,
-          fallbackProvider: fallback,
+          fallbackProvider: freeFallback,
           routeDecision: 'gateway_primary'
         };
       }
@@ -1141,7 +1156,7 @@
       // Priority 2: Gemini Cloud
       const cloudAvailable = await GeminiCloudProvider.isAvailable();
       if (cloudAvailable) {
-        const fallback = (gatewayEnabled && gatewayAvailable) ? GatewayProvider : (ollamaAvailable ? OllamaProvider : null);
+        const fallback = (gatewayEnabled && gatewayAvailable) ? GatewayProvider : ((await getOllamaAvailable()) ? OllamaProvider : null);
         return {
           selectedProvider: GeminiCloudProvider,
           fallbackProvider: fallback,
@@ -1150,7 +1165,7 @@
       }
 
       // Priority 3: Local Ollama
-      if (ollamaAvailable) {
+      if (await getOllamaAvailable()) {
         return {
           selectedProvider: OllamaProvider,
           routeDecision: 'ollama_no_cloud_key'

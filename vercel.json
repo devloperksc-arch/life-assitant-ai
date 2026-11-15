@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/ai/health", "destination": "/api/ai/health" },
+    { "source": "/ai/chat", "destination": "/api/ai/chat" },
+    { "source": "/auth/register-device", "destination": "/api/auth/register-device" },
+    { "source": "/auth/:path*", "destination": "/api/auth/:path*" },
+    { "source": "/sync/:path*", "destination": "/api/sync/:path*" },
+    { "source": "/ai/:path*", "destination": "/api/ai/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/css/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

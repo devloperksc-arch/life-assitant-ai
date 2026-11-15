@@ -35,14 +35,15 @@ function verifyToken(token) {
 }
 
 // Device registration
-async function registerDevice(userId, deviceData) {
+async function registerDevice(userId, deviceData = {}) {
   const user = await userRepo.getById(userId);
   if (!user) throw new Error(`User not found: ${userId}`);
 
+  const deviceId = deviceData.deviceId || deviceData.id || `dev_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   const device = await deviceRepo.register({
-    id: deviceData.deviceId || deviceData.id,
+    id: deviceId,
     user_id: userId,
-    name: deviceData.name || 'Personal Device',
+    name: deviceData.name || deviceData.deviceName || 'Personal Device',
     platform: deviceData.platform || 'web',
     capability_json: deviceData.capabilities || {}
   });
