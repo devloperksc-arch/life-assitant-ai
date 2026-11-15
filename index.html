@@ -2804,12 +2804,27 @@
         if (window.ReactorUI) window.ReactorUI.setState('error', err.message);
         const errDiv = document.createElement('div');
         errDiv.className = 'flex gap-3 max-w-3xl';
+        const isKeyMissing = (err.message || '').includes('No API key') || (err.message || '').includes('No AI model provider');
         errDiv.innerHTML = `
-          <div class="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 mt-0.5">
-            <span class="material-symbols-outlined text-[16px]">error</span>
+          <div class="w-8 h-8 rounded-full ${isKeyMissing ? 'bg-amber-400/20 border border-amber-400/40 text-amber-400' : 'bg-red-500/20 border border-red-500/40 text-red-400'} flex items-center justify-center shrink-0 mt-0.5">
+            <span class="material-symbols-outlined text-[16px]">${isKeyMissing ? 'key' : 'error'}</span>
           </div>
-          <div class="glass-surface p-4 rounded-xl rounded-tl-none border-red-500/20">
-            <p class="text-xs font-mono text-red-400">${Utils.escapeHtml(err.message)}</p>
+          <div class="glass-surface p-4 rounded-xl rounded-tl-none ${isKeyMissing ? 'border-amber-400/25' : 'border-red-500/20'} space-y-2">
+            <p class="text-xs font-mono ${isKeyMissing ? 'text-amber-400' : 'text-red-400'} font-semibold">${Utils.escapeHtml(err.message)}</p>
+            ${isKeyMissing ? `
+              <div class="pt-2 border-t border-outline-variant/15 flex flex-wrap gap-2 text-xs font-mono">
+                <button onclick="const k=prompt('Paste your Google Gemini API Key:'); if(k){localStorage.setItem('tadashi_gemini_key', k.trim()); if(window.showToast)showToast('Gemini Key saved! Try your message again.');}" class="px-3 py-1.5 rounded-lg bg-primary-container text-black font-bold hover:bg-surface-tint transition-all">
+                  🔑 Configure Gemini Key
+                </button>
+                <button onclick="if(typeof openDomainPage==='function')openDomainPage('settings'); else window.location.hash='#settings';" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-white transition-all">
+                  ⚡ Open Gateway Settings
+                </button>
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-surface-container/60 hover:text-primary-container text-outline transition-all flex items-center gap-1">
+                  <span>Get Free Key</span>
+                  <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+                </a>
+              </div>
+            ` : ''}
           </div>
         `;
         chatFeed.appendChild(errDiv);
