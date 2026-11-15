@@ -3383,23 +3383,176 @@
 
   // --- 22. SETTINGS ---
   function renderSettingsDomain(s) {
+    const gw = (typeof window !== 'undefined' && window.GatewayProvider) ? window.GatewayProvider : null;
+    const gwEndpoint = gw ? gw.getEndpoint() : 'http://127.0.0.1:8080/v1';
+    const gwModel = gw ? gw.getModel() : 'auto';
+    const gwKey = gw ? gw.getKey() : '';
+    const gwEnabled = gw ? gw.isEnabled() : false;
+    const gwPreset = gw ? gw.getPreset() : 'omniroute';
+
+    const ollama = (typeof window !== 'undefined' && window.OllamaProvider) ? window.OllamaProvider : null;
+    const ollamaHost = ollama ? ollama.getHost() : 'http://127.0.0.1:11434';
+    const ollamaModel = ollama ? ollama.getModel() : 'llama3.2:latest';
+
+    const router = (typeof window !== 'undefined' && window.AIRouter) ? window.AIRouter : null;
+    const privacyMode = router ? router.getPrivacyMode() : 'cloud_allowed';
+
+    const hasGemini = (typeof window !== 'undefined' && window.AI && typeof window.AI.hasKey === 'function') ? window.AI.hasKey() : false;
+
     return `
-      <div class="glass-surface p-5 rounded-xl border border-outline-variant/20 space-y-4">
-        <h4 class="text-sm font-bold text-white flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary-container text-[18px]">settings</span>
-          System Engine &amp; AI Preferences
-        </h4>
-        <div class="space-y-3">
-          <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex items-center justify-between">
-            <div>
-              <p class="text-xs font-bold text-white">Google Gemini API Key</p>
-              <p class="text-[10px] text-outline font-mono">Embedded client-side key for function calling</p>
+      <div class="glass-surface p-5 sm:p-6 rounded-2xl border border-outline-variant/20 space-y-6">
+        <div>
+          <h4 class="text-base font-bold text-white flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary-container text-[22px]">settings</span>
+            System Engine &amp; AI Model Router
+          </h4>
+          <p class="text-xs text-outline font-mono mt-1">Configure OmniRoute, FreeLLMAPI, local Ollama, or Google Gemini cloud keys.</p>
+        </div>
+
+        <!-- 1. AI GATEWAY (OMNIROUTE & FREELLMAPI) -->
+        <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-primary-container/30 space-y-4 shadow-lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-outline-variant/15">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container">
+                <span class="material-symbols-outlined text-[18px]">hub</span>
+              </span>
+              <div>
+                <p class="text-xs font-bold text-white flex items-center gap-2">
+                  AI Gateway / Smart Router
+                  <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-primary-container/15 text-primary-container border border-primary-container/30">OmniRoute &amp; FreeLLMAPI</span>
+                </p>
+                <p class="text-[11px] text-outline font-mono">Consolidate 1400+ models or free developer keys with automatic failover</p>
+              </div>
             </div>
-            <button onclick="const k=prompt('Enter Gemini API Key:'); if(k){localStorage.setItem('tadashi_gemini_key', k); if(window.showToast) showToast('Gemini Key saved!');}" class="px-3 py-1 rounded bg-primary-container text-black font-mono text-xs font-bold">
-              Configure Key
+            <div class="flex items-center gap-2">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="gw-enabled-toggle" class="sr-only peer" ${gwEnabled ? 'checked' : ''} onchange="window.saveGatewaySettings()">
+                <div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+                <span class="ml-2 text-xs font-mono font-medium ${gwEnabled ? 'text-primary-container' : 'text-outline'}">
+                  ${gwEnabled ? 'Active Provider' : 'Disabled'}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Gateway Presets -->
+          <div>
+            <label class="text-[11px] font-mono text-outline block mb-1.5 uppercase tracking-wider">Quick Provider Presets</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button onclick="window.selectGatewayPreset('omniroute')" class="p-2.5 rounded-lg border text-left transition-all ${gwPreset === 'omniroute' ? 'bg-primary-container/20 border-primary-container text-white' : 'bg-surface-container/40 border-outline-variant/20 text-outline hover:text-white'}">
+                <p class="text-xs font-bold flex items-center gap-1"><span class="text-primary-container">⚡</span> OmniRoute</p>
+                <p class="text-[10px] text-outline/80 font-mono mt-0.5">Port 8080 · 1400+ Models</p>
+              </button>
+              <button onclick="window.selectGatewayPreset('freellmapi')" class="p-2.5 rounded-lg border text-left transition-all ${gwPreset === 'freellmapi' ? 'bg-primary-container/20 border-primary-container text-white' : 'bg-surface-container/40 border-outline-variant/20 text-outline hover:text-white'}">
+                <p class="text-xs font-bold flex items-center gap-1"><span class="text-tertiary">🔄</span> FreeLLMAPI</p>
+                <p class="text-[10px] text-outline/80 font-mono mt-0.5">Port 3001 · 429 Failover</p>
+              </button>
+              <button onclick="window.selectGatewayPreset('ollama_v1')" class="p-2.5 rounded-lg border text-left transition-all ${gwPreset === 'ollama_v1' ? 'bg-primary-container/20 border-primary-container text-white' : 'bg-surface-container/40 border-outline-variant/20 text-outline hover:text-white'}">
+                <p class="text-xs font-bold flex items-center gap-1"><span class="text-amber-400">🤖</span> Ollama v1</p>
+                <p class="text-[10px] text-outline/80 font-mono mt-0.5">Port 11434 · Local /v1</p>
+              </button>
+              <button onclick="window.selectGatewayPreset('custom')" class="p-2.5 rounded-lg border text-left transition-all ${gwPreset === 'custom' ? 'bg-primary-container/20 border-primary-container text-white' : 'bg-surface-container/40 border-outline-variant/20 text-outline hover:text-white'}">
+                <p class="text-xs font-bold flex items-center gap-1"><span class="text-violet-400">⚙️</span> Custom</p>
+                <p class="text-[10px] text-outline/80 font-mono mt-0.5">LiteLLM, vLLM, Proxy</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Endpoint, Model & Key Input Fields -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">
+            <div>
+              <label class="text-[11px] text-outline block mb-1">Gateway Endpoint (OpenAI Format)</label>
+              <input type="text" id="gw-endpoint-input" value="${Utils.escapeHtml(gwEndpoint)}" placeholder="http://127.0.0.1:8080/v1" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-lg px-3 py-2 text-white placeholder:text-outline/40 focus:border-primary-container focus:outline-none">
+            </div>
+            <div>
+              <label class="text-[11px] text-outline block mb-1">Model Name (or 'auto')</label>
+              <input type="text" id="gw-model-input" value="${Utils.escapeHtml(gwModel)}" placeholder="auto" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-lg px-3 py-2 text-white placeholder:text-outline/40 focus:border-primary-container focus:outline-none">
+            </div>
+            <div>
+              <label class="text-[11px] text-outline block mb-1">API Key / Bearer (Optional)</label>
+              <input type="password" id="gw-key-input" value="${Utils.escapeHtml(gwKey)}" placeholder="Optional for local proxy" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-lg px-3 py-2 text-white placeholder:text-outline/40 focus:border-primary-container focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Action row with Test Health Badge -->
+          <div class="flex items-center justify-between gap-3 pt-2 flex-wrap">
+            <div id="gw-health-badge" class="text-xs font-mono px-3 py-1 rounded-full bg-surface-container/60 border border-outline-variant/20 text-outline flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${gwEnabled ? 'bg-primary-container animate-pulse' : 'bg-outline'}"></span>
+              <span>${gwEnabled ? 'Gateway Mode Active' : 'Gateway Inactive'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="window.testGatewayHealthUI()" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-[15px]">sensors</span>
+                <span>Test Gateway Ping</span>
+              </button>
+              <button onclick="window.saveGatewaySettings()" class="px-4 py-1.5 rounded-lg bg-primary-container text-black font-mono text-xs font-bold hover:bg-surface-tint transition-all cyan-glow">
+                Save Gateway
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Local Launch Guide Accordion -->
+          <details class="text-xs font-mono bg-surface-container-lowest/60 rounded-lg p-3 border border-outline-variant/15 text-outline">
+            <summary class="cursor-pointer font-bold text-white hover:text-primary-container transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">terminal</span>
+              <span>How to launch OmniRoute or FreeLLMAPI locally</span>
+            </summary>
+            <div class="mt-3 space-y-3 pt-2 border-t border-outline-variant/10 text-[11px] leading-relaxed">
+              <div>
+                <p class="font-bold text-primary-container">Option A: Run OmniRoute (cheaper-inference/OmniRoute)</p>
+                <pre class="bg-black/60 p-2.5 rounded-lg mt-1 text-slate-200 overflow-x-auto select-all">git clone https://github.com/cheaper-inference/OmniRoute.git
+cd OmniRoute && npm install && npm run start
+# Server listens on: http://localhost:8080/v1</pre>
+              </div>
+              <div>
+                <p class="font-bold text-tertiary">Option B: Run FreeLLMAPI (tashfeenahmed/freellmapi)</p>
+                <pre class="bg-black/60 p-2.5 rounded-lg mt-1 text-slate-200 overflow-x-auto select-all">git clone https://github.com/tashfeenahmed/freellmapi.git
+cd freellmapi && npm install && npm run dev
+# Server listens on: http://localhost:3001/v1</pre>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- 2. LOCAL OLLAMA DAEMON -->
+        <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <span class="material-symbols-outlined text-[18px]">memory</span>
+              </span>
+              <div>
+                <p class="text-xs font-bold text-white">Local Ollama PC Core</p>
+                <p class="text-[10px] text-outline font-mono">100% offline private execution on local hardware (${ollamaHost})</p>
+              </div>
+            </div>
+            <button onclick="const h=prompt('Enter Ollama Host URL:', '${Utils.escapeHtml(ollamaHost)}'); if(h && window.OllamaProvider){window.OllamaProvider.setHost(h); if(window.showToast)showToast('Ollama Host saved!'); if(typeof openDomainPage==='function')openDomainPage('settings',false);}" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-white font-mono text-xs font-semibold">
+              Edit Host
             </button>
           </div>
-          <div class="p-3 rounded-lg bg-surface-container-lowest/60 border border-outline-variant/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        </div>
+
+        <!-- 3. GOOGLE GEMINI CLOUD KEY -->
+        <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-primary-container/15 border border-primary-container/30 flex items-center justify-center text-primary-container">
+                <span class="material-symbols-outlined text-[18px]">cloud</span>
+              </span>
+              <div>
+                <p class="text-xs font-bold text-white">Google Gemini API Key</p>
+                <p class="text-[10px] text-outline font-mono">Direct Google Cloud Gemini 1.5/2.0 API connection (${hasGemini ? 'Key Configured' : 'No Key'})</p>
+              </div>
+            </div>
+            <button onclick="const k=prompt('Enter Gemini API Key:'); if(k){localStorage.setItem('tadashi_gemini_key', k); if(window.showToast) showToast('Gemini Key saved!'); if(typeof openDomainPage==='function')openDomainPage('settings',false);}" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-white font-mono text-xs font-semibold">
+              ${hasGemini ? 'Update Key' : 'Configure Key'}
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. DATABASE & BACKUPS -->
+        <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <p class="text-xs font-bold text-white">LocalStorage Database &amp; Backups</p>
               <p class="text-[10px] text-outline font-mono">Export, import, or safely reset persistent LifeOS state across all 22 domains</p>
@@ -3429,6 +3582,64 @@
       </div>
     `;
   }
+
+  // Gateway UI Handlers on window
+  window.selectGatewayPreset = function(presetId) {
+    const presets = {
+      omniroute: { endpoint: 'http://127.0.0.1:8080/v1', model: 'auto' },
+      freellmapi: { endpoint: 'http://127.0.0.1:3001/v1', model: 'auto' },
+      ollama_v1: { endpoint: 'http://127.0.0.1:11434/v1', model: 'llama3.2:latest' },
+      custom: { endpoint: 'http://127.0.0.1:8080/v1', model: 'default' }
+    };
+    const p = presets[presetId] || presets.custom;
+    const epInput = document.getElementById('gw-endpoint-input');
+    const modelInput = document.getElementById('gw-model-input');
+    if (epInput) epInput.value = p.endpoint;
+    if (modelInput) modelInput.value = p.model;
+    if (window.GatewayProvider) window.GatewayProvider.setPreset(presetId);
+    if (window.showToast) window.showToast('Selected preset: ' + presetId);
+  };
+
+  window.saveGatewaySettings = function() {
+    const epInput = document.getElementById('gw-endpoint-input');
+    const modelInput = document.getElementById('gw-model-input');
+    const keyInput = document.getElementById('gw-key-input');
+    const enabledCheckbox = document.getElementById('gw-enabled-toggle');
+
+    if (window.GatewayProvider) {
+      if (epInput && epInput.value) window.GatewayProvider.setEndpoint(epInput.value.trim());
+      if (modelInput && modelInput.value) window.GatewayProvider.setModel(modelInput.value.trim());
+      if (keyInput) window.GatewayProvider.setKey(keyInput.value.trim());
+      if (enabledCheckbox) window.GatewayProvider.setEnabled(enabledCheckbox.checked);
+    }
+    if (window.showToast) window.showToast('AI Gateway preferences saved!');
+    if (typeof openDomainPage === 'function') openDomainPage('settings', false);
+  };
+
+  window.testGatewayHealthUI = async function() {
+    const badge = document.getElementById('gw-health-badge');
+    if (badge) {
+      badge.className = 'text-xs font-mono px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-amber-400 flex items-center gap-1.5';
+      badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Probing gateway endpoint...';
+    }
+
+    if (!window.GatewayProvider) return;
+    const epInput = document.getElementById('gw-endpoint-input');
+    if (epInput && epInput.value.trim()) window.GatewayProvider.setEndpoint(epInput.value.trim());
+
+    const res = await window.GatewayProvider.checkHealth(2500);
+    if (badge) {
+      if (res.ok) {
+        badge.className = 'text-xs font-mono px-3 py-1 rounded-full bg-tertiary/15 border border-tertiary/40 text-tertiary flex items-center gap-1.5';
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-tertiary"></span> Online: ${res.modelsCount || 0} models ready`;
+        if (window.showToast) window.showToast('Gateway connection successful! ' + (res.modelsCount || 0) + ' models detected.');
+      } else {
+        badge.className = 'text-xs font-mono px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-400 flex items-center gap-1.5';
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> ${res.error || 'Offline'}`;
+        if (window.showToast) window.showToast('Gateway connection failed: ' + (res.error || 'Offline'));
+      }
+    }
+  };
 
   function renderGenericDomain(id, domain, s) {
     return `

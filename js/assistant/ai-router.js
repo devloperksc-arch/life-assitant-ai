@@ -580,13 +580,404 @@
     }
   };
 
-  // --- 2. HOSTED CLOUD GEMINI PROVIDER ---
+  // --- 2. OPENAI-COMPATIBLE AI GATEWAY PROVIDER (OmniRoute & FreeLLMAPI) ---
+  const GATEWAY_ENDPOINT_KEY = 'tadashi_gateway_endpoint';
+  const GATEWAY_MODEL_KEY    = 'tadashi_gateway_model';
+  const GATEWAY_KEY_STORAGE  = 'tadashi_gateway_key';
+  const GATEWAY_ENABLED_KEY  = 'tadashi_gateway_enabled';
+  const GATEWAY_PRESET_KEY   = 'tadashi_gateway_preset';
+  const GATEWAY_TIMEOUT_KEY  = 'tadashi_gateway_timeout_ms';
+
+  const GATEWAY_PRESETS = {
+    omniroute: {
+      id: 'omniroute',
+      name: 'OmniRoute (Smart Cost & Free Router)',
+      defaultEndpoint: 'http://127.0.0.1:8080/v1',
+      defaultModel: 'auto',
+      description: 'Unified AI gateway aggregating 1400+ models with smart quota fallbacks and context compression.'
+    },
+    freellmapi: {
+      id: 'freellmapi',
+      name: 'FreeLLMAPI (Free Tier Aggregator & Failover)',
+      defaultEndpoint: 'http://127.0.0.1:3001/v1',
+      defaultModel: 'auto',
+      description: 'Aggregates dozens of free-tier developer keys with automatic HTTP 429 failover.'
+    },
+    ollama_v1: {
+      id: 'ollama_v1',
+      name: 'Ollama (OpenAI Compatibility V1)',
+      defaultEndpoint: 'http://127.0.0.1:11434/v1',
+      defaultModel: 'llama3.2:latest',
+      description: 'Local Ollama daemon running in standard OpenAI /v1 endpoint mode.'
+    },
+    custom: {
+      id: 'custom',
+      name: 'Custom OpenAI-Compatible Gateway',
+      defaultEndpoint: 'http://127.0.0.1:8080/v1',
+      defaultModel: 'default',
+      description: 'Any self-hosted or remote OpenAI-compatible proxy (LiteLLM, LocalAI, vLLM, OpenRouter).'
+    }
+  };
+
+  const GatewayProvider = {
+    id: 'openai_gateway',
+    name: 'AI Gateway (OmniRoute / FreeLLMAPI)',
+    PRESETS: GATEWAY_PRESETS,
+
+    getPreset() {
+      try { return localStorage.getItem(GATEWAY_PRESET_KEY) || 'omniroute'; } catch(e) { return 'omniroute'; }
+    },
+
+    setPreset(presetId) {
+      if (!GATEWAY_PRESETS[presetId]) presetId = 'custom';
+      try { localStorage.setItem(GATEWAY_PRESET_KEY, presetId); } catch(e) {}
+    },
+
+    getEndpoint() {
+      try {
+        const custom = localStorage.getItem(GATEWAY_ENDPOINT_KEY);
+        if (custom && custom.trim()) return this._normalizeEndpoint(custom.trim());
+      } catch(e) {}
+      const preset = GATEWAY_PRESETS[this.getPreset()] || GATEWAY_PRESETS.omniroute;
+      return preset.defaultEndpoint;
+    },
+
+    setEndpoint(url) {
+      try {
+        if (url) localStorage.setItem(GATEWAY_ENDPOINT_KEY, (url || '').trim());
+        else localStorage.removeItem(GATEWAY_ENDPOINT_KEY);
+      } catch(e) {}
+    },
+
+    _normalizeEndpoint(url) {
+      let clean = (url || '').trim().replace(/\/+$/, '');
+      if (!clean.endsWith('/v1') && !clean.includes('/v1/')) {
+        clean += '/v1';
+      }
+      return clean;
+    },
+
+    getModel() {
+      try {
+        const m = localStorage.getItem(GATEWAY_MODEL_KEY);
+        if (m && m.trim()) return m.trim();
+      } catch(e) {}
+      const preset = GATEWAY_PRESETS[this.getPreset()] || GATEWAY_PRESETS.omniroute;
+      return preset.defaultModel;
+    },
+
+    setModel(model) {
+      try {
+        if (model) localStorage.setItem(GATEWAY_MODEL_KEY, (model || '').trim());
+        else localStorage.removeItem(GATEWAY_MODEL_KEY);
+      } catch(e) {}
+    },
+
+    getKey() {
+      try { return (localStorage.getItem(GATEWAY_KEY_STORAGE) || '').trim(); } catch(e) { return ''; }
+    },
+
+    setKey(k) {
+      try {
+        if (k) localStorage.setItem(GATEWAY_KEY_STORAGE, (k || '').trim());
+        else localStorage.removeItem(GATEWAY_KEY_STORAGE);
+      } catch(e) {}
+    },
+
+    isEnabled() {
+      try { return localStorage.getItem(GATEWAY_ENABLED_KEY) === 'true'; } catch(e) { return false; }
+    },
+
+    setEnabled(enabled) {
+      try { localStorage.setItem(GATEWAY_ENABLED_KEY, enabled ? 'true' : 'false'); } catch(e) {}
+    },
+
+    getTimeout() {
+      try { return parseInt(localStorage.getItem(GATEWAY_TIMEOUT_KEY), 10) || 30000; } catch(e) { return 30000; }
+    },
+
+    setTimeout(ms) {
+      try { localStorage.setItem(GATEWAY_TIMEOUT_KEY, String(ms)); } catch(e) {}
+    },
+
+    isLoopback(endpoint) {
+      const target = (endpoint || this.getEndpoint()).toLowerCase();
+      return target.includes('127.0.0.1') || target.includes('localhost') || target.includes('[::1]');
+    },
+
+    classifyEndpoint(endpoint) {
+      return this.isLoopback(endpoint) ? 'local' : 'remote_online';
+    },
+
+    async checkHealth(timeoutMs = 1500) {
+      const endpoint = this.getEndpoint();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const headers = { 'Accept': 'application/json' };
+      const key = this.getKey();
+      if (key) headers['Authorization'] = `Bearer ${key}`;
+
+      try {
+        const res = await fetch(`${endpoint}/models`, {
+          method: 'GET',
+          headers,
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        if (!res.ok) {
+          return {
+            ok: false,
+            status: 'http_error',
+            endpoint,
+            error: `Gateway returned HTTP ${res.status}: ${res.statusText}`,
+            models: []
+          };
+        }
+
+        const data = await res.json();
+        const models = Array.isArray(data.data) ? data.data.map(m => m.id || m.name || m) : [];
+        return {
+          ok: true,
+          status: 'ready',
+          endpoint,
+          preset: this.getPreset(),
+          modelsCount: models.length,
+          models: models.slice(0, 50)
+        };
+      } catch(err) {
+        clearTimeout(timer);
+        const isTimeout = err.name === 'AbortError';
+        const preset = this.getPreset();
+        const hint = preset === 'omniroute'
+          ? 'OmniRoute is not running on ' + endpoint + '. Launch OmniRoute on your PC.'
+          : preset === 'freellmapi'
+          ? 'FreeLLMAPI is not running on ' + endpoint + '. Launch FreeLLMAPI container.'
+          : 'AI Gateway is offline on ' + endpoint + '.';
+
+        return {
+          ok: false,
+          status: isTimeout ? 'timeout' : 'offline',
+          endpoint,
+          error: isTimeout ? `Connection to gateway (${endpoint}) timed out after ${timeoutMs}ms.` : hint,
+          models: []
+        };
+      }
+    },
+
+    async isAvailable(timeoutMs = 1500) {
+      if (!this.isEnabled()) return false;
+      const health = await this.checkHealth(timeoutMs);
+      return health.ok;
+    },
+
+    formatTools(tools) {
+      if (!Array.isArray(tools)) return [];
+      return tools.map(t => ({
+        type: 'function',
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters
+        }
+      }));
+    },
+
+    buildOpenAIMessages(messages, options = {}) {
+      const formatted = [];
+
+      const systemPrompt = options.systemPrompt || (typeof window.AI !== 'undefined' ? window.AI.buildSystemPrompt() : 'You are TADASHI, autonomous AI assistant.');
+      formatted.push({ role: 'system', content: systemPrompt });
+
+      for (const m of (messages || [])) {
+        if (!m) continue;
+        let role = m.role;
+        if (role === 'tadashi' || role === 'model') role = 'assistant';
+        if (role === 'user' || role === 'assistant' || role === 'system' || role === 'tool') {
+          const content = m.content || (m.parts && m.parts[0]?.text) || '';
+          const msgObj = { role, content };
+          if (m.tool_calls) msgObj.tool_calls = m.tool_calls;
+          if (m.tool_call_id) msgObj.tool_call_id = m.tool_call_id;
+          if (m.name) msgObj.name = m.name;
+          formatted.push(msgObj);
+        }
+      }
+
+      if (options.prompt && (formatted.length === 1 || formatted[formatted.length - 1].role !== 'user')) {
+        formatted.push({ role: 'user', content: options.prompt });
+      }
+
+      return formatted;
+    },
+
+    async generate(messages, tools, options = {}) {
+      const startTime = performance.now();
+      const endpoint = this.getEndpoint();
+      const model = options.model || this.getModel();
+      const timeoutMs = options.timeoutMs || this.getTimeout();
+      const controller = new AbortController();
+
+      if (options.signal) {
+        if (options.signal.aborted) controller.abort();
+        else options.signal.addEventListener('abort', () => controller.abort());
+      }
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const headers = { 'Content-Type': 'application/json' };
+      const key = this.getKey();
+      if (key) headers['Authorization'] = `Bearer ${key}`;
+
+      const formattedMessages = this.buildOpenAIMessages(messages, options);
+      const formattedTools = this.formatTools(tools);
+
+      const body = {
+        model,
+        messages: formattedMessages,
+        stream: false,
+        temperature: options.temperature !== undefined ? options.temperature : 0.7
+      };
+
+      if (formattedTools.length > 0) {
+        body.tools = formattedTools;
+        body.tool_choice = 'auto';
+      }
+
+      try {
+        let rounds = 0;
+        let finalResponseData = null;
+        const allToolCalls = [];
+
+        while (rounds < 4) {
+          const res = await fetch(`${endpoint}/chat/completions`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            signal: controller.signal
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Gateway HTTP ${res.status}: ${errText}`);
+          }
+
+          const data = await res.json();
+          finalResponseData = data;
+          const choice = data.choices && data.choices[0];
+          if (!choice) break;
+
+          const msg = choice.message || {};
+          const toolCalls = msg.tool_calls;
+
+          if (!Array.isArray(toolCalls) || toolCalls.length === 0) {
+            break;
+          }
+
+          body.messages.push(msg);
+
+          for (const tc of toolCalls) {
+            const fnName = tc.function?.name;
+            let fnArgs = {};
+            try {
+              fnArgs = typeof tc.function?.arguments === 'string'
+                ? JSON.parse(tc.function.arguments)
+                : (tc.function?.arguments || {});
+            } catch(pe) {
+              fnArgs = {};
+            }
+
+            allToolCalls.push({ name: fnName, args: fnArgs });
+
+            let toolResult;
+            if (typeof window.ToolRegistry !== 'undefined' && window.ToolRegistry.getTool(fnName)) {
+              const check = await window.ToolRegistry.execute(fnName, fnArgs, { isApproved: false });
+              if (check.approvalRequired) {
+                if (typeof options.onApprovalRequest === 'function') {
+                  const approved = await options.onApprovalRequest(check.proposal);
+                  if (approved) {
+                    toolResult = await window.ToolRegistry.execute(fnName, fnArgs, { isApproved: true, idempotencyKey: check.proposal.id });
+                  } else {
+                    toolResult = { ok: false, rejected: true, error: 'User declined the action proposal.' };
+                  }
+                } else {
+                  toolResult = { ok: false, approvalRequired: true, error: 'Action requires explicit user confirmation before executing.' };
+                }
+              } else {
+                toolResult = check;
+              }
+            } else if (typeof window.AI !== 'undefined' && typeof window.AI.executeTool === 'function') {
+              toolResult = await window.AI.executeTool(fnName, fnArgs);
+            } else {
+              toolResult = { ok: false, error: `Tool ${fnName} not found` };
+            }
+
+            if (typeof options.onToolCall === 'function') {
+              try { options.onToolCall(fnName, fnArgs, toolResult); } catch(te) {}
+            }
+
+            body.messages.push({
+              role: 'tool',
+              tool_call_id: tc.id,
+              name: fnName,
+              content: JSON.stringify(toolResult.result ?? toolResult.error ?? toolResult)
+            });
+          }
+
+          rounds++;
+        }
+
+        clearTimeout(timer);
+        const latencyMs = performance.now() - startTime;
+        const choice = finalResponseData?.choices?.[0];
+        const text = choice?.message?.content || '';
+
+        recordTelemetry({
+          provider: 'gateway',
+          model,
+          latencyMs,
+          status: 'success',
+          taskClass: options.taskClass
+        });
+
+        return {
+          ok: true,
+          provider: 'gateway',
+          model,
+          text,
+          toolCalls: allToolCalls,
+          latencyMs
+        };
+
+      } catch(err) {
+        clearTimeout(timer);
+        const latencyMs = performance.now() - startTime;
+        recordTelemetry({
+          provider: 'gateway',
+          model,
+          latencyMs,
+          status: 'error',
+          error: err.message,
+          taskClass: options.taskClass
+        });
+
+        if (err.name === 'AbortError') {
+          throw new Error(`AI Gateway request timed out after ${timeoutMs}ms or was cancelled.`);
+        }
+        if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED'))) {
+          throw new Error(`Cannot connect to AI Gateway on ${endpoint}. Verify OmniRoute/FreeLLMAPI is active.`);
+        }
+        throw err;
+      }
+    }
+  };
+
+  // --- 3. HOSTED CLOUD GEMINI PROVIDER ---
   const GeminiCloudProvider = {
     id: 'gemini_cloud',
     name: 'Gemini (Google Cloud)',
 
     async isAvailable() {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
       return typeof window.AI !== 'undefined' && window.AI.hasKey();
     },
 
@@ -633,10 +1024,11 @@
     }
   };
 
-  // --- 3. TADASHI AGENT ROUTER (Decision Matrix) ---
+  // --- 4. TADASHI AGENT ROUTER (Decision Matrix) ---
   const AIRouter = {
     TASK_CLASS,
     providers: {
+      gateway: GatewayProvider,
       ollama: OllamaProvider,
       gemini: GeminiCloudProvider
     },
@@ -666,11 +1058,32 @@
     // Main Policy Resolution
     async resolveRoute(request = {}) {
       const privacy = request.privacy || this.getPrivacyMode();
-      const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      const isOnline = (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') ? navigator.onLine : true;
       const ollamaAvailable = await OllamaProvider.isAvailable(1000);
+
+      const gatewayEnabled = GatewayProvider.isEnabled();
+      const gatewayHost = GatewayProvider.getEndpoint();
+      const gatewayLoopback = GatewayProvider.isLoopback(gatewayHost);
+      const gatewayAvailable = gatewayEnabled ? await GatewayProvider.isAvailable(1000) : false;
 
       // Rule 1: Local-only privacy policy strictly enforced
       if (privacy === 'local_only') {
+        if (gatewayEnabled) {
+          if (!gatewayLoopback) {
+            return {
+              selectedProvider: null,
+              routeDecision: 'blocked_privacy_remote_gateway',
+              error: `Local-only privacy mode requires a local loopback AI Gateway (127.0.0.1 or localhost). Configured gateway "${gatewayHost}" is classified as remote online. Data was strictly blocked from cloud transit.`
+            };
+          }
+          if (gatewayAvailable) {
+            return {
+              selectedProvider: GatewayProvider,
+              routeDecision: 'gateway_privacy_enforced'
+            };
+          }
+        }
+
         const host = OllamaProvider.getHost();
         if (!OllamaProvider.isLoopback(host)) {
           return {
@@ -695,6 +1108,12 @@
 
       // Rule 2: Completely offline (Internet disconnected)
       if (!isOnline) {
+        if (gatewayEnabled && gatewayLoopback && gatewayAvailable) {
+          return {
+            selectedProvider: GatewayProvider,
+            routeDecision: 'gateway_offline_loopback'
+          };
+        }
         if (ollamaAvailable) {
           return {
             selectedProvider: OllamaProvider,
@@ -708,17 +1127,29 @@
         };
       }
 
-      // Rule 3: Online & Cloud Allowed -> Use Gemini Cloud (Fallback to Ollama on failure)
+      // Rule 3: Online & Cloud Allowed
+      // Priority 1: AI Gateway (OmniRoute / FreeLLMAPI) if user enabled it and it is healthy
+      if (gatewayEnabled && gatewayAvailable) {
+        const fallback = (await GeminiCloudProvider.isAvailable()) ? GeminiCloudProvider : (ollamaAvailable ? OllamaProvider : null);
+        return {
+          selectedProvider: GatewayProvider,
+          fallbackProvider: fallback,
+          routeDecision: 'gateway_primary'
+        };
+      }
+
+      // Priority 2: Gemini Cloud
       const cloudAvailable = await GeminiCloudProvider.isAvailable();
       if (cloudAvailable) {
+        const fallback = (gatewayEnabled && gatewayAvailable) ? GatewayProvider : (ollamaAvailable ? OllamaProvider : null);
         return {
           selectedProvider: GeminiCloudProvider,
-          fallbackProvider: ollamaAvailable ? OllamaProvider : null,
+          fallbackProvider: fallback,
           routeDecision: 'cloud_primary'
         };
       }
 
-      // Cloud not configured or has no API key -> check Ollama
+      // Priority 3: Local Ollama
       if (ollamaAvailable) {
         return {
           selectedProvider: OllamaProvider,
@@ -729,7 +1160,7 @@
       return {
         selectedProvider: null,
         routeDecision: 'unconfigured',
-        error: 'No AI model provider configured. Please provide a Gemini API key or start local Ollama.'
+        error: 'No AI model provider configured. Please provide a Gemini API key, enable OmniRoute / FreeLLMAPI gateway, or start local Ollama.'
       };
     },
 
@@ -778,6 +1209,7 @@
   };
 
   window.OllamaProvider = OllamaProvider;
+  window.GatewayProvider = GatewayProvider;
   window.AIRouter = AIRouter;
 
 })(typeof window !== 'undefined' ? window : global);

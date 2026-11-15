@@ -526,8 +526,26 @@ IMPORTANT RULES:
   // onApprovalRequest(proposal) returns Promise<boolean>
   // ================================================================
   async chat(message, history, { onToolCall, onApprovalRequest } = {}) {
+    // Transparently route through AIRouter when Gateway (OmniRoute/FreeLLMAPI) is enabled,
+    // when local-only privacy is set, or when no Gemini cloud key is configured.
+    if (typeof window !== 'undefined' && window.AIRouter && typeof window.AIRouter.chat === 'function') {
+      const gatewayActive = window.GatewayProvider && typeof window.GatewayProvider.isEnabled === 'function' && window.GatewayProvider.isEnabled();
+      const noGeminiKey = !this.hasKey();
+      const localOnly = typeof window.AIRouter.getPrivacyMode === 'function' && window.AIRouter.getPrivacyMode() === 'local_only';
+
+      if (gatewayActive || noGeminiKey || localOnly) {
+        try {
+          const res = await window.AIRouter.chat(message, history, { onToolCall, onApprovalRequest });
+          if (res && typeof res.text === 'string') return res.text;
+        } catch(routerErr) {
+          if (!this.hasKey() || localOnly) throw routerErr;
+          console.warn('AIRouter call failed; attempting direct Gemini fallback:', routerErr);
+        }
+      }
+    }
+
     const key   = this.getKey();
-    if (!key) throw new Error('No API key configured');
+    if (!key) throw new Error('No API key configured. Provide a Gemini Key, or configure OmniRoute / FreeLLMAPI in Settings.');
     const model = this.getModel();
 
     // Build conversation turns
