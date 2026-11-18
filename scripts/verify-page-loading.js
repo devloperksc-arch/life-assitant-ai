@@ -231,12 +231,12 @@ async function verifyPageLoading() {
   assert.strictEqual(tadashiOpens, tadashiCloses, `view-tadashi must be fully closed before view-manage (opens: ${tadashiOpens}, closes: ${tadashiCloses})`);
   console.log(`  ✓ view-tadashi is cleanly closed before view-manage (${tadashiOpens} divs balanced)`);
 
-  // Count 22 domain cards in view-manage
+  // Count 23 domain cards in view-manage
   const briefingsIdx = mainChunk.indexOf('id="view-briefings"');
   const manageChunk = mainChunk.substring(manageIdx, briefingsIdx);
   const cardMatches = manageChunk.match(/class="[^"]*domain-card[^"]*"/g) || [];
-  assert.strictEqual(cardMatches.length, 22, `view-manage must contain exactly 22 domain cards, found ${cardMatches.length}`);
-  console.log(`  ✓ view-manage contains all 22 domain cards in #domains-grid`);
+  assert.strictEqual(cardMatches.length, 23, `view-manage must contain exactly 23 domain cards, found ${cardMatches.length}`);
+  console.log(`  ✓ view-manage contains all 23 domain cards in #domains-grid`);
 
   console.log('\n======================================================');
   console.log(`ALL ASSETS, CONTAINERS, AND ${renderedCount} DOMAIN PAGES LOADED CLEANLY`);

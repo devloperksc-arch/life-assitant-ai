@@ -455,6 +455,32 @@ const DATA = {
     days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
   },
 
+  updates: {
+    systemVersion: '5.9.0',
+    currentBuild: '0ae6137',
+    lastCheckedAt: '2026-11-15T12:00:00.000Z',
+    history: [
+      {
+        id: 'upd_v5_8_0',
+        version: '5.8.0',
+        timestamp: '2026-11-15T11:45:00.000Z',
+        description: 'Dual-Gateway AI router (OmniRoute + FreeLLMAPI) & Vercel serverless integration',
+        author: 'Antigravity / DeepMind',
+        filesCount: 15,
+        status: 'applied'
+      },
+      {
+        id: 'upd_v5_9_0',
+        version: '5.9.0',
+        timestamp: '2026-11-15T12:15:00.000Z',
+        description: 'Update Center Live Hot-Patching Engine & OTA Manifest Manager',
+        author: 'Krishna Singh',
+        filesCount: 4,
+        status: 'applied'
+      }
+    ]
+  },
+
   notifications: [
     { id:1, type:'risk', icon:'⚠️', iconBg:'rgba(245,158,11,0.15)', title:'OS Exam in 6 days', desc:'You are 42% through the syllabus. TADASHI recommends 3 study sessions this week.', time:'2 min ago', unread:true },
     { id:2, type:'reminder', icon:'💪', iconBg:'rgba(16,185,129,0.15)', title:'Gym session scheduled at 5:30 PM', desc:'Push day — Bench Press, OHP, Triceps', time:'15 min ago', unread:true },

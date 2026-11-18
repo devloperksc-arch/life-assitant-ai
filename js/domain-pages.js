@@ -43,7 +43,8 @@
     { id: 'routines', num: '19', name: 'Routines & Habits', cat: 'systems', icon: 'bedtime', emoji: '🌅', tag: 'Streak 12d', color: '#6af7ba' },
     { id: 'digital-life', num: '20', name: 'Digital Life', cat: 'systems', icon: 'laptop', emoji: '💻', tag: '5 Subs Active', color: '#a8e8ff' },
     { id: 'analytics', num: '21', name: 'System Analytics', cat: 'systems', icon: 'query_stats', emoji: '📊', tag: 'LifeScore 84', color: '#00d4ff' },
-    { id: 'settings', num: '22', name: 'Settings & Voice', cat: 'systems', icon: 'settings', emoji: '⚙️', tag: 'Gemini Active', color: '#00d4ff' }
+    { id: 'settings', num: '22', name: 'Settings & Voice', cat: 'systems', icon: 'settings', emoji: '⚙️', tag: 'Gemini Active', color: '#00d4ff' },
+    { id: 'updates', num: '23', name: 'Update Center', cat: 'systems', icon: 'system_update', emoji: '🔄', tag: 'Live Patching', color: '#00d4ff' }
   ];
   if (!window.DOMAINS || !window.DOMAINS.length) {
     window.DOMAINS = DOMAINS_REGISTRY;
@@ -54,7 +55,11 @@
     'homecare': 'home-module',
     'vault': 'documents',
     'digital': 'digital-life',
-    'workspace': 'home'
+    'workspace': 'home',
+    'update-center': 'updates',
+    'update': 'updates',
+    'patch': 'updates',
+    'ota': 'updates'
   };
 
   function normalizeDomainId(id) {
@@ -982,6 +987,8 @@
         return renderAnalyticsDomain(dbState);
       case 'settings':
         return renderSettingsDomain(dbState);
+      case 'updates':
+        return renderUpdatesDomain(dbState);
       default:
         return renderGenericDomain(id, domain, dbState);
     }
@@ -3760,6 +3767,567 @@ cd freellmapi && npm install && npm run dev
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     if (typeof window.showToast === 'function') window.showToast('LifeOS data exported successfully! 💾');
+  };
+
+
+  // ============================================================
+  // 23. UPDATE CENTER DOMAIN (Live In-App Patching & Manifest OTA)
+  // ============================================================
+  let _stagedManifest = null;
+  let _stagedFilesMap = {};
+
+  function renderUpdatesDomain(s) {
+    const engine = (typeof window !== 'undefined' && window.UpdateEngine) ? window.UpdateEngine : null;
+    const currentVer = engine ? engine.getCurrentVersion() : '5.9.0';
+    const activePatches = engine ? engine.getActivePatches() : [];
+    const hasBackup = engine ? engine.hasPreUpdateBackup() : false;
+    const history = (window.DB && window.DB.updates && typeof window.DB.updates.getHistory === 'function') 
+      ? window.DB.updates.getHistory() 
+      : [];
+
+    return `
+      <div class="space-y-6 max-w-6xl mx-auto pb-12" id="updates-domain-container">
+        
+        <!-- Top Status & Telemetry HUD -->
+        <div class="glass-surface rounded-2xl p-6 border border-outline-variant/20 relative overflow-hidden">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-container/30 to-secondary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container shadow-[0_0_20px_rgba(0,212,255,0.25)]">
+                <span class="material-symbols-outlined text-[32px]">system_update</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <h3 class="text-xl font-bold text-white font-mono">TADASHI Update Center</h3>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-primary-container/20 text-primary border border-primary-container/35">
+                    v${currentVer} Live
+                  </span>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-mono bg-tertiary/15 text-tertiary border border-tertiary/30 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>Zero-Downtime OTA
+                  </span>
+                </div>
+                <p class="text-xs text-outline font-mono mt-1">
+                  Hot-patch code, CSS styles, domain templates, and schema migrations live while the app is running.
+                </p>
+              </div>
+            </div>
+
+            <!-- Fast Metrics -->
+            <div class="flex items-center gap-3">
+              <div class="px-4 py-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 text-center">
+                <span class="text-[10px] text-outline uppercase font-mono block">Active Patches</span>
+                <span class="text-lg font-bold font-mono text-primary-container">${activePatches.length}</span>
+              </div>
+              <div class="px-4 py-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15 text-center">
+                <span class="text-[10px] text-outline uppercase font-mono block">Safety Backup</span>
+                <span class="text-xs font-bold font-mono ${hasBackup ? 'text-tertiary' : 'text-outline'} flex items-center justify-center gap-1 mt-1">
+                  <span class="material-symbols-outlined text-[14px]">${hasBackup ? 'verified_user' : 'shield'}</span>
+                  ${hasBackup ? 'Ready' : 'None'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-2 border-b border-outline-variant/15 pb-2 overflow-x-auto no-scrollbar" id="update-center-tabs">
+          <button onclick="switchUpdateTab('apply')" id="tab-btn-apply" class="update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold bg-primary-container/20 text-primary border border-primary-container/30 transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">install_desktop</span>
+            Apply Update Package
+          </button>
+          <button onclick="switchUpdateTab('patches')" id="tab-btn-patches" class="update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-medium text-outline hover:text-white hover:bg-surface-container transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">memory</span>
+            Active Live Patches (${activePatches.length})
+          </button>
+          <button onclick="switchUpdateTab('history')" id="tab-btn-history" class="update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-medium text-outline hover:text-white hover:bg-surface-container transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">history</span>
+            Rollback & History
+          </button>
+          <button onclick="switchUpdateTab('create')" id="tab-btn-create" class="update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-medium text-outline hover:text-white hover:bg-surface-container transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">build</span>
+            Manifest Generator
+          </button>
+        </div>
+
+        <!-- TAB 1: APPLY UPDATE PACKAGE -->
+        <div id="update-pane-apply" class="update-pane space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Upload Box -->
+            <div class="glass-surface rounded-2xl p-6 border border-outline-variant/15 space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary-container text-[18px]">upload_file</span>
+                  Package Upload
+                </h4>
+                <span class="text-[11px] text-outline font-mono">update-manifest.json</span>
+              </div>
+              
+              <div class="border-2 border-dashed border-outline-variant/30 hover:border-primary-container/60 rounded-xl p-6 text-center cursor-pointer transition-colors bg-surface-container-lowest/40" onclick="document.getElementById('manifest-file-input').click()">
+                <input type="file" id="manifest-file-input" accept=".json" class="hidden" onchange="handleManifestFileUpload(event)" />
+                <span class="material-symbols-outlined text-[36px] text-primary-container mb-2 block">cloud_upload</span>
+                <span class="text-xs font-mono font-medium text-white block">Click to select update-manifest.json</span>
+                <span class="text-[11px] font-mono text-outline mt-1 block">Drag and drop file here, or choose from files</span>
+              </div>
+
+              <!-- Folder / Structure Upload -->
+              <div class="pt-2 border-t border-outline-variant/10">
+                <label class="text-xs font-mono text-outline block mb-2">Or select codebase update files / folder:</label>
+                <input type="file" id="codebase-files-input" multiple class="block w-full text-xs font-mono text-outline file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-mono file:bg-surface-container file:text-white hover:file:bg-surface-container-high cursor-pointer" onchange="handleFolderFilesUpload(event)" />
+              </div>
+            </div>
+
+            <!-- Direct JSON Paste Box -->
+            <div class="glass-surface rounded-2xl p-6 border border-outline-variant/15 space-y-4 flex flex-col">
+              <div class="flex items-center justify-between">
+                <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary-container text-[18px]">code</span>
+                  Paste Manifest JSON
+                </h4>
+                <button onclick="loadManifestTemplateIntoTextarea()" class="text-xs font-mono text-primary-container hover:underline">
+                  Load Example Template
+                </button>
+              </div>
+
+              <textarea id="raw-manifest-textarea" rows="8" placeholder='{"version": "5.9.1", "description": "Hotfix patch", "files": [...]}' class="w-full flex-1 rounded-xl bg-surface-container-lowest border border-outline-variant/30 p-3 font-mono text-xs text-white focus:outline-none focus:border-primary-container resize-none"></textarea>
+
+              <div class="flex items-center gap-3 pt-2">
+                <button onclick="validatePastedManifest()" class="flex-1 px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-white font-mono text-xs font-medium border border-outline-variant/20 transition-all flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-[16px]">rule</span>
+                  Validate Package
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview & Staging Card -->
+          <div id="update-validation-preview" class="glass-surface rounded-2xl p-6 border border-outline-variant/15 hidden space-y-4">
+            <!-- Dynamically populated by window.validateUpdatePackage -->
+          </div>
+        </div>
+
+        <!-- TAB 2: ACTIVE LIVE PATCHES -->
+        <div id="update-pane-patches" class="update-pane space-y-6 hidden">
+          <div class="glass-surface rounded-2xl p-6 border border-outline-variant/15 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary-container text-[18px]">memory</span>
+                  Active In-Memory & Cache Patches
+                </h4>
+                <p class="text-xs text-outline font-mono mt-0.5">Currently applied hot-patches running in the browser and Service Worker CacheStorage.</p>
+              </div>
+              ${activePatches.length > 0 ? `
+                <button onclick="flushLivePatches()" class="px-3 py-1.5 rounded-lg bg-error/15 text-error border border-error/30 text-xs font-mono hover:bg-error/25 transition-all">
+                  Flush In-Memory Patches
+                </button>
+              ` : ''}
+            </div>
+
+            ${activePatches.length === 0 ? `
+              <div class="py-10 text-center text-outline font-mono text-xs border border-dashed border-outline-variant/20 rounded-xl">
+                <span class="material-symbols-outlined text-[32px] text-outline/50 mb-2 block">task_alt</span>
+                Clean Base State: Zero runtime patches active. Running official build bundle.
+              </div>
+            ` : `
+              <div class="divide-y divide-outline-variant/10 font-mono text-xs">
+                ${activePatches.map((p, idx) => `
+                  <div class="py-3 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                      <span class="px-2 py-0.5 rounded bg-primary-container/15 text-primary text-[10px]">${p.path.endsWith('.css') ? 'CSS' : 'JS'}</span>
+                      <span class="text-white font-medium">${p.path}</span>
+                      <span class="text-outline text-[11px]">(${Math.round(p.sizeBytes / 1024 * 10) / 10 || 1} KB)</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-outline text-[11px]">
+                      <span>Applied: ${new Date(p.appliedAt).toLocaleTimeString()}</span>
+                      <span class="px-2 py-0.5 rounded bg-surface-container text-white">v${p.version}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- TAB 3: ROLLBACK & HISTORY -->
+        <div id="update-pane-history" class="update-pane space-y-6 hidden">
+          
+          <!-- Emergency Rollback Card -->
+          <div class="glass-surface rounded-2xl p-6 border ${hasBackup ? 'border-primary-container/30 bg-primary-container/5' : 'border-outline-variant/15'} space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+                  <span class="material-symbols-outlined text-amber-400 text-[18px]">settings_backup_restore</span>
+                  Emergency Safety Rollback
+                </h4>
+                <p class="text-xs text-outline font-mono mt-0.5">
+                  Restores the exact codebase state and database snapshot saved prior to the last applied update.
+                </p>
+              </div>
+              <button onclick="rollbackLiveUpdate()" ${hasBackup ? '' : 'disabled'} class="px-4 py-2 rounded-xl ${hasBackup ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30' : 'bg-surface-container text-outline opacity-50 cursor-not-allowed'} font-mono text-xs font-bold transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">restore</span>
+                Restore Pre-Update Backup
+              </button>
+            </div>
+          </div>
+
+          <!-- History Timeline -->
+          <div class="glass-surface rounded-2xl p-6 border border-outline-variant/15 space-y-4">
+            <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary-container text-[18px]">history</span>
+              Update History Timeline
+            </h4>
+            
+            <div class="space-y-3 font-mono text-xs">
+              ${history.map(item => `
+                <div class="p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant/15 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-white">v${item.version}</span>
+                      <span class="text-[10px] px-2 py-0.2 rounded bg-primary-container/15 text-primary border border-primary-container/20">${item.status}</span>
+                      <span class="text-outline text-[11px]">${item.filesCount} file(s)</span>
+                    </div>
+                    <p class="text-outline mt-1 text-[11px]">${item.description}</p>
+                  </div>
+                  <div class="text-[11px] text-outline text-right shrink-0">
+                    <div>${new Date(item.timestamp).toLocaleString()}</div>
+                    <div class="text-[10px] text-outline/70">Author: ${item.author || 'System'}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: MANIFEST GENERATOR -->
+        <div id="update-pane-create" class="update-pane space-y-6 hidden">
+          <div class="glass-surface rounded-2xl p-6 border border-outline-variant/15 space-y-4">
+            <div>
+              <h4 class="text-sm font-semibold text-white font-mono flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary-container text-[18px]">build</span>
+                Generate Custom Update Manifest
+              </h4>
+              <p class="text-xs text-outline font-mono mt-0.5">
+                Generate an update-manifest.json to distribute live patches across TADASHI instances.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs font-mono text-outline block mb-1">Target Version</label>
+                <input type="text" id="gen-version" value="5.9.1" class="w-full px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-white font-mono text-xs focus:border-primary-container outline-none" />
+              </div>
+              <div>
+                <label class="text-xs font-mono text-outline block mb-1">Author</label>
+                <input type="text" id="gen-author" value="Krishna Singh" class="w-full px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-white font-mono text-xs focus:border-primary-container outline-none" />
+              </div>
+              <div>
+                <label class="text-xs font-mono text-outline block mb-1">Target File Path</label>
+                <select id="gen-file-path" class="w-full px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-white font-mono text-xs focus:border-primary-container outline-none">
+                  <option value="js/domain-pages.js">js/domain-pages.js</option>
+                  <option value="css/tailwind.css">css/tailwind.css</option>
+                  <option value="js/data.js">js/data.js</option>
+                  <option value="js/db.js">js/db.js</option>
+                  <option value="index.html">index.html</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-mono text-outline block mb-1">Patch Description</label>
+              <input type="text" id="gen-desc" value="Live UI and feature enhancement" class="w-full px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-white font-mono text-xs focus:border-primary-container outline-none" />
+            </div>
+
+            <div>
+              <label class="text-xs font-mono text-outline block mb-1">New / Updated File Content</label>
+              <textarea id="gen-content" rows="6" placeholder="// Paste updated code here..." class="w-full rounded-xl bg-surface-container-lowest border border-outline-variant/30 p-3 font-mono text-xs text-white focus:outline-none focus:border-primary-container resize-none"></textarea>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <button onclick="generateAndDownloadManifest()" class="px-5 py-2.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint transition-all flex items-center gap-2 shadow-[0_0_14px_rgba(0,212,255,0.3)]">
+                <span class="material-symbols-outlined text-[16px]">download</span>
+                Download update-manifest.json
+              </button>
+              <button onclick="generateAndCopyManifest()" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-white font-mono text-xs font-medium border border-outline-variant/20 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                Copy JSON
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  window.switchUpdateTab = function(tabName) {
+    document.querySelectorAll('.update-pane').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.update-tab-btn').forEach(btn => {
+      btn.className = "update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-medium text-outline hover:text-white hover:bg-surface-container transition-all flex items-center gap-2";
+    });
+    const pane = document.getElementById('update-pane-' + tabName);
+    const btn = document.getElementById('tab-btn-' + tabName);
+    if (pane) pane.classList.remove('hidden');
+    if (btn) {
+      btn.className = "update-tab-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold bg-primary-container/20 text-primary border border-primary-container/30 transition-all flex items-center gap-2";
+    }
+  };
+
+  window.loadManifestTemplateIntoTextarea = function() {
+    const textarea = document.getElementById('raw-manifest-textarea');
+    if (!textarea) return;
+    if (window.UpdateEngine && typeof window.UpdateEngine.generateManifestTemplate === 'function') {
+      textarea.value = window.UpdateEngine.generateManifestTemplate();
+    } else {
+      textarea.value = JSON.stringify({
+        version: "5.9.1",
+        description: "Hotfix live update",
+        author: "Krishna Singh",
+        files: [
+          {
+            path: "css/tailwind.css",
+            action: "replace",
+            content: "/* New CSS overrides here */"
+          }
+        ]
+      }, null, 2);
+    }
+  };
+
+  window.handleManifestFileUpload = function(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        const textarea = document.getElementById('raw-manifest-textarea');
+        if (textarea) textarea.value = JSON.stringify(parsed, null, 2);
+        window.validateManifestObject(parsed, _stagedFilesMap);
+      } catch (err) {
+        alert('Invalid manifest JSON: ' + err.message);
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  window.handleFolderFilesUpload = function(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    _stagedFilesMap = {};
+    let readCount = 0;
+    let foundManifest = null;
+
+    Array.from(files).forEach(f => {
+      const path = f.webkitRelativePath || f.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        _stagedFilesMap[path] = content;
+        if (f.name === 'update-manifest.json' || f.name.endsWith('manifest.json')) {
+          try { foundManifest = JSON.parse(content); } catch(pe) {}
+        }
+        readCount++;
+        if (readCount === files.length) {
+          if (foundManifest) {
+            window.validateManifestObject(foundManifest, _stagedFilesMap);
+          } else {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`Loaded ${files.length} codebase files. Provide manifest to apply.`);
+            }
+          }
+        }
+      };
+      reader.readAsText(f);
+    });
+  };
+
+  window.validatePastedManifest = function() {
+    const textarea = document.getElementById('raw-manifest-textarea');
+    if (!textarea || !textarea.value.trim()) {
+      alert('Please paste manifest JSON or select a file first.');
+      return;
+    }
+    try {
+      const manifest = JSON.parse(textarea.value.trim());
+      window.validateManifestObject(manifest, _stagedFilesMap);
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+
+  window.validateManifestObject = function(manifest, filesMap = {}) {
+    if (!window.UpdateEngine) {
+      alert('UpdateEngine is not loaded.');
+      return;
+    }
+    const res = window.UpdateEngine.validate(manifest, filesMap);
+    _stagedManifest = res.ok ? manifest : null;
+    const previewEl = document.getElementById('update-validation-preview');
+    if (!previewEl) return;
+    previewEl.classList.remove('hidden');
+
+    if (!res.ok) {
+      previewEl.innerHTML = `
+        <div class="p-4 rounded-xl bg-error/15 border border-error/30 text-error font-mono text-xs space-y-2">
+          <div class="font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">error</span>
+            Package Validation Failed
+          </div>
+          <ul class="list-disc pl-5 space-y-1">
+            ${res.errors.map(e => `<li>${Utils.escapeHtml(e)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      return;
+    }
+
+    const riskBadge = res.stats.riskLevel === 'high' 
+      ? '<span class="px-2 py-0.5 rounded font-mono text-[10px] bg-error/20 text-error border border-error/30">HIGH RISK (Core runtime/DB)</span>'
+      : res.stats.riskLevel === 'medium'
+      ? '<span class="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">MEDIUM RISK</span>'
+      : '<span class="px-2 py-0.5 rounded font-mono text-[10px] bg-tertiary/20 text-tertiary border border-tertiary/30">LOW RISK (Clean)</span>';
+
+    previewEl.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-outline-variant/15">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-tertiary text-[20px]">check_circle</span>
+            <span class="font-mono font-bold text-sm text-white">Update Package Verified: v${Utils.escapeHtml(res.version)}</span>
+            ${riskBadge}
+          </div>
+          <span class="text-xs text-outline font-mono">${res.stats.fileCount} file(s) · ${Math.round(res.stats.totalBytes / 1024 * 10) / 10 || 1} KB</span>
+        </div>
+
+        <p class="text-xs text-outline font-mono">${Utils.escapeHtml(res.description)} (Author: ${Utils.escapeHtml(res.author)})</p>
+
+        <div class="space-y-1.5 font-mono text-xs max-h-48 overflow-y-auto custom-scrollbar">
+          ${res.files.map(f => `
+            <div class="px-3 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant/10 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-primary-container">${f.action === 'replace' ? '⚡ replace' : '📝 patch'}</span>
+                <span class="text-white font-medium">${Utils.escapeHtml(f.path)}</span>
+              </div>
+              <span class="text-outline text-[11px]">${Math.round(f.sizeBytes / 1024 * 10) / 10 || 1} KB</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="pt-3 border-t border-outline-variant/15 flex items-center justify-between flex-wrap gap-3">
+          <span class="text-[11px] font-mono text-tertiary flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[14px]">shield</span>
+            Automatic pre-update safety backup will be created before applying.
+          </span>
+          <button onclick="applyLiveUpdate()" class="px-5 py-2.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint transition-all flex items-center gap-2 shadow-[0_0_16px_rgba(0,212,255,0.35)] active:scale-95">
+            <span class="material-symbols-outlined text-[18px]">bolt</span>
+            Apply Live Update (Zero Downtime)
+          </button>
+        </div>
+      </div>
+    `;
+  };
+
+  window.applyLiveUpdate = async function() {
+    if (!_stagedManifest) {
+      alert('No validated manifest staged for live update.');
+      return;
+    }
+    if (!confirm(`Apply Live Update v${_stagedManifest.version} now?\n\nThis will update your running LifeOS session with zero downtime. An automatic safety snapshot will be kept.`)) {
+      return;
+    }
+    try {
+      await window.UpdateEngine.apply(_stagedManifest, _stagedFilesMap);
+      _stagedManifest = null;
+      _stagedFilesMap = {};
+    } catch (err) {
+      alert('Failed to apply live update: ' + err.message);
+    }
+  };
+
+  window.rollbackLiveUpdate = async function() {
+    if (!window.UpdateEngine || !window.UpdateEngine.hasPreUpdateBackup()) {
+      alert('No pre-update backup snapshot found.');
+      return;
+    }
+    if (!confirm('ROLLBACK WARNING: This will revert recent live patches and restore your pre-update database snapshot.\n\nProceed with rollback?')) {
+      return;
+    }
+    try {
+      await window.UpdateEngine.rollback();
+    } catch (err) {
+      alert('Rollback failed: ' + err.message);
+    }
+  };
+
+  window.flushLivePatches = function() {
+    if (!confirm('Flush all in-memory live patches and revert to base bundle?')) return;
+    try {
+      localStorage.removeItem('tadashi_live_patches');
+      document.querySelectorAll('style[id^="tadashi-live-patch-"]').forEach(el => el.remove());
+      if (typeof window.showToast === 'function') window.showToast('In-memory patches flushed.');
+      if (typeof window.renderDomainPage === 'function') window.renderDomainPage(window.currentDomainId || 'updates');
+    } catch(e) {}
+  };
+
+  window.generateAndDownloadManifest = function() {
+    const version = (document.getElementById('gen-version')?.value || '5.9.1').trim();
+    const author = (document.getElementById('gen-author')?.value || 'Krishna Singh').trim();
+    const filePath = (document.getElementById('gen-file-path')?.value || 'js/domain-pages.js').trim();
+    const desc = (document.getElementById('gen-desc')?.value || 'Live update').trim();
+    const content = document.getElementById('gen-content')?.value || '';
+
+    const manifest = {
+      version,
+      timestamp: new Date().toISOString(),
+      description: desc,
+      author,
+      requiresReload: false,
+      files: [
+        {
+          path: filePath,
+          action: 'replace',
+          content
+        }
+      ],
+      schemaMigrations: []
+    };
+
+    const jsonStr = JSON.stringify(manifest, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'update-manifest.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    if (typeof window.showToast === 'function') window.showToast('Downloaded update-manifest.json! 📦');
+  };
+
+  window.generateAndCopyManifest = function() {
+    const version = (document.getElementById('gen-version')?.value || '5.9.1').trim();
+    const author = (document.getElementById('gen-author')?.value || 'Krishna Singh').trim();
+    const filePath = (document.getElementById('gen-file-path')?.value || 'js/domain-pages.js').trim();
+    const desc = (document.getElementById('gen-desc')?.value || 'Live update').trim();
+    const content = document.getElementById('gen-content')?.value || '';
+
+    const manifest = {
+      version,
+      timestamp: new Date().toISOString(),
+      description: desc,
+      author,
+      requiresReload: false,
+      files: [{ path: filePath, action: 'replace', content }],
+      schemaMigrations: []
+    };
+
+    const jsonStr = JSON.stringify(manifest, null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(jsonStr);
+      if (typeof window.showToast === 'function') window.showToast('Manifest JSON copied to clipboard! 📋');
+    } else {
+      alert(jsonStr);
+    }
   };
 
   // Import LifeOS data from user JSON file with validation & backup

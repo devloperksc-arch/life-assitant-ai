@@ -666,6 +666,48 @@ const DB = (() => {
     },
 
     // ============================================================
+    // UPDATE CENTER (Domain 23)
+    // ============================================================
+    updates: {
+      getStatus() {
+        const u = _state.updates || {};
+        return {
+          systemVersion: u.systemVersion || '5.9.0',
+          currentBuild: u.currentBuild || '0ae6137',
+          lastCheckedAt: u.lastCheckedAt || new Date().toISOString(),
+          historyCount: Array.isArray(u.history) ? u.history.length : 0
+        };
+      },
+      getHistory() {
+        return _clone((_state.updates && _state.updates.history) || []);
+      },
+      recordUpdate(entry) {
+        _pushUndo();
+        if (!_state.updates) _state.updates = { systemVersion: '5.9.0', history: [] };
+        if (!Array.isArray(_state.updates.history)) _state.updates.history = [];
+        _state.updates.history.unshift({
+          id: entry.id || `upd_${Date.now()}`,
+          version: entry.version || '5.9.0',
+          description: entry.description || 'Live Hot-Patch Update',
+          author: entry.author || 'User',
+          timestamp: entry.timestamp || new Date().toISOString(),
+          filesCount: Number(entry.filesCount) || 1,
+          status: entry.status || 'applied'
+        });
+        _state.updates.systemVersion = entry.version || _state.updates.systemVersion;
+        _save();
+        _emit('updates', 'recordUpdate', entry);
+        return entry;
+      },
+      clearHistory() {
+        _pushUndo();
+        if (_state.updates) _state.updates.history = [];
+        _save();
+        _emit('updates', 'clearHistory', null);
+      }
+    },
+
+    // ============================================================
     // AI SUMMARY — rich context snapshot for Gemini system prompt
     // ============================================================
     buildAISummary() {
