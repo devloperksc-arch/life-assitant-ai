@@ -48,6 +48,20 @@
       border-color: rgba(0, 212, 255, 0.22);
       box-shadow: 0 8px 24px -8px rgba(0, 212, 255, 0.12);
     }
+    /* Domain card structure: strictly column layout so filter toggles never break into a horizontal row */
+    .domain-card {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      min-height: 185px;
+    }
+    .domain-card.is-hidden,
+    .domain-card[style*="display: none"] {
+      display: none !important;
+    }
+    .domain-card > :last-child {
+      margin-top: auto;
+    }
     .neural-floating-dock {
       background: rgba(10, 13, 23, 0.92);
       backdrop-filter: blur(12px) saturate(150%);
@@ -232,20 +246,20 @@
   <link rel="stylesheet" href="css/tailwind.css" />
 
   <!-- TADASHI Core Engines: Data, DB, Utilities, Gemini AI, Voice (Deferred for non-blocking render) -->
-  <script defer src="js/data.js?v=5.9"></script>
-  <script defer src="js/db.js?v=5.9"></script>
-  <script defer src="js/utils.js?v=5.9"></script>
-  <script defer src="js/lib/ai.js?v=5.9"></script>
-  <script defer src="js/lib/voice.js?v=5.9"></script>
-  <script defer src="js/domain-pages.js?v=5.9"></script>
-  <script defer src="js/assistant/reactor-ui.js?v=5.9"></script>
-  <script defer src="js/assistant/ai-router.js?v=5.9"></script>
-  <script defer src="js/assistant/scheduler.js?v=5.9"></script>
-  <script defer src="js/assistant/sync-engine.js?v=5.9"></script>
-  <script defer src="js/assistant/memory.js?v=5.9"></script>
-  <script defer src="js/assistant/skill-runtime.js?v=5.9"></script>
-  <script defer src="js/assistant/tool-registry.js?v=5.9"></script>
-  <script defer src="js/assistant/update-engine.js?v=5.9"></script>
+  <script defer src="js/data.js?v=5.10"></script>
+  <script defer src="js/db.js?v=5.10"></script>
+  <script defer src="js/utils.js?v=5.10"></script>
+  <script defer src="js/lib/ai.js?v=5.10"></script>
+  <script defer src="js/lib/voice.js?v=5.10"></script>
+  <script defer src="js/domain-pages.js?v=5.10"></script>
+  <script defer src="js/assistant/reactor-ui.js?v=5.10"></script>
+  <script defer src="js/assistant/ai-router.js?v=5.10"></script>
+  <script defer src="js/assistant/scheduler.js?v=5.10"></script>
+  <script defer src="js/assistant/sync-engine.js?v=5.10"></script>
+  <script defer src="js/assistant/memory.js?v=5.10"></script>
+  <script defer src="js/assistant/skill-runtime.js?v=5.10"></script>
+  <script defer src="js/assistant/tool-registry.js?v=5.10"></script>
+  <script defer src="js/assistant/update-engine.js?v=5.10"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
   <!-- Skip to main content (a11y) -->
@@ -284,7 +298,7 @@
 </button>
 <button class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-outline hover:text-white hover:bg-surface-container font-mono text-sm" onclick="switchTab('view-manage'); toggleMobileMenu();">
 <span class="material-symbols-outlined">apps</span>
-<span class="">Manage (22 Domains)</span>
+<span class="">Manage (23 Domains)</span>
 </button>
 <button class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-outline hover:text-white hover:bg-surface-container font-mono text-sm" onclick="switchTab('view-briefings'); toggleMobileMenu();">
 <span class="material-symbols-outlined">auto_awesome</span>
@@ -318,7 +332,7 @@
 <span class="text-on-surface text-[11px]">Sync: Optimal</span>
 </span>
 <button class="hover:text-primary-container transition-colors flex items-center gap-1 px-2 py-1 rounded-md" onclick="switchTab('view-manage')">
-<span class="">22 Domains Active</span>
+<span class="">23 Domains Active</span>
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </button>
 </div>
@@ -511,7 +525,7 @@
 <h3 class="text-lg font-medium text-white">Pending Domain Updates &amp; Actions</h3>
 </div>
 <button class="text-primary hover:underline text-xs font-mono flex items-center gap-1" onclick="switchTab('view-manage')">
-<span class="">View All 22 Domains</span>
+<span class="">View All 23 Domains</span>
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </button>
 </div>
@@ -628,7 +642,7 @@
           </div>
           <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Memory Cores</span>
-            <span class="text-tertiary font-bold text-xs">22 Domains</span>
+            <span class="text-tertiary font-bold text-xs">23 Domains</span>
           </div>
           <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Execution</span>
@@ -653,8 +667,8 @@
             <span>📚 OS Exam Prep (6d)</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('Summarize pending actions across all 22 domains')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
-            <span>⚡ 22 Domains Synthesis</span>
+          <button onclick="populatePrompt('Summarize pending actions across all 23 domains')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>⚡ 23 Domains Synthesis</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
         </div>
@@ -675,7 +689,7 @@
               TADASHI Autonomous Copilot
               <span class="w-2 h-2 rounded-full bg-tertiary"></span>
 </h3>
-<p class="text-xs text-outline font-mono">Direct neural bridge into all 22 Life Domains &amp; daily agenda.</p>
+<p class="text-xs text-outline font-mono">Direct neural bridge into all 23 Life Domains &amp; daily agenda.</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
@@ -711,8 +725,8 @@
 <button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Optimize tomorrow schedule for 3 hours study')">
                 → Rebalance tomorrow's schedule
               </button>
-<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Summarize pending actions across all 22 domains')">
-                → Summarize 22 Domains status
+<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Summarize pending actions across all 23 domains')">
+                → Summarize 23 Domains status
               </button>
 </div>
 </div>
@@ -768,7 +782,7 @@
 </div>
 </div>
 <!-- ========================================== -->
-<!-- VIEW 3: MANAGE (Unified Hub for All 22 Life Domains) -->
+<!-- VIEW 3: MANAGE (Unified Hub for All 23 Life Domains) -->
 <!-- ========================================== -->
 <div class="view-panel panel-hidden space-y-6" id="view-manage">
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-outline-variant/10">
@@ -785,7 +799,7 @@
 <button class="domain-filter-btn px-3 py-1.5 rounded-lg glass-surface text-outline hover:text-white text-xs font-mono" data-filter="systems">Systems &amp; Tools (7)</button>
 </div>
 </div>
-<!-- 22 Domains Grid -->
+<!-- 23 Domains Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="domains-grid">
 <!-- Domain 01: Home Dashboard -->
 <div class="domain-card glass-surface glass-surface-hover rounded-2xl p-5 border-l-2 border-primary-container cursor-pointer hover:border-primary-container/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.18)] transition-all active:scale-[0.99] group" data-category="core" onclick="openDomainPage('home')">
@@ -2169,7 +2183,7 @@
       var prompts={
         reschedule:'Review my schedule this week and suggest an optimized daily plan with time blocks for study, fitness, and personal tasks. Be concise.',
         balance:'Analyze my current schedule and suggest how to better balance study, fitness, rest, and social time. Actionable recommendations only.',
-        deadline:'List all upcoming deadlines across my 22 domains by urgency. Format as a priority list with dates.',
+        deadline:'List all upcoming deadlines across my 23 domains by urgency. Format as a priority list with dates.',
         freetime:'Find free time slots in my schedule this week and suggest productive or restorative activities for each slot.',
         sleep:'Review my evening schedule and recommend adjustments to protect my 8.2-hour sleep window.'
       };
@@ -2192,7 +2206,7 @@
     // DOMAIN DETAIL MODAL
     // ================================================================
     var DOMAIN_DETAIL = {
-      goals:        { icon:'flag',            color:'#a8e8ff', num:'05', name:'Goals & OKRs',         desc:'Quarterly OKRs, milestone tracking, achievement telemetry, and long-horizon planning across all 22 life domains.', status:[{label:'3 Goals Active',color:'#6af7ba'},{label:'Q4 2026',color:'#00d4ff'}], stats:[{k:'Q4 Goals',v:'3 Active'},{k:'Milestones',v:'8 of 12'},{k:'Progress',v:'67%'}], actions:['Review Q4 Goals','Set New Milestone','Prioritize goals'] },
+      goals:        { icon:'flag',            color:'#a8e8ff', num:'05', name:'Goals & OKRs',         desc:'Quarterly OKRs, milestone tracking, achievement telemetry, and long-horizon planning across all 23 life domains.', status:[{label:'3 Goals Active',color:'#6af7ba'},{label:'Q4 2026',color:'#00d4ff'}], stats:[{k:'Q4 Goals',v:'3 Active'},{k:'Milestones',v:'8 of 12'},{k:'Progress',v:'67%'}], actions:['Review Q4 Goals','Set New Milestone','Prioritize goals'] },
       fitness:      { icon:'fitness_center',  color:'#3cd7ff', num:'07', name:'Heavy · Fitness & Workout', desc:'Heavy workout tracker, progressive overload, active set & rep logging, rest timer countdown, and 1RM power metrics.', status:[{label:'HEAVY ACTIVE',color:'#3cd7ff'},{label:'Week: 4/5',color:'#6af7ba'}], stats:[{k:'Volume Lifted',v:'48,250 kg'},{k:'Active Routine',v:'Push A'},{k:'1RM Bench',v:'125 kg'}], actions:['Open Heavy Session','Start Rest Timer','Calculate 1RM'] },
       nutrition:    { icon:'restaurant',      color:'#6af7ba', num:'08', name:'Nutrition & Diet',     desc:'Macro tracking, clean energy balance, hydration targets, meal logging, and dietary optimization for cognitive performance.', status:[{label:'1840/2200 kcal',color:'#6af7ba'}], stats:[{k:'Calories',v:'1840/2200'},{k:'Protein',v:'145g/160g'},{k:'Water',v:'2.8L'}], actions:['Log Meal','Plan Meals','Check Macros'] },
       finance:      { icon:'payments',        color:'#d0bcff', num:'09', name:'Finance & Wealth',     desc:'Monthly budget tracking, SIP auto-debit approvals, expense categorization, emergency fund, and financial goals.', status:[{label:'Action Required',color:'#f59e0b'},{label:'36.8k/50k spend',color:'#d0bcff'}], stats:[{k:'Monthly Spend',v:'36800'},{k:'Budget',v:'50000'},{k:'SIP Pending',v:'5000'}], actions:['Review Budget','Approve SIP','Check Investments'] },
@@ -2364,7 +2378,7 @@
           title.innerText = 'TADASHI Autonomous Copilot';
           subtitle.innerText = 'Autonomous guidance, reasoning, and multi-domain schedule orchestration.';
         } else if (viewId === 'view-manage') {
-          title.innerText = '22 Life Domains Registry';
+          title.innerText = '23 Life Domains Registry';
           subtitle.innerText = 'Comprehensive registry of core faculties, vitality, living spaces, and systems.';
         } else if (viewId === 'view-briefings') {
           title.innerText = 'Intelligence & Briefings';
@@ -2503,11 +2517,10 @@
         
         const filter = btn.getAttribute('data-filter');
         document.querySelectorAll('.domain-card').forEach(card => {
-          if (filter === 'all' || card.getAttribute('data-category') === filter) {
-            card.style.display = 'flex';
-          } else {
-            card.style.display = 'none';
-          }
+          const match = (filter === 'all' || card.getAttribute('data-category') === filter);
+          card.classList.toggle('is-hidden', !match);
+          card.style.display = match ? 'flex' : 'none';
+          card.style.flexDirection = 'column';
         });
       });
     });
@@ -2528,7 +2541,7 @@
         if (playIcon) playIcon.innerText = 'pause';
         if (audioTitle) audioTitle.innerText = 'Playing: Evening Debrief — Oct 24';
 
-        const briefingScript = "Good evening Krishna. This is your TADASHI synthesis update for October 24th. You have two urgent priorities detected: your Operating Systems Memory deep study wrap-up is scheduled for 23:15, focusing on virtual memory paging and translation lookaside buffers. Next, your high-priority call for Mom's Birthday is queued at 23:15. Earlier today, your Zone 2 aerobic conditioning was completed with 68 milliseconds HRV. Tomorrow, OS Assignment 3 is due at 14:00. All 22 life domains are operating at optimal sync.";
+        const briefingScript = "Good evening Krishna. This is your TADASHI synthesis update for October 24th. You have two urgent priorities detected: your Operating Systems Memory deep study wrap-up is scheduled for 23:15, focusing on virtual memory paging and translation lookaside buffers. Next, your high-priority call for Mom's Birthday is queued at 23:15. Earlier today, your Zone 2 aerobic conditioning was completed with 68 milliseconds HRV. Tomorrow, OS Assignment 3 is due at 14:00. All 23 life domains are operating at optimal sync.";
 
         let progressVal = 35;
         const progressTimer = setInterval(() => {
@@ -2643,7 +2656,7 @@
       input.value = '';
       input.disabled = true;
 
-      if (window.ReactorUI) window.ReactorUI.setState('thinking', 'TADASHI reasoning across 22 domains...');
+      if (window.ReactorUI) window.ReactorUI.setState('thinking', 'TADASHI reasoning across 23 domains...');
 
       const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
       if (!chatFeed) { input.disabled = false; return; }
@@ -2675,7 +2688,7 @@
           <span class="material-symbols-outlined text-[16px] animate-spin">psychology</span>
         </div>
         <div class="glass-surface p-4 rounded-xl rounded-tl-none border-outline-variant/20 flex items-center gap-2">
-          <span class="text-xs font-mono text-primary-container">TADASHI reasoning across 22 domains...</span>
+          <span class="text-xs font-mono text-primary-container">TADASHI reasoning across 23 domains...</span>
         </div>
       `;
       chatFeed.appendChild(thinkingDiv);
