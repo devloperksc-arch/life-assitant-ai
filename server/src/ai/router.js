@@ -32,6 +32,11 @@ const CONFIG = {
     }
     // Default verified free-tier models across Google AI Studio & OpenRouter free-tiers
     return [
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash-lite',
+      'gemini-3.1-flash-lite',
+      'gemini-flash-latest',
+      'gemini-3.8-flash',
       'meta-llama/llama-3.2-3b-instruct:free',
       'meta-llama/llama-3.1-8b-instruct:free',
       'gemini-2.0-flash-exp:free',

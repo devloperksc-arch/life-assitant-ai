@@ -411,7 +411,7 @@
         { label: '⚡ AI: Optimize Cognitive Load', prompt: 'Analyze my current schedule and reduce context switching.' }
       ],
       'tadashi': [
-        { label: '⚡ AI: Run Holistic Life Audit', prompt: 'Perform an invariant audit across all 22 domains and detect potential conflicts.' },
+        { label: '⚡ AI: Run Holistic Life Audit', prompt: 'Perform an invariant audit across all 23 domains and detect potential conflicts.' },
         { label: '⚡ AI: Memory Context Summary', prompt: 'Summarize all persistent memory items loaded into your neural context.' },
         { label: '⚡ AI: Proactive Replanning', prompt: 'Review my upcoming deadlines and propose proactive schedule adjustments.' }
       ],
@@ -3613,20 +3613,24 @@ cd freellmapi && npm install && npm run dev
           </div>
         </div>
 
-        <!-- 3. GOOGLE GEMINI CLOUD KEY -->
+        <!-- 3. UNIVERSAL AI PROVIDER & API KEYS -->
         <div class="p-4 rounded-xl bg-surface-container-lowest/80 border border-outline-variant/20 space-y-3">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2.5">
               <span class="w-8 h-8 rounded-lg bg-primary-container/15 border border-primary-container/30 flex items-center justify-center text-primary-container">
-                <span class="material-symbols-outlined text-[18px]">cloud</span>
+                <span class="material-symbols-outlined text-[18px]">key</span>
               </span>
               <div>
-                <p class="text-xs font-bold text-white">Google Gemini API Key</p>
-                <p class="text-[10px] text-outline font-mono">Direct Google Cloud Gemini 1.5/2.0 API connection (${hasGemini ? 'Key Configured' : 'No Key'})</p>
+                <p class="text-xs font-bold text-white flex items-center gap-2">
+                  Universal AI Provider &amp; API Keys
+                  <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-primary-container/15 text-primary-container border border-primary-container/30">Auto-Detect &amp; Failover</span>
+                </p>
+                <p class="text-[10px] text-outline font-mono">Real-time detection for Google Gemini, Anthropic Claude, OpenAI ChatGPT, and OpenRouter</p>
               </div>
             </div>
-            <button onclick="const k=prompt('Enter Gemini API Key:'); if(k){localStorage.setItem('tadashi_gemini_key', k); if(window.showToast) showToast('Gemini Key saved!'); if(typeof openDomainPage==='function')openDomainPage('settings',false);}" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-white font-mono text-xs font-semibold">
-              ${hasGemini ? 'Update Key' : 'Configure Key'}
+            <button onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" class="px-4 py-2 rounded-xl bg-gradient-to-r from-primary-container to-surface-tint text-surface-container-lowest font-mono text-xs font-bold cyan-glow hover:opacity-95 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 shadow-[0_0_16px_rgba(0,212,255,0.25)]">
+              <span class="material-symbols-outlined text-[16px]">vpn_key</span>
+              <span>Open AI Key Window</span>
             </button>
           </div>
         </div>
@@ -3636,7 +3640,7 @@ cd freellmapi && npm install && npm run dev
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <p class="text-xs font-bold text-white">LocalStorage Database &amp; Backups</p>
-              <p class="text-[10px] text-outline font-mono">Export, import, or safely reset persistent LifeOS state across all 22 domains</p>
+              <p class="text-[10px] text-outline font-mono">Export, import, or safely reset persistent LifeOS state across all 23 domains</p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <input type="file" id="tadashi-import-input" accept=".json,application/json" class="hidden" onchange="window.importData(event)">
@@ -4361,7 +4365,7 @@ cd freellmapi && npm install && npm run dev
 
   // Safe guarded reset with pre-reset snapshot
   window.confirmResetDB = function () {
-    if (confirm('CRITICAL WARNING: This will reset all 22 TADASHI domains back to default seed data.\n\nA safety backup will be stored before reset, so you can restore if needed.\n\nDo you wish to proceed?')) {
+    if (confirm('CRITICAL WARNING: This will reset all 23 TADASHI domains back to default seed data.\n\nA safety backup will be stored before reset, so you can restore if needed.\n\nDo you wish to proceed?')) {
       if (window.DB) {
         window.DB.reset();
         if (typeof window.showToast === 'function') window.showToast('Database reset to defaults!');

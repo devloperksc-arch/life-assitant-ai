@@ -4,31 +4,194 @@
 // ============================================================
 
 const AI = {
-  DEFAULT_KEY: '',
-  KEY_STORAGE: 'tadashi_gemini_key',
-  MODEL_STORAGE: 'tadashi_gemini_model',
-  DEFAULT_MODEL: 'gemini-flash-latest',
-  MODELS: [
-    { id: 'gemini-flash-latest', name: 'Gemini Flash Latest (Fast, Recommended)' },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (Deep Reasoning)' },
-  ],
+  ACTIVE_PROVIDER_STORAGE: 'tadashi_active_provider',
+  AUTO_FAILOVER_STORAGE:   'tadashi_ai_auto_failover',
+  KEY_STORAGE:             'tadashi_gemini_key',
+  MODEL_STORAGE:           'tadashi_gemini_model',
+  DEFAULT_MODEL:           'gemini-flash-lite-latest',
 
-  getKey() { const s = localStorage.getItem(this.KEY_STORAGE); return (s || '').trim(); },
-  setKey(k) { localStorage.setItem(this.KEY_STORAGE, (k || '').trim()); },
-  clearKey() { localStorage.removeItem(this.KEY_STORAGE); },
-  hasKey() { return !!this.getKey(); },
-  getModel() {
-    let m = (localStorage.getItem(this.MODEL_STORAGE) || '').trim();
-    if (!m || m.includes('1.5') || m.includes('2.0')) {
-      m = this.DEFAULT_MODEL;
-      if (localStorage.getItem(this.MODEL_STORAGE)) {
-        try { localStorage.setItem(this.MODEL_STORAGE, m); } catch (e) { }
+  PROVIDERS: {
+    gemini: {
+      id: 'gemini',
+      name: 'Google Gemini',
+      tag: 'Google AI Studio',
+      icon: 'psychology',
+      color: '#00d4ff',
+      keyStorage: 'tadashi_gemini_key',
+      modelStorage: 'tadashi_gemini_model',
+      defaultModel: 'gemini-flash-lite-latest',
+      models: [
+        { id: 'gemini-flash-lite-latest', name: 'Gemini Flash Lite (Fastest & Stable)' },
+        { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite' },
+        { id: 'gemini-flash-latest', name: 'Gemini Flash Latest' },
+        { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash' }
+      ],
+      docsUrl: 'https://aistudio.google.com/apikey',
+      detect: (k) => k.startsWith('AIzaSy')
+    },
+    openai: {
+      id: 'openai',
+      name: 'OpenAI (ChatGPT)',
+      tag: 'ChatGPT Platform',
+      icon: 'smart_toy',
+      color: '#10a37f',
+      keyStorage: 'tadashi_openai_key',
+      modelStorage: 'tadashi_openai_model',
+      defaultModel: 'gpt-4o-mini',
+      models: [
+        { id: 'gpt-4o-mini', name: 'GPT-4o Mini (Fast & Affordable)' },
+        { id: 'gpt-4o', name: 'GPT-4o (Flagship Multimodal)' },
+        { id: 'chatgpt-4o-latest', name: 'ChatGPT-4o Latest' }
+      ],
+      docsUrl: 'https://platform.openai.com/api-keys',
+      detect: (k) => k.startsWith('sk-proj-') || (k.startsWith('sk-') && !k.startsWith('sk-ant-') && !k.startsWith('sk-or-'))
+    },
+    claude: {
+      id: 'claude',
+      name: 'Anthropic Claude',
+      tag: 'Anthropic API',
+      icon: 'neurology',
+      color: '#d97706',
+      keyStorage: 'tadashi_claude_key',
+      modelStorage: 'tadashi_claude_model',
+      defaultModel: 'claude-3-5-haiku-20241022',
+      models: [
+        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku (Fast & Precise)' },
+        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet (Deep Reasoning)' },
+        { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku' }
+      ],
+      docsUrl: 'https://console.anthropic.com/settings/keys',
+      detect: (k) => k.startsWith('sk-ant-')
+    },
+    openrouter: {
+      id: 'openrouter',
+      name: 'OpenRouter',
+      tag: 'Multi-Model Hub',
+      icon: 'hub',
+      color: '#8b5cf6',
+      keyStorage: 'tadashi_openrouter_key',
+      modelStorage: 'tadashi_openrouter_model',
+      defaultModel: 'meta-llama/llama-3.2-3b-instruct:free',
+      models: [
+        { id: 'meta-llama/llama-3.2-3b-instruct:free', name: 'Llama 3.2 3B (Free)' },
+        { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash Exp (Free)' },
+        { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku via OpenRouter' },
+        { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini via OpenRouter' }
+      ],
+      docsUrl: 'https://openrouter.ai/keys',
+      detect: (k) => k.startsWith('sk-or-v1-') || k.startsWith('sk-or-')
+    }
+  },
+
+  detectProvider(key) {
+    key = (key || '').trim();
+    if (!key) return null;
+    for (const [id, p] of Object.entries(this.PROVIDERS)) {
+      if (p.detect && p.detect(key)) return id;
+    }
+    return 'custom';
+  },
+
+  getActiveProvider() {
+    let p = localStorage.getItem(this.ACTIVE_PROVIDER_STORAGE);
+    if (!p || !this.PROVIDERS[p]) {
+      for (const [id, prov] of Object.entries(this.PROVIDERS)) {
+        if (localStorage.getItem(prov.keyStorage)) { p = id; break; }
       }
+      p = p || 'gemini';
+    }
+    return p;
+  },
+
+  setActiveProvider(id) {
+    if (this.PROVIDERS[id]) {
+      localStorage.setItem(this.ACTIVE_PROVIDER_STORAGE, id);
+      this._notifyProviderChange();
+    }
+  },
+
+  isAutoFailoverEnabled() {
+    return localStorage.getItem(this.AUTO_FAILOVER_STORAGE) !== 'false';
+  },
+
+  setAutoFailover(enabled) {
+    localStorage.setItem(this.AUTO_FAILOVER_STORAGE, enabled ? 'true' : 'false');
+  },
+
+  getConfiguredProviders() {
+    return Object.keys(this.PROVIDERS).filter(id => !!localStorage.getItem(this.PROVIDERS[id].keyStorage));
+  },
+
+  getKey(providerId) {
+    const p = providerId ? this.PROVIDERS[providerId] : this.PROVIDERS[this.getActiveProvider()];
+    return p ? (localStorage.getItem(p.keyStorage) || '').trim() : '';
+  },
+
+  setKey(key, providerId) {
+    key = (key || '').trim();
+    providerId = providerId || this.detectProvider(key) || this.getActiveProvider();
+    const p = this.PROVIDERS[providerId];
+    if (p) {
+      if (key) {
+        localStorage.setItem(p.keyStorage, key);
+        this.setActiveProvider(providerId);
+      } else {
+        localStorage.removeItem(p.keyStorage);
+      }
+      this._notifyProviderChange();
+    }
+  },
+
+  clearKey(providerId) {
+    const p = providerId ? this.PROVIDERS[providerId] : this.PROVIDERS[this.getActiveProvider()];
+    if (p) {
+      localStorage.removeItem(p.keyStorage);
+      this._notifyProviderChange();
+    }
+  },
+
+  hasKey(providerId) {
+    if (providerId) return !!this.getKey(providerId);
+    return this.getConfiguredProviders().length > 0;
+  },
+
+  getModel(providerId) {
+    const p = providerId ? this.PROVIDERS[providerId] : this.PROVIDERS[this.getActiveProvider()];
+    if (!p) return 'default';
+    let m = (localStorage.getItem(p.modelStorage) || '').trim();
+    if (!m) m = p.defaultModel;
+    if (p.id === 'gemini' && (m.includes('1.5') || m.includes('2.0') || m.includes('2.5'))) {
+      m = p.defaultModel;
     }
     return m;
   },
-  setModel(m) { const v = (m || '').trim(); if (v) localStorage.setItem(this.MODEL_STORAGE, v); else localStorage.removeItem(this.MODEL_STORAGE); },
+
+  setModel(model, providerId) {
+    const p = providerId ? this.PROVIDERS[providerId] : this.PROVIDERS[this.getActiveProvider()];
+    if (p) {
+      if (model) localStorage.setItem(p.modelStorage, (model || '').trim());
+      else localStorage.removeItem(p.modelStorage);
+      this._notifyProviderChange();
+    }
+  },
+
+  _notifyProviderChange() {
+    if (typeof document !== 'undefined') {
+      const p = this.PROVIDERS[this.getActiveProvider()];
+      const badge = document.getElementById('reactor-model-badge');
+      if (badge && p) {
+        badge.textContent = `${p.name.split(' ')[0]}: ${this.getModel()}`;
+      }
+      const hdrBadge = document.getElementById('header-provider-badge');
+      if (hdrBadge && p) {
+        hdrBadge.textContent = p.name.split(' ')[0];
+      }
+      const chip = document.getElementById('modal-active-provider-chip');
+      if (chip && p) {
+        chip.textContent = `Active: ${p.name}`;
+      }
+    }
+  },
 
   // ================================================================
   // SYSTEM PROMPT — pulls live data from DB
@@ -507,7 +670,7 @@ IMPORTANT RULES:
   // ================================================================
   // GEMINI API CALL (with 30s timeout via AbortController)
   // ================================================================
-  async _call(key, model, body) {
+  async _call(key, model, body, attempt = 0) {
     const cleanModel = (model || this.DEFAULT_MODEL).trim().replace(/^models\//, '');
     const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const timeoutId = controller ? setTimeout(() => controller.abort(), 30000) : null;
@@ -534,21 +697,196 @@ IMPORTANT RULES:
     if (!res.ok) {
       let msg = `HTTP ${res.status}`;
       try { const j = await res.json(); msg = (j?.error?.message) || msg; } catch (e) { }
+
+      // Automatic fallback on temporary capacity spike (503) or retired model (404)
+      if ((res.status === 503 || res.status === 404) && attempt < 2) {
+        const fallback = (cleanModel !== 'gemini-flash-lite-latest') ? 'gemini-flash-lite-latest' : 'gemini-3.5-flash-lite';
+        console.warn(`[AI] Model "${cleanModel}" returned ${res.status} (${msg}). Auto-failing over to high-availability fallback "${fallback}"...`);
+        try {
+          const fallbackRes = await this._call(key, fallback, body, attempt + 1);
+          this.setModel(fallback);
+          if (typeof document !== 'undefined') {
+            const badge = document.getElementById('reactor-model-badge');
+            if (badge) badge.textContent = fallback.replace(/^gemini-/, 'Gemini ').replace(/-/g, ' ');
+          }
+          return fallbackRes;
+        } catch (fallbackErr) {
+          console.warn('[AI] Fallback model failed:', fallbackErr);
+        }
+      }
+
       if (res.status === 403) msg = 'Invalid or unauthorized API key.';
       else if (res.status === 404) msg = `Model "${cleanModel}" not found or retired. Switched to ${this.DEFAULT_MODEL}.`;
       else if (res.status === 429) msg = 'Rate limit reached. Please wait a moment.';
-      else if (res.status === 503) msg = 'Gemini servers busy. Try again in a moment.';
+      else if (res.status === 503) msg = 'Gemini servers busy. Try again in a moment or switch to Gemini Flash Lite.';
       throw new Error(msg);
     }
     return res.json();
   },
 
-  // ================================================================
-  // MAIN CHAT — with function calling loop & policy approval gate
-  // onToolCall(name, args, result) is called for each tool execution
-  // onApprovalRequest(proposal) returns Promise<boolean>
-  // ================================================================
-  async chat(message, history, { onToolCall, onApprovalRequest } = {}) {
+  // Format history for OpenAI and Claude standard APIs
+  _buildStandardHistory(history) {
+    return (history || [])
+      .filter(m => m && (m.role === 'user' || m.role === 'tadashi') && (m.text || m.content))
+      .slice(-10)
+      .map(m => ({
+        role: m.role === 'tadashi' ? 'assistant' : 'user',
+        content: m.text || m.content
+      }));
+  },
+
+  // ----------------------------------------------------------------
+  // OPENAI (CHATGPT) & OPENROUTER EXECUTION
+  // ----------------------------------------------------------------
+  async _callOpenAI(key, model, message, history, { onToolCall, onApprovalRequest } = {}, endpoint = 'https://api.openai.com/v1/chat/completions') {
+    const headers = { 'Content-Type': 'application/json' };
+    if (key) headers['Authorization'] = `Bearer ${key}`;
+    if (endpoint.includes('openrouter.ai')) {
+      headers['HTTP-Referer'] = 'https://tadashi.lifeos';
+      headers['X-Title'] = 'TADASHI LifeOS';
+    }
+
+    const messages = [
+      { role: 'system', content: this.buildSystemPrompt() },
+      ...this._buildStandardHistory(history),
+      { role: 'user', content: message }
+    ];
+
+    const availableTools = (typeof window !== 'undefined' && window.ToolRegistry)
+      ? window.ToolRegistry.getGeminiDeclarations()
+      : this.TOOLS;
+
+    const tools = availableTools.map(t => ({
+      type: 'function',
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.parameters
+      }
+    }));
+
+    let rounds = 0;
+    while (rounds < 4) {
+      rounds++;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          messages,
+          tools,
+          tool_choice: 'auto',
+          temperature: 0.7
+        })
+      });
+
+      if (!res.ok) {
+        let errText = `HTTP ${res.status}`;
+        try { const j = await res.json(); errText = j?.error?.message || errText; } catch(e) {}
+        throw new Error(`Provider Error (${res.status}): ${errText}`);
+      }
+
+      const data = await res.json();
+      const choice = data.choices?.[0];
+      const msg = choice?.message;
+      if (!msg) throw new Error('Empty response from AI model.');
+
+      messages.push(msg);
+
+      if (msg.tool_calls && msg.tool_calls.length > 0) {
+        for (const call of msg.tool_calls) {
+          const fnName = call.function.name;
+          let fnArgs = {};
+          try { fnArgs = JSON.parse(call.function.arguments); } catch(e) {}
+          const execRes = await this.executeTool(fnName, fnArgs, { onApprovalRequest });
+          if (onToolCall) onToolCall(fnName, fnArgs, execRes);
+          messages.push({
+            role: 'tool',
+            tool_call_id: call.id,
+            content: JSON.stringify(execRes)
+          });
+        }
+      } else {
+        return msg.content || '';
+      }
+    }
+    return messages[messages.length - 1]?.content || 'Action executed.';
+  },
+
+  // ----------------------------------------------------------------
+  // ANTHROPIC CLAUDE EXECUTION (Direct browser-enabled)
+  // ----------------------------------------------------------------
+  async _callClaude(key, model, message, history, { onToolCall, onApprovalRequest } = {}) {
+    const messages = [
+      ...this._buildStandardHistory(history),
+      { role: 'user', content: message }
+    ];
+
+    const availableTools = (typeof window !== 'undefined' && window.ToolRegistry)
+      ? window.ToolRegistry.getGeminiDeclarations()
+      : this.TOOLS;
+
+    const tools = availableTools.map(t => ({
+      name: t.name,
+      description: t.description,
+      input_schema: t.parameters
+    }));
+
+    let rounds = 0;
+    while (rounds < 4) {
+      rounds++;
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1500,
+          system: this.buildSystemPrompt(),
+          messages,
+          tools
+        })
+      });
+
+      if (!res.ok) {
+        let errText = `HTTP ${res.status}`;
+        try { const j = await res.json(); errText = j?.error?.message || errText; } catch(e) {}
+        throw new Error(`Claude Error (${res.status}): ${errText}`);
+      }
+
+      const data = await res.json();
+      const content = data.content || [];
+      const toolUses = content.filter(p => p.type === 'tool_use');
+
+      if (toolUses.length > 0) {
+        messages.push({ role: 'assistant', content });
+        const toolResults = [];
+        for (const tu of toolUses) {
+          const execRes = await this.executeTool(tu.name, tu.input || {}, { onApprovalRequest });
+          if (onToolCall) onToolCall(tu.name, tu.input || {}, execRes);
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: tu.id,
+            content: JSON.stringify(execRes)
+          });
+        }
+        messages.push({ role: 'user', content: toolResults });
+      } else {
+        const textBlock = content.find(p => p.type === 'text');
+        return textBlock ? textBlock.text : '';
+      }
+    }
+    return 'Action executed.';
+  },
+
+  // ----------------------------------------------------------------
+  // GEMINI EXECUTION
+  // ----------------------------------------------------------------
+  async _chatGemini(message, history, { onToolCall, onApprovalRequest } = {}) {
     // Transparently route through AIRouter when Gateway (OmniRoute/FreeLLMAPI) is enabled,
     // when local-only privacy is set, or when no Gemini cloud key is configured.
     if (typeof window !== 'undefined' && window.AIRouter && typeof window.AIRouter.chat === 'function') {
@@ -698,12 +1036,158 @@ IMPORTANT RULES:
     return turns;
   },
 
-  async testKey(key, model) {
-    const cleanModel = (model || this.DEFAULT_MODEL).trim().replace(/^models\//, '');
-    await this._call(key, cleanModel, {
-      contents: [{ role: 'user', parts: [{ text: 'Reply with exactly one word: OK' }] }],
-      generationConfig: { maxOutputTokens: 10 }
-    });
-    return true;
+  // ----------------------------------------------------------------
+  // MULTI-PROVIDER ROUTE DISPATCHER
+  // ----------------------------------------------------------------
+  async _dispatchChat(providerId, message, history, options = {}) {
+    if (providerId === 'claude') {
+      const key = this.getKey('claude');
+      const model = this.getModel('claude');
+      return await this._callClaude(key, model, message, history, options);
+    }
+    if (providerId === 'openai') {
+      const key = this.getKey('openai');
+      const model = this.getModel('openai');
+      return await this._callOpenAI(key, model, message, history, options, 'https://api.openai.com/v1/chat/completions');
+    }
+    if (providerId === 'openrouter') {
+      const key = this.getKey('openrouter');
+      const model = this.getModel('openrouter');
+      return await this._callOpenAI(key, model, message, history, options, 'https://openrouter.ai/api/v1/chat/completions');
+    }
+    // Default to Gemini
+    return await this._chatGemini(message, history, options);
+  },
+
+  // ================================================================
+  // MAIN CHAT — with multi-provider dispatch & automatic resilient failover
+  // ================================================================
+  async chat(message, history, { onToolCall, onApprovalRequest } = {}) {
+    // 1. Transparently check AIRouter when Gateway is explicitly enabled
+    if (typeof window !== 'undefined' && window.AIRouter && typeof window.AIRouter.chat === 'function') {
+      const gatewayActive = window.GatewayProvider && typeof window.GatewayProvider.isEnabled === 'function' && window.GatewayProvider.isEnabled();
+      const localOnly = typeof window.AIRouter.getPrivacyMode === 'function' && window.AIRouter.getPrivacyMode() === 'local_only';
+      if (gatewayActive || localOnly) {
+        try {
+          const res = await window.AIRouter.chat(message, history, { onToolCall, onApprovalRequest });
+          if (res && typeof res.text === 'string') return res.text;
+        } catch (routerErr) {
+          if (localOnly) throw routerErr;
+          console.warn('AIRouter call failed; attempting direct multi-provider fallback:', routerErr);
+        }
+      }
+    }
+
+    const activeProvider = this.getActiveProvider();
+    const activeKey = this.getKey(activeProvider);
+
+    if (!activeKey && this.getConfiguredProviders().length === 0) {
+      throw new Error('No AI provider API key configured. Click "Configure AI Key" to connect Google Gemini, OpenAI (ChatGPT), or Anthropic Claude.');
+    }
+
+    // Try primary active provider
+    try {
+      return await this._dispatchChat(activeProvider, message, history, { onToolCall, onApprovalRequest });
+    } catch (primaryErr) {
+      console.warn(`[AI] Primary provider "${activeProvider}" failed: ${primaryErr.message}`);
+
+      // Resilient Auto-Failover: if active provider experiences downtime, 503, or rate limit, fail over to other configured keys!
+      if (this.isAutoFailoverEnabled()) {
+        const fallbacks = this.getConfiguredProviders().filter(p => p !== activeProvider);
+        for (const alt of fallbacks) {
+          console.warn(`[AI] Auto-failing over from "${activeProvider}" to secondary provider "${alt}"...`);
+          try {
+            const altResult = await this._dispatchChat(alt, message, history, { onToolCall, onApprovalRequest });
+            if (typeof window !== 'undefined' && window.showToast) {
+              const pName = this.PROVIDERS[alt] ? this.PROVIDERS[alt].name : alt;
+              window.showToast(`${this.PROVIDERS[activeProvider]?.name || activeProvider} busy. Answered via ${pName}!`);
+            }
+            return altResult;
+          } catch (altErr) {
+            console.warn(`[AI] Fallback provider "${alt}" also failed:`, altErr);
+          }
+        }
+      }
+
+      throw primaryErr;
+    }
+  },
+
+  // ----------------------------------------------------------------
+  // TEST KEY METHOD — verifies keys against actual live endpoints
+  // ----------------------------------------------------------------
+  async testKey(key, providerId, model) {
+    key = (key || '').trim();
+    if (!key) throw new Error('Please enter an API key to test.');
+    providerId = providerId || this.detectProvider(key) || this.getActiveProvider();
+
+    if (providerId === 'gemini') {
+      const cleanModel = (model || this.PROVIDERS.gemini.defaultModel).trim().replace(/^models\//, '');
+      await this._call(key, cleanModel, {
+        contents: [{ role: 'user', parts: [{ text: 'Reply with exactly one word: OK' }] }],
+        generationConfig: { maxOutputTokens: 10 }
+      });
+      return { ok: true, provider: 'gemini', message: 'Google Gemini verified successfully!' };
+    }
+
+    if (providerId === 'openai') {
+      const m = model || this.PROVIDERS.openai.defaultModel;
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [{ role: 'user', content: 'Reply OK' }],
+          max_tokens: 5
+        })
+      });
+      if (!res.ok) {
+        let err = `HTTP ${res.status}`;
+        try { const j = await res.json(); err = j?.error?.message || err; } catch(e) {}
+        throw new Error(err);
+      }
+      return { ok: true, provider: 'openai', message: 'OpenAI (ChatGPT) verified successfully!' };
+    }
+
+    if (providerId === 'claude') {
+      const m = model || this.PROVIDERS.claude.defaultModel;
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: m,
+          max_tokens: 5,
+          messages: [{ role: 'user', content: 'Reply OK' }]
+        })
+      });
+      if (!res.ok) {
+        let err = `HTTP ${res.status}`;
+        try { const j = await res.json(); err = j?.error?.message || err; } catch(e) {}
+        throw new Error(err);
+      }
+      return { ok: true, provider: 'claude', message: 'Anthropic Claude verified successfully!' };
+    }
+
+    if (providerId === 'openrouter') {
+      const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        headers: { 'Authorization': `Bearer ${key}` }
+      });
+      if (!res.ok) {
+        let err = `HTTP ${res.status}`;
+        try { const j = await res.json(); err = j?.error?.message || err; } catch(e) {}
+        throw new Error(err);
+      }
+      return { ok: true, provider: 'openrouter', message: 'OpenRouter verified successfully!' };
+    }
+
+    return { ok: true, provider: providerId, message: 'Provider key saved.' };
   }
 };
