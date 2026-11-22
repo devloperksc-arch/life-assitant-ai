@@ -996,6 +996,28 @@
     const pendingTasks = tasks.filter(t => t.status !== 'done').length;
 
     return `
+      <!-- Neural Bridge & AI Key Control Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl glass-surface border border-primary-container/30 shadow-lg bg-surface-container-lowest/70">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container shadow-[0_0_12px_rgba(0,212,255,0.2)]">
+            <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-white flex items-center gap-2">
+              TADASHI Neural Bridge &amp; AI Intelligence
+              <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-primary-container/15 text-primary border border-primary-container/30">Multi-Provider AI Active</span>
+            </p>
+            <p class="text-[10px] text-outline font-mono">Connect Google Gemini, Anthropic Claude, OpenAI ChatGPT, or OpenRouter with auto-failover</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" class="px-4 py-2 rounded-xl bg-primary-container text-black font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_16px_rgba(0,212,255,0.3)]">
+            <span class="material-symbols-outlined text-[16px]">key</span>
+            <span>Change API Key</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Telemetry Stats Grid -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="glass-surface p-4 rounded-xl border border-primary-container/20">
