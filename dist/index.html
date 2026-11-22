@@ -261,7 +261,7 @@
   <script defer src="js/data.js?v=5.15"></script>
   <script defer src="js/db.js?v=5.15"></script>
   <script defer src="js/utils.js?v=5.15"></script>
-  <script defer src="js/lib/ai.js?v=5.16"></script>
+  <script defer src="js/lib/ai.js?v=5.17"></script>
   <script defer src="js/lib/voice.js?v=5.15"></script>
   <script defer src="js/domain-pages.js?v=5.16"></script>
   <script defer src="js/assistant/reactor-ui.js?v=5.15"></script>
@@ -2867,6 +2867,41 @@
       const input = document.getElementById('tadashi-chat-input');
       if (!input || !input.value.trim()) return;
       const userText = input.value.trim();
+
+      // Direct Chat Key Paste Interceptor: if user pastes their API key in chat, auto-activate!
+      if (userText.startsWith('AQ.') || userText.startsWith('AIza') || userText.startsWith('sk-ant-') || userText.startsWith('sk-proj-') || userText.startsWith('sk-or-')) {
+        input.value = '';
+        if (window.AI) {
+          AI.setKey(userText);
+          const prov = AI.getActiveProvider();
+          const provName = (AI.PROVIDERS[prov] && AI.PROVIDERS[prov].name) || 'Gemini';
+          const masked = userText.slice(0, 7) + '...' + userText.slice(-4);
+          const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+          if (chatFeed) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.className = 'flex gap-3 max-w-3xl';
+            confirmDiv.innerHTML = `
+              <div class="w-8 h-8 rounded-full bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1">vpn_key</span>
+              </div>
+              <div class="glass-surface p-4 rounded-xl rounded-tl-none border-primary-container/40 space-y-2 cyan-glow">
+                <div class="flex items-center justify-between mb-1 font-mono text-xs">
+                  <span class="text-primary-container font-semibold">TADASHI AI Engine</span>
+                  <span class="text-outline">${Utils.timeNow()} IST</span>
+                </div>
+                <p class="text-sm text-white font-medium">✓ ${provName} Key Saved &amp; Activated!</p>
+                <p class="text-xs text-outline font-mono">Key: <span class="text-primary-container">${masked}</span></p>
+                <p class="text-xs text-slate-300">You are now fully connected to ${provName}. You can ask any question, brainstorm, or manage your 23 life domains!</p>
+              </div>
+            `;
+            chatFeed.appendChild(confirmDiv);
+            chatFeed.scrollTop = chatFeed.scrollHeight;
+          }
+          if (window.showToast) showToast('✓ ' + provName + ' key saved & activated!');
+          return;
+        }
+      }
+
       input.value = '';
       input.disabled = true;
 

@@ -28,6 +28,28 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Local environment configuration bridge (reads gitignored .env / process.env)
+  if (req.url === '/api/config' || req.url === '/api/env-config') {
+    let geminiKey = process.env.GEMINI_API_KEY || '';
+    if (!geminiKey) {
+      try {
+        const envPath = path.join(ROOT, '.env');
+        if (fs.existsSync(envPath)) {
+          const envText = fs.readFileSync(envPath, 'utf8');
+          const m = envText.match(/^\s*GEMINI_API_KEY\s*=\s*([^\r\n#]+)/m);
+          if (m) geminiKey = m[1].trim();
+        }
+      } catch(e) {}
+    }
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    res.end(JSON.stringify({ geminiKey }));
+    return;
+  }
+
   const parsedUrl = new URL(req.url, `http://127.0.0.1:${PORT}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
   if (pathname === '/') pathname = '/index.html';

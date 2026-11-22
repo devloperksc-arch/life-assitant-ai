@@ -1084,11 +1084,21 @@ IMPORTANT RULES:
       }
     }
 
-    const activeProvider = this.getActiveProvider();
-    const activeKey = this.getKey(activeProvider);
+    let activeProvider = this.getActiveProvider();
+    let activeKey = this.getKey(activeProvider);
+
+    if (!activeKey) {
+      await this.syncEnvironmentConfig();
+      activeProvider = this.getActiveProvider();
+      activeKey = this.getKey(activeProvider);
+    }
 
     if (!activeKey && this.getConfiguredProviders().length === 0) {
-      throw new Error('No AI provider API key configured. Click "Configure AI Key" to connect Google Gemini, OpenAI (ChatGPT), or Anthropic Claude.');
+      const lower = (message || '').trim().toLowerCase();
+      if (/^(hi|hello|hey|greetings|hola|howdy|sup|good (morning|afternoon|evening))\b/i.test(lower)) {
+        return "Hello Krishna! I'm **TADASHI**, your personal LifeOS intelligence assistant. All 23 life domains are active and operational.\n\nTo unlock full conversational reasoning (like Google or ChatGPT) across any topic, connect your Gemini API key using the button below or paste it right into the chat!";
+      }
+      throw new Error('No AI provider API key configured. Click "Configure AI Key" to connect Google Gemini, OpenAI (ChatGPT), or Anthropic Claude, or paste your API key directly here in chat.');
     }
 
     // Try primary active provider
@@ -1197,5 +1207,23 @@ IMPORTANT RULES:
     }
 
     return { ok: true, provider: providerId, message: 'Provider key saved.' };
+  },
+
+  async syncEnvironmentConfig() {
+    if (this.getKey('gemini')) return;
+    if (typeof fetch === 'undefined') return;
+    try {
+      const res = await fetch('/api/config');
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && data.geminiKey && !this.getKey('gemini')) {
+          this.setKey(data.geminiKey, 'gemini');
+        }
+      }
+    } catch(e) {}
   }
 };
+
+if (typeof window !== 'undefined') {
+  AI.syncEnvironmentConfig().catch(() => {});
+}
