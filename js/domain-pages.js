@@ -1034,7 +1034,13 @@
               <span class="material-symbols-outlined text-primary-container text-[18px]">bolt</span>
               Urgent Priority Action Items
             </h4>
-            <span class="text-[10px] font-mono text-outline">Auto-Triaged</span>
+            <div class="flex items-center gap-2">
+              <button onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-container/15 hover:bg-primary-container/25 border border-primary-container/30 text-primary-container font-mono text-[11px] font-semibold active:scale-95 transition-all" title="Change or configure API Key">
+                <span class="material-symbols-outlined text-[14px]">key</span>
+                <span>Change API Key</span>
+              </button>
+              <span class="text-[10px] font-mono text-outline">Auto-Triaged</span>
+            </div>
           </div>
           <div class="space-y-2">
             <div class="p-3 rounded-lg bg-surface-container-lowest/70 border-l-4 border-amber-400 flex items-center justify-between">

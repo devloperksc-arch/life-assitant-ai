@@ -246,20 +246,20 @@
   <link rel="stylesheet" href="css/tailwind.css" />
 
   <!-- TADASHI Core Engines: Data, DB, Utilities, Gemini AI, Voice (Deferred for non-blocking render) -->
-  <script defer src="js/data.js?v=5.13"></script>
-  <script defer src="js/db.js?v=5.13"></script>
-  <script defer src="js/utils.js?v=5.13"></script>
-  <script defer src="js/lib/ai.js?v=5.13"></script>
-  <script defer src="js/lib/voice.js?v=5.13"></script>
-  <script defer src="js/domain-pages.js?v=5.13"></script>
-  <script defer src="js/assistant/reactor-ui.js?v=5.13"></script>
-  <script defer src="js/assistant/ai-router.js?v=5.13"></script>
-  <script defer src="js/assistant/scheduler.js?v=5.13"></script>
-  <script defer src="js/assistant/sync-engine.js?v=5.13"></script>
-  <script defer src="js/assistant/memory.js?v=5.13"></script>
-  <script defer src="js/assistant/skill-runtime.js?v=5.13"></script>
-  <script defer src="js/assistant/tool-registry.js?v=5.13"></script>
-  <script defer src="js/assistant/update-engine.js?v=5.13"></script>
+  <script defer src="js/data.js?v=5.14"></script>
+  <script defer src="js/db.js?v=5.14"></script>
+  <script defer src="js/utils.js?v=5.14"></script>
+  <script defer src="js/lib/ai.js?v=5.14"></script>
+  <script defer src="js/lib/voice.js?v=5.14"></script>
+  <script defer src="js/domain-pages.js?v=5.14"></script>
+  <script defer src="js/assistant/reactor-ui.js?v=5.14"></script>
+  <script defer src="js/assistant/ai-router.js?v=5.14"></script>
+  <script defer src="js/assistant/scheduler.js?v=5.14"></script>
+  <script defer src="js/assistant/sync-engine.js?v=5.14"></script>
+  <script defer src="js/assistant/memory.js?v=5.14"></script>
+  <script defer src="js/assistant/skill-runtime.js?v=5.14"></script>
+  <script defer src="js/assistant/tool-registry.js?v=5.14"></script>
+  <script defer src="js/assistant/update-engine.js?v=5.14"></script>
 </head>
 <body class="min-h-screen bg-[#06080e] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
   <!-- Skip to main content (a11y) -->
@@ -336,6 +336,10 @@
 <span class="">23 Domains Active</span>
 <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
 </button>
+<button class="hover:text-primary-container transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-primary-container/30 hover:border-primary-container/60 text-white text-[11px] font-mono shadow-[0_0_10px_rgba(0,212,255,0.12)] active:scale-95" onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" title="Configure or change AI Provider API Keys">
+<span class="material-symbols-outlined text-primary-container text-[13px]">key</span>
+<span>API Key</span>
+</button>
 </div>
 </div>
 <!-- ========================================== -->
@@ -365,6 +369,10 @@
 <button class="px-5 py-2.5 rounded-xl glass-surface hover:bg-surface-container/60 text-on-surface font-mono text-xs transition-all flex items-center gap-2 active:scale-95 border border-outline-variant/30" onclick="switchTab('view-schedule')">
 <span class="material-symbols-outlined text-outline text-[18px]">tune</span>
 <span class="">Adjust Schedule</span>
+</button>
+<button class="px-4 py-2.5 rounded-xl glass-surface hover:bg-surface-container/80 text-white font-mono text-xs font-semibold transition-all flex items-center gap-2 active:scale-95 border border-primary-container/40 hover:border-primary-container shadow-[0_0_14px_rgba(0,212,255,0.18)]" onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" title="Configure or switch API Keys (Gemini, Claude, ChatGPT, OpenRouter)">
+<span class="material-symbols-outlined text-primary-container text-[18px]">key</span>
+<span class="">Change API Key</span>
 </button>
 </div>
 </div>
@@ -1547,6 +1555,11 @@
 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 <span>Adjust Schedule</span>
+</button>
+<!-- Change API Key Button -->
+<button onclick="if(typeof openApiKeyModal==='function')openApiKeyModal();" class="flex items-center space-x-1.5 py-2.5 px-3 rounded-xl bg-slate-900/80 border border-cyan-500/40 text-cyan-400 hover:text-white font-medium text-xs hover:border-cyan-400 active:scale-[0.98] transition-transform" title="Change API Key">
+<span class="material-symbols-outlined text-[15px]">key</span>
+<span>API Key</span>
 </button>
 </div>
 </section>
