@@ -51,10 +51,14 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
+    const isHtmlOrJs = ext === '.html' || ext === '.js';
     res.writeHead(200, {
       'Content-Type': contentType,
       'Content-Length': stats.size,
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': isHtmlOrJs ? 'no-cache, no-store, must-revalidate' : 'public, max-age=3600',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
 
     const stream = fs.createReadStream(filePath);

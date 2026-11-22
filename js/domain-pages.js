@@ -80,19 +80,21 @@
     const domainId = normalizeDomainId(id);
     currentDomainId = domainId;
 
-    // Desktop view switching
+    // Desktop view switching: unconditionally activate #view-domain-page
     if (typeof window.switchTab === 'function') {
       try { window.switchTab('view-domain-page', false); } catch (e) { }
     }
     document.querySelectorAll('.view-panel').forEach(p => {
-      p.classList.add('panel-hidden');
-      p.style.display = '';
+      if (p.id !== 'view-domain-page') {
+        p.classList.add('panel-hidden');
+        p.style.display = 'none';
+      }
     });
     const target = document.getElementById('view-domain-page');
     if (target) {
       target.classList.remove('panel-hidden');
       target.classList.remove('hidden');
-      target.style.display = '';
+      target.style.display = 'block';
     }
 
     // Only update mobile view if on mobile screen
@@ -272,19 +274,11 @@
       </div>
     `;
 
-    // Render into active container based on layout (prevents duplicate IDs between desktop & mobile)
-    let isMobile = false;
-    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-      try { isMobile = window.matchMedia('(max-width: 1023px)').matches; } catch (e) { }
-    }
-
-    if (isMobile && mobileContainer) {
-      mobileContainer.innerHTML = renderedHtml;
-      if (container) container.innerHTML = '';
-    } else if (container) {
+    // Always render into BOTH containers so content is immediately ready regardless of viewport/scaling!
+    if (container) {
       container.innerHTML = renderedHtml;
-      if (mobileContainer) mobileContainer.innerHTML = '';
-    } else if (mobileContainer) {
+    }
+    if (mobileContainer) {
       mobileContainer.innerHTML = renderedHtml;
     }
 
@@ -3742,9 +3736,17 @@ cd freellmapi && npm install && npm run dev
   }
 
   // Expose to window
+  window._realOpenDomainPage = openDomainPage;
   window.openDomainPage = openDomainPage;
   window.renderDomainPage = renderDomainPage;
   window.returnToDomainsHub = returnToDomainsHub;
+
+  // If a domain open request was queued before this file finished loading, execute immediately
+  if (typeof window !== 'undefined' && window._pendingDomainOpen) {
+    const pending = window._pendingDomainOpen;
+    window._pendingDomainOpen = null;
+    try { openDomainPage(pending.id, pending.pushHistory); } catch (e) { }
+  }
 
   // Listen to DB changes and re-render if current domain page is visible
   document.addEventListener('DOMContentLoaded', () => {
