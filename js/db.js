@@ -111,6 +111,45 @@ const DB = (() => {
       _emit('all', 'reset', null);
     },
 
+    clearMockData() {
+      _pushUndo();
+      _flushSave();
+      try {
+        localStorage.setItem('tadashi_pre_clear_backup', JSON.stringify(_state));
+      } catch (e) { }
+      // Preserve user identity, API keys and core configuration, but clear predicate dummy mock items
+      _state.tasks = [];
+      _state.goals = [];
+      if (_state.study) {
+        _state.study.subjects = [];
+        _state.study.assignments = [];
+      }
+      if (_state.finance) {
+        _state.finance.transactions = [];
+      }
+      if (_state.fitness) {
+        _state.fitness.workouts = [];
+      }
+      if (_state.relationships) {
+        _state.relationships = [];
+      }
+      _flushSave();
+      _emit('all', 'clearMockData', null);
+      return true;
+    },
+
+    restorePreClearBackup() {
+      const b = localStorage.getItem('tadashi_pre_clear_backup');
+      if (!b) return false;
+      try {
+        _pushUndo();
+        _state = JSON.parse(b);
+        _flushSave();
+        _emit('all', 'restore', null);
+        return true;
+      } catch (e) { return false; }
+    },
+
     restorePreResetBackup() {
       const b = localStorage.getItem('tadashi_pre_reset_backup');
       if (!b) return false;
@@ -714,16 +753,16 @@ const DB = (() => {
       const s = _state;
       const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       const pendingTasks = (s.tasks || []).filter(t => t.status !== 'done').slice(0, 10)
-        .map(t => `  - [${t.priority}] ${t.title} (due: ${t.deadline || 'no date'}, project: ${t.project || 'General'})`).join('\n');
+        .map(t => `  - [${t.priority || 'medium'}] ${t.title} (due: ${t.deadline || 'no date'}, project: ${t.project || 'General'})`).join('\n');
       const goals = (s.goals || []).slice(0, 5)
-        .map(g => `  - ${g.emoji || ''} ${g.title}: ${g.progress}% complete (target: ${g.target})`).join('\n');
-      const recentTx = (s.finance.transactions || []).slice(0, 5)
-        .map(t => `    ${t.name}: ${t.amount > 0 ? '+' : ''}₹${t.amount} (${t.category}, ${t.date})`).join('\n');
-      const subjects = (s.study.subjects || [])
-        .map(sub => `  - ${sub.name} [${sub.code}]: ${sub.progress}% done (exam: ${sub.examDate})`).join('\n');
-      const recentWorkouts = (s.fitness.workouts || []).slice(-3)
+        .map(g => `  - ${g.emoji || ''} ${g.title}: ${g.progress || 0}% complete (target: ${g.target || 'TBD'})`).join('\n');
+      const recentTx = (s.finance?.transactions || []).slice(0, 5)
+        .map(t => `    ${t.name}: ${t.amount > 0 ? '+' : ''}₹${t.amount} (${t.category || 'General'}, ${t.date || 'recent'})`).join('\n');
+      const subjects = (s.study?.subjects || [])
+        .map(sub => `  - ${sub.name} [${sub.code || ''}]: ${sub.progress || 0}% done (exam: ${sub.examDate || 'TBD'})`).join('\n');
+      const recentWorkouts = (s.fitness?.workouts || []).slice(-3)
         .map(w => `  - ${w.date}: ${w.name}, ${w.duration}min (${w.status})`).join('\n');
-      const subsList = (s.digitalLife.subscriptions || []).filter(x => x.status === 'active')
+      const subsList = (s.digitalLife?.subscriptions || []).filter(x => x.status === 'active')
         .map(x => `  - ${x.name}: ₹${x.amount}/${x.period}`).join('\n');
 
       return `

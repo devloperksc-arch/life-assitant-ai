@@ -1,0 +1,46 @@
+{
+  "user": {
+    "name": "Krishna",
+    "nickname": "Krishna",
+    "role": "Computer Science & Engineering",
+    "city": "New Delhi",
+    "timezone": "Asia/Kolkata",
+    "motto": "Build relentless systems, master core fundamentals."
+  },
+  "rhythm": {
+    "wakeUpTime": "07:00",
+    "sleepTime": "23:30",
+    "focusWindow": "09:00 - 13:00",
+    "workoutTime": "18:00 - 19:30"
+  },
+  "goals": [
+    { "title": "Score 9.0+ CGPA this Semester", "category": "Academic", "target": "Dec 2026", "progress": 45 },
+    { "title": "Hit 80kg Bench & 120kg Deadlift", "category": "Fitness", "target": "Jan 2027", "progress": 60 },
+    { "title": "Build & Deploy 3 Production Full-Stack Systems", "category": "Career", "target": "Feb 2027", "progress": 30 }
+  ],
+  "fitness": {
+    "modality": "Weightlifting & Zone 2 Cardio",
+    "weeklyGoal": 5,
+    "weightKg": 72.5,
+    "targetWeightKg": 75.0
+  },
+  "nutrition": {
+    "dietType": "High Protein Balanced",
+    "calorieTarget": 2400,
+    "proteinGramsTarget": 140,
+    "waterLitersTarget": 3.5
+  },
+  "finance": {
+    "monthlyIncomeTarget": 80000,
+    "fixedExpenses": 32000,
+    "monthlySavingsTarget": 25000
+  },
+  "relationships": [
+    { "name": "Mom", "relation": "Family", "cadence": "Daily evening call" },
+    { "name": "Dad", "relation": "Family", "cadence": "Alternate days call" }
+  ],
+  "habits": {
+    "toBuild": ["Morning 500ml hydration", "90-minute deep study block before noon", "10-minute nightly review"],
+    "toBreak": ["Late-night phone scrolling", "Skipping post-workout stretching"]
+  }
+}

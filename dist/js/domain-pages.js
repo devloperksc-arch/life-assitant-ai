@@ -3670,6 +3670,14 @@ cd freellmapi && npm install && npm run dev
                 <span class="material-symbols-outlined text-[15px]">download</span>
                 <span>Export JSON</span>
               </button>
+              <button onclick="if(confirm('Clear predicate dummy data (fake tasks, dummy exams, mock transactions) and start fresh with real personal data? Your profile, memories, and API keys are completely preserved.')){ if(DB && DB.clearMockData){ DB.clearMockData(); if(window.showToast) showToast('✓ Mock data cleared! Ready for real data.'); if(typeof openDomainPage==='function') openDomainPage('settings',false); } }" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-amber-400/40 text-amber-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all" title="Clear fake seed tasks/finances to enter real data">
+                <span class="material-symbols-outlined text-[15px]">cleaning_services</span>
+                <span>Clear Mock Data</span>
+              </button>
+              <a href="USER_PROFILE_QUESTIONNAIRE.md" target="_blank" class="px-3 py-1.5 rounded-lg bg-primary-container/15 hover:bg-primary-container/25 border border-primary-container/30 text-primary-container font-mono text-xs font-semibold flex items-center gap-1.5 transition-all" title="Open the questionnaire to update details about yourself">
+                <span class="material-symbols-outlined text-[15px]">assignment</span>
+                <span>Profile Questionnaire</span>
+              </a>
               <button onclick="document.getElementById('tadashi-import-input').click()" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-primary-container font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
                 <span class="material-symbols-outlined text-[15px]">upload</span>
                 <span>Import JSON</span>

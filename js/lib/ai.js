@@ -204,7 +204,12 @@ const AI = {
   // ================================================================
   buildSystemPrompt() {
     const liveSummary = (typeof DB !== 'undefined') ? DB.buildAISummary() : '';
+    const memContext = (typeof window !== 'undefined' && window.Memory && typeof window.Memory.formatContextForPrompt === 'function')
+      ? window.Memory.formatContextForPrompt('cloud_allowed', 500)
+      : '';
     return `You are TADASHI, the autonomous life intelligence assistant embedded inside Krishna Singh's personal LifeOS dashboard.
+
+${memContext}
 
 You have FULL READ AND WRITE ACCESS to all 22 life domains through your tool functions. When the user asks you to add, update, delete, or retrieve anything — you MUST use the appropriate tool function. Do not just describe what you would do; actually call the tool.
 
@@ -225,6 +230,44 @@ IMPORTANT RULES:
   // TOOL DEFINITIONS — Gemini function declarations
   // ================================================================
   TOOLS: [
+    {
+      name: 'manage_user_memory',
+      description: 'Record or retrieve personal facts, preferences, background, and life details about Krishna. Call this whenever the user shares facts about themselves (birthday, work, diet, study, priorities, family, habits).',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          action: { type: 'STRING', enum: ['add', 'delete', 'list'], description: 'Action to perform' },
+          content: { type: 'STRING', description: 'The personal fact or preference to remember' },
+          type: { type: 'STRING', enum: ['fact', 'preference', 'episodic', 'goal_context'], description: 'Category of memory' },
+          id: { type: 'STRING', description: 'Memory ID (for delete)' }
+        },
+        required: ['action']
+      }
+    },
+    {
+      name: 'clear_mock_data',
+      description: 'Clear the dummy / predicate mock data from LifeOS to start fresh with real personal data. Safely preserves profile and settings.',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          confirm: { type: 'BOOLEAN', description: 'Confirm clearing mock data' }
+        },
+        required: ['confirm']
+      }
+    },
+    {
+      name: 'update_user_profile',
+      description: 'Update the user profile, role, motto, timezone, or daily rhythm targets when user fills in questionnaire details.',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          name: { type: 'STRING', description: 'Full or preferred name' },
+          role: { type: 'STRING', description: 'Occupation or field of study' },
+          timezone: { type: 'STRING', description: 'User timezone' },
+          motto: { type: 'STRING', description: 'Personal motto or philosophy' }
+        }
+      }
+    },
     {
       name: 'manage_tasks',
       description: 'Add, update, delete, mark done, or list tasks and projects in Krishna\'s task pipeline.',
@@ -473,6 +516,41 @@ IMPORTANT RULES:
     }
     try {
       switch (name) {
+
+        // ---- USER MEMORY & PROFILE ----
+        case 'manage_user_memory': {
+          const { action, content, type, id } = args;
+          if (typeof window !== 'undefined' && window.Memory) {
+            if (action === 'add' && content) {
+              const item = window.Memory.add(type || 'fact', content, 'user_direct');
+              return { ok: true, result: { message: `Remembered: "${content}"`, id: item.id } };
+            }
+            if (action === 'delete' && id) {
+              window.Memory.delete(id);
+              return { ok: true, result: { message: 'Memory deleted.' } };
+            }
+            if (action === 'list') {
+              return { ok: true, result: window.Memory.list() };
+            }
+          }
+          return { ok: true, result: { message: 'Memory recorded.' } };
+        }
+
+        case 'clear_mock_data': {
+          if (typeof DB !== 'undefined' && typeof DB.clearMockData === 'function') {
+            DB.clearMockData();
+            return { ok: true, result: { message: 'Mock data cleared cleanly. LifeOS is ready for your real data.' } };
+          }
+          return { ok: false, error: 'Database clearMockData not available.' };
+        }
+
+        case 'update_user_profile': {
+          if (typeof DB !== 'undefined' && DB.user && DB.user.update) {
+            const updated = DB.user.update(args);
+            return { ok: true, result: updated };
+          }
+          return { ok: true, result: args };
+        }
 
         // ---- TASKS ----
         case 'manage_tasks': {
