@@ -27,7 +27,7 @@ const AI = {
         { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash' }
       ],
       docsUrl: 'https://aistudio.google.com/apikey',
-      detect: (k) => k.startsWith('AIzaSy')
+      detect: (k) => k.startsWith('AIzaSy') || k.startsWith('AQ.') || k.startsWith('AQ') || k.startsWith('AIza')
     },
     openai: {
       id: 'openai',
@@ -89,6 +89,10 @@ const AI = {
     for (const [id, p] of Object.entries(this.PROVIDERS)) {
       if (p.detect && p.detect(key)) return id;
     }
+    if (key.startsWith('AQ') || key.startsWith('AIza')) return 'gemini';
+    if (key.startsWith('sk-ant')) return 'claude';
+    if (key.startsWith('sk-or')) return 'openrouter';
+    if (key.startsWith('sk-')) return 'openai';
     return 'custom';
   },
 
@@ -129,12 +133,14 @@ const AI = {
 
   setKey(key, providerId) {
     key = (key || '').trim();
-    providerId = providerId || this.detectProvider(key) || this.getActiveProvider();
-    const p = this.PROVIDERS[providerId];
+    if (providerId && !this.PROVIDERS[providerId]) providerId = null;
+    const detected = this.detectProvider(key);
+    providerId = providerId || (detected && this.PROVIDERS[detected] ? detected : null) || this.getActiveProvider() || 'gemini';
+    const p = this.PROVIDERS[providerId] || this.PROVIDERS.gemini;
     if (p) {
       if (key) {
         localStorage.setItem(p.keyStorage, key);
-        this.setActiveProvider(providerId);
+        this.setActiveProvider(p.id);
       } else {
         localStorage.removeItem(p.keyStorage);
       }
@@ -1119,7 +1125,9 @@ IMPORTANT RULES:
   async testKey(key, providerId, model) {
     key = (key || '').trim();
     if (!key) throw new Error('Please enter an API key to test.');
-    providerId = providerId || this.detectProvider(key) || this.getActiveProvider();
+    if (providerId && !this.PROVIDERS[providerId]) providerId = null;
+    const detected = this.detectProvider(key);
+    providerId = providerId || (detected && this.PROVIDERS[detected] ? detected : null) || this.getActiveProvider() || 'gemini';
 
     if (providerId === 'gemini') {
       const cleanModel = (model || this.PROVIDERS.gemini.defaultModel).trim().replace(/^models\//, '');
