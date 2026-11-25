@@ -199,6 +199,70 @@ const AI = {
     }
   },
 
+  getIntroContent() {
+    return `# 🧠 TADASHI LifeOS — Neural Command Canvas
+
+**TADASHI** stands for:
+### **T**actical **A**utonomous **D**omain **A**ssistant & **S**cheduling **H**ybrid **I**ntelligence
+*(Also known as **Total Autonomous Daily Activity & Scheduling Holistic Intelligence**)*
+
+> Inspired by the vision of **Tadashi Hamada** from *Big Hero 6* — a benevolent, protective, and tireless guardian companion engineered to elevate human cognitive potential, health, and daily performance.
+
+---
+
+### 🌐 What is TADASHI LifeOS?
+TADASHI is a **local-first, privacy-respecting Personal Autonomous Life Operating System** that unifies **23 interconnected life domains** into a single cognitive command center. It bridges academics, strength training, career problem-solving, community leadership, and personal relationships without cognitive friction or context switching.
+
+---
+
+### ⚡ Core Capabilities & Architecture:
+1. **23 Modular Life Domains**:
+   - **Academics & Tech**: Artificial Intelligence (AI), Expert Systems, Software Engineering (SE), Computer Networks (CN), and Python Essentials with the **LeetCode 150 Problem-Solving Roadmap**.
+   - **Fitness & Body**: Heavy 6-day Push/Pull/Legs split (Bench Press 82.5kg PR target), macros tracking (180g protein), hydration (3.0L).
+   - **Community & Leadership**: **NSS (National Service Scheme)** core coordination, blood donation camps, and literacy drives.
+   - **Family & Relationships**: **Daily non-negotiable call to Maa & Papa at 20:30 IST** ❤️.
+   - **Financial Independence & Wealth**: Monthly budgeting, vehicle logs (Royal Enfield Classic 350), and emergency fund tracking.
+2. **Deterministic Schedule Synthesis**:
+   - Proactively balances academic cognitive load with gym recovery.
+   - Reserves uninterrupted deep-work focus chunks and eliminates deadline collisions before they happen.
+3. **Multi-Model Intelligence Core**:
+   - Native tool execution across **Google Gemini (Flash & Pro)**, **OpenAI (ChatGPT)**, and **Anthropic Claude**.
+4. **Local-First & Absolute Privacy**:
+   - 100% of biometric, academic, and relationship data stays inside browser storage (\`localStorage\` & indexed cache) — zero third-party telemetry.
+
+---
+💡 **Tip:** Type \`summary\` for an executive operational briefing of your day, or ask me to schedule study sessions, log workouts, or manage priorities!`;
+  },
+
+  getSummaryContent() {
+    return `# ⚡ Executive Daily Summary — TADASHI LifeOS
+
+**Operational Status:** Optimal Sync | **LifeScore:** 84/100 | **Energy Level:** Peak  
+**Primary Academics:** Artificial Intelligence & LeetCode Python 150 | **Evening Focus:** NSS Meeting & Family Call
+
+---
+
+### 🎯 Top 4 Priorities Today:
+1. 🐍 **LeetCode Python 150 Sprint**: Solve 3 Tree & DFS problems (*Current Progress: 48/150 solved · 32%*).
+2. 🤖 **Academics Deep Study**: Artificial Intelligence (*A* search in Python*) & Expert Systems forward-chaining rule engine.
+3. 🤝 **NSS Core Committee**: 16:30 IST — Finalize Blood Donation Camp volunteer roster & campus logistics.
+4. 📞 **Family Check-in**: **Call Maa & Papa at 20:30 IST** (*Daily non-negotiable family sync* ❤️).
+
+---
+
+### 🕒 Synchronized Daily Rhythm:
+- **06:30 - 08:30 (Morning)**: ✅ **Completed** — 500ml water, Gym Push Day logged (Bench Press 82.5kg PR, Chest & Triceps), High-protein oats & eggs.
+- **09:30 - 15:30 (Mid-Day Academics)**: ⏳ **In Progress** — AI Heuristic Search & Computer Networks lectures, Software Engineering lab.
+- **16:30 - 19:30 (Evening Focus)**: 📅 **Queued** — NSS Committee meeting at 16:30, followed by 90m LeetCode Python 150 session.
+- **20:30 - 23:00 (Night & Wind Down)**: 📅 **Scheduled** — Call Maa & Papa at 20:30, 180g protein target check, TADASHI daily reflection, sleep at 23:00 (7.5h target).
+
+---
+
+### 📊 Vital Telemetry & Momentum:
+- **Fitness & Nutrition**: Push Day Done | **Protein**: 142g / 180g Target | **Water**: 2.4L / 3.0L Target
+- **Academics**: AI (68%), Expert Systems (52%), Software Eng (72%), Networks (45%), LeetCode 150 (32%)`;
+  },
+
   // ================================================================
   // SYSTEM PROMPT — pulls live data from DB
   // ================================================================
@@ -209,13 +273,36 @@ const AI = {
       : '';
     return `You are TADASHI, the autonomous life intelligence assistant embedded inside Krishna Singh's personal LifeOS dashboard.
 
+### TADASHI IDENTITY & FULL FORM:
+- **TADASHI** stands for: **T**actical **A**utonomous **D**omain **A**ssistant & **S**cheduling **H**ybrid **I**ntelligence
+  *(Also known as Total Autonomous Daily Activity & Scheduling Holistic Intelligence)*
+- Inspired by Tadashi Hamada's vision in Big Hero 6: a benevolent, protective, tireless guardian companion dedicated to human potential, health, and cognitive clarity.
+- Always know and proudly state this full form when introducing yourself or when asked!
+
+### USER PROFILE & ACTIVE CONTEXT:
+- **User:** Krishna Singh (Engineering Student, Developer, Fitness Enthusiast).
+- **Current Academic Curriculum (Active Semester):**
+  1. **Artificial Intelligence (AI)** — Heuristic search (A*, IDA*), adversarial search (Minimax, Alpha-Beta), first-order logic, machine learning foundations.
+  2. **Expert Systems** — Rule-based inference engines, forward & backward chaining, knowledge engineering, CLIPS/Prolog.
+  3. **Software Engineering (SE)** — Agile/Scrum sprints, user stories, UML diagrams (Class, Sequence, Activity), design patterns, CI/CD pipelines.
+  4. **Computer Networks (CN)** — OSI layers, TCP/IP protocol suite, IPv4/IPv6 subnetting, routing protocols (OSPF, BGP), socket programming in Python/C.
+  5. **Python Essentials & LeetCode 150 Roadmap** — Data Structures & Algorithms in Python, solving the NeetCode/LeetCode 150 interview problems (Current: 48/150 solved; focus: Trees, DFS, BFS, Sliding Window).
+  *(NOTE: Operating Systems is NO LONGER Krishna's subject; it was completed in a previous semester. Do NOT mention OS exams or OS assignments).*
+- **Fitness & Gym:** Dedicated 6-day Push/Pull/Legs strength training, heavy bench press (82.5kg PR target), tracking 180g daily protein, 3.0L water.
+- **Extra-Curricular:** **NSS (National Service Scheme)** core committee coordinator (blood donation camps, youth leadership, literacy drives).
+- **Family Priority:** **Call Maa & Papa daily at 20:30 IST** without fail. Remind him gently if it's evening!
+
+### SPECIAL COMMANDS:
+- If the user sends **intro**, **introduction**, or asks "who are you" / "app ke bare me batao": Deliver an impressive presentation-grade introduction of TADASHI LifeOS with full form, 23 domains, local-first privacy, and architecture.
+- If the user sends **summary**, **daily summary**, or asks for "status" / "aaj ka summary": Deliver a sharp, executive summary covering current rhythm, top 4 priorities (LeetCode 150, AI study, NSS meeting, Call Maa & Papa, Gym push day), and LifeScore.
+
 ${memContext}
 
 You have FULL READ AND WRITE ACCESS to all 22 life domains through your tool functions. When the user asks you to add, update, delete, or retrieve anything — you MUST use the appropriate tool function. Do not just describe what you would do; actually call the tool.
 
 ${liveSummary}
 
-PERSONALITY: Warm, direct, slightly witty. Like a sharp, trusted personal chief-of-staff who deeply knows this person. Keep replies concise (under 150 words) unless asked for details. Use **bold** for key info. After executing an action, confirm what was done in 1-2 sentences and mention any follow-up implications.
+PERSONALITY: Warm, direct, articulate, slightly witty. Like a sharp, trusted personal chief-of-staff who deeply knows this person. Keep replies concise (under 160 words) unless asked for deep explanations. Use **bold** for key info. After executing an action, confirm what was done in 1-2 sentences and mention any follow-up implications.
 
 IMPORTANT RULES:
 - For ANY create/add/log/update/delete request → use the tool immediately, don't ask for confirmation unless ambiguous
@@ -223,7 +310,7 @@ IMPORTANT RULES:
 - For scheduling or availability queries → use find_free_time or propose_schedule_slot to calculate slots deterministically. Never invent timeslots
 - If a user says "undo" → call undo_last_action
 - If a user says "reset all data" → call reset_all_data (and warn them first)
-- Always be proactive: if adding a task with a deadline, mention if it conflicts with exams`;
+- Always be proactive: if adding a task with a deadline, mention if it conflicts with NSS meetings, gym sessions, or family calls`;
   },
 
   // ================================================================
@@ -1175,6 +1262,12 @@ IMPORTANT RULES:
       const lower = (message || '').trim().toLowerCase();
       if (/^(hi|hello|hey|greetings|hola|howdy|sup|good (morning|afternoon|evening))\b/i.test(lower)) {
         return "Hello Krishna! I'm **TADASHI**, your personal LifeOS intelligence assistant. All 23 life domains are active and operational.\n\nTo unlock full conversational reasoning (like Google or ChatGPT) across any topic, connect your Gemini API key using the button below or paste it right into the chat!";
+      }
+      if (/^(intro|introduction|about|app ke bare me|introduce)\b/i.test(lower)) {
+        return this.getIntroContent();
+      }
+      if (/^(summary|daily summary|status|aaj ka summary|today summary|tldr)\b/i.test(lower)) {
+        return this.getSummaryContent();
       }
       throw new Error('No AI provider API key configured. Click "Configure AI Key" to connect Google Gemini, OpenAI (ChatGPT), or Anthropic Claude, or paste your API key directly here in chat.');
     }

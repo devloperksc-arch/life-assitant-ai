@@ -24,64 +24,63 @@ const DATA = {
   },
 
   tasks: [
-    { id:1, title:'Complete OS assignment', status:'todo', priority:'high', deadline:'2026-09-22', effort:3, project:'Study', tags:['urgent','coding'] },
-    { id:2, title:'Gym — chest & triceps', status:'todo', priority:'medium', deadline:'2026-09-20', effort:1, project:'Fitness', tags:['health'] },
-    { id:3, title:'Review monthly budget', status:'in-progress', priority:'high', deadline:'2026-09-21', effort:1, project:'Finance', tags:['money'] },
-    { id:4, title:'Push project code to GitHub', status:'in-progress', priority:'high', deadline:'2026-09-20', effort:2, project:'Dev', tags:['coding','urgent'] },
-    { id:5, title:'Call mom for her birthday', status:'todo', priority:'medium', deadline:'2026-09-20', effort:0, project:'Relationships', tags:['family'] },
-    { id:6, title:'Read DBMS chapter 5', status:'todo', priority:'high', deadline:'2026-09-22', effort:2, project:'Study', tags:['exam-prep'] },
-    { id:7, title:'Grocery shopping', status:'done', priority:'low', deadline:'2026-09-19', effort:1, project:'Home', tags:['errand'] },
-    { id:8, title:'Pay electricity bill', status:'done', priority:'medium', deadline:'2026-09-18', effort:0, project:'Finance', tags:['bills'] },
-    { id:9, title:'Update resume', status:'todo', priority:'medium', deadline:'2026-09-25', effort:2, project:'Career', tags:['career'] },
-    { id:10, title:'Plan weekend study schedule', status:'todo', priority:'high', deadline:'2026-09-20', effort:1, project:'Study', tags:['planning'] },
+    { id:1, title:'LeetCode Python 150 — Solve 3 Tree & DFS problems', status:'todo', priority:'high', deadline:'2026-11-25', effort:2, project:'Code', tags:['urgent','python','leetcode'] },
+    { id:2, title:'Gym — Push Day: Bench Press & Triceps', status:'todo', priority:'high', deadline:'2026-11-25', effort:1, project:'Fitness', tags:['health','gym'] },
+    { id:3, title:'NSS Core Meeting — Finalize Blood Donation Camp Roster', status:'todo', priority:'high', deadline:'2026-11-25', effort:2, project:'NSS', tags:['urgent','social'] },
+    { id:4, title:'Call Maa & Papa — Daily evening family check-in', status:'todo', priority:'high', deadline:'2026-11-25', effort:0, project:'Relationships', tags:['family','priority'] },
+    { id:5, title:'AI Lab — Implement A* Search algorithm in Python', status:'in-progress', priority:'high', deadline:'2026-11-27', effort:3, project:'Study', tags:['ai','coding'] },
+    { id:6, title:'Computer Networks — Socket programming client-server demo', status:'todo', priority:'medium', deadline:'2026-11-28', effort:2, project:'Study', tags:['networks','lab'] },
+    { id:7, title:'Software Engineering — Sprint 2 Backlog & UML Architecture', status:'in-progress', priority:'medium', deadline:'2026-11-29', effort:2, project:'Study', tags:['se','agile'] },
+    { id:8, title:'Expert Systems — Rule-based inference engine problem set', status:'todo', priority:'medium', deadline:'2026-11-30', effort:2, project:'Study', tags:['expert-systems'] },
+    { id:9, title:'Track daily macros & 180g protein target', status:'done', priority:'medium', deadline:'2026-11-25', effort:0, project:'Fitness', tags:['nutrition'] },
+    { id:10, title:'Plan weekly LeetCode milestone (Reach 55/150)', status:'todo', priority:'medium', deadline:'2026-11-26', effort:1, project:'Career', tags:['career','python'] },
   ],
 
   goals: [
-    { id:1, emoji:'🎓', title:'Ace Final Exams', status:'active', progress:58, target:'2026-11-30', category:'Study',
+    { id:1, emoji:'🐍', title:'Crack LeetCode 150 in Python', status:'active', progress:32, target:'2026-12-31', category:'Dev',
       milestones:[
-        { title:'Finish OS syllabus', done:true },
-        { title:'Complete DBMS revision', done:false },
-        { title:'Practice last 5 years papers', done:false },
-        { title:'Mock tests', done:false }
+        { title:'Arrays & Hashing (9/9)', done:true },
+        { title:'Two Pointers & Sliding Window (11/11)', done:true },
+        { title:'Trees & Binary Search (14/28)', done:false },
+        { title:'Graphs & Dynamic Programming (0/40)', done:false }
       ]
     },
-    { id:2, emoji:'💪', title:'Get to 75kg lean', status:'active', progress:45, target:'2026-12-31', category:'Fitness',
+    { id:2, emoji:'🎓', title:'Ace Semester Exams (AI, SE, Networks, Expert Systems)', status:'active', progress:64, target:'2026-12-20', category:'Study',
       milestones:[
-        { title:'Consistent 5x/week gym', done:true },
-        { title:'Track macros daily', done:true },
-        { title:'Reach 78kg', done:false },
-        { title:'Reach 75kg lean', done:false }
+        { title:'Artificial Intelligence: A* & Minimax', done:true },
+        { title:'Computer Networks: TCP/IP & Subnetting', done:true },
+        { title:'Software Engineering: Design Patterns & UML', done:false },
+        { title:'Expert Systems: Rule-based inference', done:false }
       ]
     },
-    { id:3, emoji:'💰', title:'Save ₹50,000', status:'active', progress:72, target:'2026-12-31', category:'Finance',
+    { id:3, emoji:'💪', title:'Get to 75kg Lean & 90kg Bench Press', status:'active', progress:55, target:'2026-12-31', category:'Fitness',
       milestones:[
-        { title:'Cut unnecessary subscriptions', done:true },
-        { title:'Save ₹20,000', done:true },
-        { title:'Save ₹36,000', done:false },
-        { title:'Save ₹50,000', done:false }
+        { title:'Consistent 5x/week gym streak', done:true },
+        { title:'Track 180g protein daily', done:true },
+        { title:'Bench Press 85kg hit', done:false },
+        { title:'Reach 75kg lean body weight', done:false }
       ]
     },
-    { id:4, emoji:'🚀', title:'Launch Side Project', status:'on-hold', progress:18, target:'2027-03-31', category:'Dev',
+    { id:4, emoji:'🤝', title:'NSS Youth Leadership & Community Impact', status:'active', progress:78, target:'2026-12-15', category:'Social',
       milestones:[
-        { title:'Define MVP features', done:true },
-        { title:'Build frontend', done:false },
-        { title:'Build backend', done:false },
-        { title:'Deploy & launch', done:false }
+        { title:'Campus cleanliness drive lead', done:true },
+        { title:'Blood donation camp roster & logistics', done:false },
+        { title:'Weekend village literacy workshop', done:false }
       ]
     },
   ],
 
   calendarEvents: [
-    { id:1, title:'CS101 Lecture', date:'2026-09-20', time:'09:00', duration:90, type:'class', color:'cyan' },
-    { id:2, title:'DBMS Lab', date:'2026-09-20', time:'11:00', duration:120, type:'class', color:'violet' },
-    { id:3, title:'Gym Session', date:'2026-09-20', time:'17:30', duration:60, type:'fitness', color:'green' },
-    { id:4, title:'OS Assignment Due', date:'2026-09-22', time:'23:59', duration:0, type:'deadline', color:'red' },
-    { id:5, title:'OS Exam', date:'2026-09-26', time:'10:00', duration:180, type:'exam', color:'red' },
-    { id:6, title:'Study Session — DBMS', date:'2026-09-21', time:'14:00', duration:120, type:'study', color:'amber' },
-    { id:7, title:'Mom\'s Birthday Call', date:'2026-09-20', time:'20:00', duration:30, type:'personal', color:'pink' },
-    { id:8, title:'Project Sync', date:'2026-09-22', time:'15:00', duration:60, type:'work', color:'cyan' },
-    { id:9, title:'DBMS Exam', date:'2026-09-29', time:'10:00', duration:180, type:'exam', color:'red' },
-    { id:10, title:'Weekend Workout', date:'2026-09-21', time:'08:00', duration:75, type:'fitness', color:'green' },
+    { id:1, title:'Gym — Push Day (Bench & Triceps)', date:'2026-11-25', time:'07:00', duration:75, type:'fitness', color:'green' },
+    { id:2, title:'Artificial Intelligence Lecture (A* Search & Heuristics)', date:'2026-11-25', time:'09:30', duration:90, type:'class', color:'cyan' },
+    { id:3, title:'Computer Networks (TCP/IP & Packet Routing)', date:'2026-11-25', time:'11:15', duration:90, type:'class', color:'violet' },
+    { id:4, title:'Software Engineering Lab (Agile Sprint & UML)', date:'2026-11-25', time:'14:00', duration:90, type:'class', color:'cyan' },
+    { id:5, title:'NSS Committee Meeting (Blood Donation Camp Briefing)', date:'2026-11-25', time:'16:30', duration:60, type:'work', color:'amber' },
+    { id:6, title:'LeetCode Python 150 Sprint (Trees & DFS)', date:'2026-11-25', time:'18:00', duration:90, type:'study', color:'cyan' },
+    { id:7, title:'Call Maa & Papa (Daily Family Check-in)', date:'2026-11-25', time:'20:30', duration:30, type:'personal', color:'pink' },
+    { id:8, title:'Expert Systems Study (Inference Engines & Rules)', date:'2026-11-25', time:'21:30', duration:60, type:'study', color:'violet' },
+    { id:9, title:'AI Lab Python Assignment Due', date:'2026-11-27', time:'23:59', duration:0, type:'deadline', color:'red' },
+    { id:10, title:'Weekend NSS Outreach & Literacy Drive', date:'2026-11-29', time:'09:00', duration:180, type:'personal', color:'green' },
   ],
 
   fitness: {
@@ -147,34 +146,55 @@ const DATA = {
 
   study: {
     subjects: [
-      { id:1, name:'Operating Systems', code:'CS401', examDate:'2026-09-26', progress:58,
+      { id:1, name:'Artificial Intelligence', code:'CS501', examDate:'2026-12-10', progress:68,
         topics:[
-          { name:'Process Management', status:'done' },
-          { name:'Memory Management', status:'done' },
-          { name:'File Systems', status:'partial' },
-          { name:'Deadlocks', status:'todo' },
-          { name:'I/O Systems', status:'todo' },
+          { name:'State Space & Heuristic Search (A*, IDA*)', status:'done' },
+          { name:'Adversarial Search & Minimax Alpha-Beta', status:'done' },
+          { name:'Knowledge Representation & First-Order Logic', status:'partial' },
+          { name:'Probabilistic Reasoning & Bayes Nets', status:'todo' },
+          { name:'Machine Learning Foundations & Neural Nets', status:'todo' },
         ],
-        assignments:[{ name:'OS Assignment', due:'2026-09-22', status:'pending' }]
+        assignments:[{ name:'AI Lab: A* Search in Python', due:'2026-11-27', status:'pending' }]
       },
-      { id:2, name:'Database Management', code:'CS402', examDate:'2026-09-29', progress:42,
+      { id:2, name:'Expert Systems', code:'CS502', examDate:'2026-12-14', progress:52,
         topics:[
-          { name:'ER Model', status:'done' },
-          { name:'Relational Algebra', status:'done' },
-          { name:'SQL', status:'partial' },
-          { name:'Normalization', status:'todo' },
-          { name:'Transactions', status:'todo' },
+          { name:'Expert Systems Architecture', status:'done' },
+          { name:'Forward & Backward Chaining Inference', status:'done' },
+          { name:'Rule-Based Knowledge Representation', status:'partial' },
+          { name:'Conflict Resolution Strategies', status:'todo' },
+          { name:'CLIPS / Prolog Engine Integration', status:'todo' },
         ],
-        assignments:[]
+        assignments:[{ name:'Medical Diagnosis Rule Engine', due:'2026-11-30', status:'pending' }]
       },
-      { id:3, name:'Computer Networks', code:'CS403', examDate:'2026-10-05', progress:25,
+      { id:3, name:'Software Engineering', code:'CS503', examDate:'2026-12-18', progress:72,
         topics:[
-          { name:'OSI Model', status:'done' },
-          { name:'TCP/IP', status:'partial' },
-          { name:'Routing', status:'todo' },
-          { name:'Transport Layer', status:'todo' },
+          { name:'Agile, Scrum & Kanban Methodologies', status:'done' },
+          { name:'Requirements Engineering & User Stories', status:'done' },
+          { name:'UML Class, Sequence & Activity Diagrams', status:'done' },
+          { name:'Design Patterns (Creational, Structural, Behavioral)', status:'partial' },
+          { name:'CI/CD Pipelines, Testing & DevOps', status:'todo' },
         ],
-        assignments:[{ name:'Network Lab Report', due:'2026-09-28', status:'pending' }]
+        assignments:[{ name:'Sprint 2 Architecture & UML Document', due:'2026-11-29', status:'pending' }]
+      },
+      { id:4, name:'Computer Networks', code:'CS504', examDate:'2026-12-22', progress:45,
+        topics:[
+          { name:'OSI & TCP/IP Protocol Layers', status:'done' },
+          { name:'Data Link & MAC Addressing', status:'done' },
+          { name:'IPv4 / IPv6 Addressing & Subnetting', status:'partial' },
+          { name:'Routing Protocols (OSPF, BGP, RIP)', status:'todo' },
+          { name:'Transport Layer: TCP Congestion Control & UDP', status:'todo' },
+        ],
+        assignments:[{ name:'Socket Programming Client-Server Demo', due:'2026-11-28', status:'pending' }]
+      },
+      { id:5, name:'Python Essentials & LeetCode 150', code:'CS505', examDate:'2026-12-30', progress:32,
+        topics:[
+          { name:'Arrays & Hashing (9/9 solved)', status:'done' },
+          { name:'Two Pointers & Sliding Window (11/11 solved)', status:'done' },
+          { name:'Stack & Binary Search (8/12 solved)', status:'partial' },
+          { name:'Trees & Binary Search Trees (10/20 solved)', status:'partial' },
+          { name:'Graphs & Dynamic Programming (0/40 solved)', status:'todo' },
+        ],
+        assignments:[{ name:'Daily 3 LeetCode Python Sprint', due:'2026-11-25', status:'pending' }]
       },
     ]
   },
@@ -211,34 +231,48 @@ const DATA = {
   relationships: [
     {
       id: 1,
-      name: 'Mom',
-      howIKnow: 'Mother / Family · My biggest pillar',
+      name: 'Maa',
+      howIKnow: 'Mother / Family · My biggest pillar & love',
       phone: '+91 98765 43210',
       whatsapp: '919876543210',
       instagram: '',
-      cadence: 'Daily evening call (21:30 - 22:00)',
+      cadence: 'Daily evening call (20:30 - 21:00)',
       birthday: 'October 24',
-      lastContact: 'Today',
-      notes: 'Loves evening check-ins. Keep her updated on studies, gym, and health.',
-      emoji: '👩',
+      lastContact: 'Today 20:30',
+      notes: 'Daily evening call with Papa. Talk about college, gym, food, and daily progress.',
+      emoji: '❤️',
       color: '#f43f5e'
     },
     {
       id: 2,
-      name: 'Dad',
-      howIKnow: 'Father / Family · Career & Life Advisor',
+      name: 'Papa',
+      howIKnow: 'Father / Family · Core Guide & Strength',
       phone: '+91 98765 43211',
       whatsapp: '919876543211',
       instagram: '',
-      cadence: '2x / week',
+      cadence: 'Daily evening call (20:30 - 21:00)',
       birthday: 'April 12',
-      lastContact: 'Yesterday',
-      notes: 'Discuss financial savings, motorcycle maintenance, and exam prep.',
+      lastContact: 'Today 20:30',
+      notes: 'Daily family check-in together with Maa at 20:30 IST.',
       emoji: '👨',
       color: '#3cd7ff'
     },
     {
       id: 3,
+      name: 'NSS Core Committee',
+      howIKnow: 'National Service Scheme · College Unit Leadership',
+      phone: '+91 98220 11223',
+      whatsapp: '919822011223',
+      instagram: 'nss_college_unit',
+      cadence: 'Weekly Meetings & Drives',
+      birthday: 'September 24 (NSS Day)',
+      lastContact: 'Yesterday',
+      notes: 'Blood donation camp logistics, youth leadership meetings, village literacy campaign.',
+      emoji: '🤝',
+      color: '#f59e0b'
+    },
+    {
+      id: 4,
       name: 'Rohan Sharma',
       howIKnow: 'Gym Training Partner & Heavy Lifting Buddy',
       phone: '+91 98234 56789',
@@ -246,13 +280,13 @@ const DATA = {
       instagram: 'rohan_lifts',
       cadence: '6x / week (Daily at Gym)',
       birthday: 'December 5',
-      lastContact: 'Today',
+      lastContact: 'Today at Gym',
       notes: 'Spotter on Bench Press & Squats. Following the exact 6-day Push/Pull/Legs split together.',
       emoji: '🏋️‍♂️',
       color: '#00d4ff'
     },
     {
-      id: 4,
+      id: 5,
       name: 'Vikram Sir',
       howIKnow: 'Tech & Career Mentor · Staff Engineer at Google',
       phone: '+91 97123 45678',
@@ -266,16 +300,16 @@ const DATA = {
       color: '#a855f7'
     },
     {
-      id: 5,
+      id: 6,
       name: 'Priya Singh',
-      howIKnow: 'College CS Batchmate & OS Project Partner',
+      howIKnow: 'College CS Batchmate & AI / SE Project Partner',
       phone: '+91 96543 21098',
       whatsapp: '919654321098',
       instagram: 'priya_codes',
       cadence: 'Weekly / As needed for assignments',
       birthday: 'June 18',
-      lastContact: '2 days ago',
-      notes: 'Collaborating on Operating Systems Memory Management assignment.',
+      lastContact: 'Yesterday',
+      notes: 'Collaborating on Artificial Intelligence lab and Software Engineering sprint deliverables.',
       emoji: '👩‍💻',
       color: '#6af7ba'
     }
@@ -389,29 +423,30 @@ const DATA = {
   ],
 
   knowledge: [
-    { id:1, type:'Note', title:'Spring Boot best practices', preview:'Use @Transactional on service layer, not repository. Prefer constructor injection over field injection...', date:'2026-09-18', tags:['coding','java'] },
-    { id:2, type:'Idea', title:'TADASHI cross-domain replanning algorithm', preview:'When a major event changes, traverse Life Graph DFS, calculate constraint impact scores...', date:'2026-09-17', tags:['project','ai'] },
-    { id:3, type:'Book Note', title:'Atomic Habits — Key Takeaways', preview:'1% better every day compounds to 37x in a year. Focus on systems not goals. Make habits obvious, attractive...', date:'2026-09-10', tags:['books','habits'] },
-    { id:4, type:'Journal', title:'Weekly reflection Sep 15-19', preview:'Productive week overall. Missed 1 gym session. OS assignment needs focus. Should start DBMS revision earlier...', date:'2026-09-19', tags:['journal','reflection'] },
-    { id:5, type:'Project Idea', title:'Automated campus schedule optimizer', preview:'ML model to optimize student schedules based on energy, preferences, exam proximity...', date:'2026-09-08', tags:['idea','ml','college'] },
+    { id:1, type:'Note', title:'Python & LeetCode 150 Patterns', preview:'Focus on Sliding Window, Two Pointers, and Binary Tree DFS/BFS traversals. Use Python collections.deque and heapq for O(log k) operations...', date:'2026-11-20', tags:['coding','python','dsa'] },
+    { id:2, type:'Idea', title:'TADASHI cross-domain replanning algorithm', preview:'When a major event changes, traverse Life Graph DFS, calculate constraint impact scores across Academics, Fitness, and Routines...', date:'2026-11-18', tags:['project','ai'] },
+    { id:3, type:'Book Note', title:'Atomic Habits — Key Takeaways', preview:'1% better every day compounds to 37x in a year. Focus on systems not goals. Make habits obvious, attractive...', date:'2026-11-10', tags:['books','habits'] },
+    { id:4, type:'Journal', title:'Weekly reflection & Semester Priorities', preview:'Solid momentum this week. Bench Press hit 82.5kg. AI heuristic search lab on track. LeetCode Python 150 at 48 problems. Need to finalize NSS blood donation roster before Friday and keep daily 20:30 call with Maa & Papa...', date:'2026-11-24', tags:['journal','reflection'] },
+    { id:5, type:'Project Idea', title:'Expert Systems Rule Engine in Python', preview:'Building a forward-chaining rule engine in Python for autonomous student diagnostic recommendations...', date:'2026-11-15', tags:['idea','ai','expert-systems'] },
   ],
 
   routines: {
     morning: [
-      { task:'Wake up', time:'06:30', done:true },
-      { task:'Drink 500ml water', time:'06:31', done:true },
-      { task:'Morning workout / walk', time:'06:45', done:false },
-      { task:'Shower', time:'07:30', done:false },
-      { task:'Breakfast', time:'08:00', done:false },
-      { task:'Review today\'s plan', time:'08:30', done:false },
+      { task:'Wake up & hydrate (500ml warm water)', time:'06:30', done:true },
+      { task:'Gym — Push Day (Chest & Triceps)', time:'07:00', done:true },
+      { task:'Post-workout shower & grooming', time:'08:15', done:false },
+      { task:'High-protein breakfast (Oats & Eggs / Whey)', time:'08:30', done:false },
+      { task:'Review daily agenda & lecture prep', time:'09:15', done:false },
     ],
     night: [
+      { task:'Call Maa & Papa (Daily Family Check-in)', time:'20:30', done:false },
+      { task:'Balanced dinner & 180g protein check', time:'21:00', done:false },
+      { task:'Review LeetCode streak & NSS tasks', time:'22:00', done:false },
       { task:'Stop screen 30 min before bed', time:'22:30', done:false },
-      { task:'Journal / reflection', time:'22:35', done:false },
-      { task:'Review tomorrow\'s plan', time:'22:45', done:false },
-      { task:'Sleep', time:'23:00', done:false },
+      { task:'Journal / daily reflection', time:'22:45', done:false },
+      { task:'Sleep & recovery (7.5h target)', time:'23:00', done:false },
     ],
-    sleep: { target:'23:00', wake:'06:30', lastNight: 7.1 }
+    sleep: { target:'23:00', wake:'06:30', lastNight: 7.2 }
   },
 
   wellbeing: {

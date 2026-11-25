@@ -258,12 +258,12 @@
   <link rel="stylesheet" href="css/tailwind.css" />
 
   <!-- TADASHI Core Engines: Data, DB, Utilities, Gemini AI, Voice (Deferred for non-blocking render) -->
-  <script defer src="js/data.js?v=5.15"></script>
-  <script defer src="js/db.js?v=5.15"></script>
-  <script defer src="js/utils.js?v=5.15"></script>
-  <script defer src="js/lib/ai.js?v=5.18"></script>
-  <script defer src="js/lib/voice.js?v=5.15"></script>
-  <script defer src="js/domain-pages.js?v=5.17"></script>
+  <script defer src="js/data.js?v=5.19"></script>
+  <script defer src="js/db.js?v=5.19"></script>
+  <script defer src="js/utils.js?v=5.19"></script>
+  <script defer src="js/lib/ai.js?v=5.19"></script>
+  <script defer src="js/lib/voice.js?v=5.19"></script>
+  <script defer src="js/domain-pages.js?v=5.19"></script>
   <script defer src="js/assistant/reactor-ui.js?v=5.15"></script>
   <script defer src="js/assistant/ai-router.js?v=5.15"></script>
   <script defer src="js/assistant/scheduler.js?v=5.15"></script>
@@ -379,7 +379,7 @@
 </div>
 <h2 id="workspace-hero-greeting" class="text-2xl sm:text-3xl text-white font-semibold tracking-tight">Good evening Krishna — 2 urgent priorities detected</h2>
 <p id="workspace-hero-desc" class="text-sm text-outline mt-2 leading-relaxed max-w-2xl font-normal">
-            OS Deep Study wrap-up scheduled for 23:15, followed by family call and evening neuro-reset before 23:30.
+            AI Deep Study &amp; LeetCode 150 wrap-up scheduled, followed by NSS briefing and Call Maa &amp; Papa at 20:30.
           </p>
 </div>
 <div class="flex items-center gap-3 shrink-0 flex-wrap">
@@ -427,13 +427,13 @@
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
 <span class="text-primary-container font-semibold uppercase tracking-wider">CURRENT FOCUS</span>
-<span class="text-outline/80">Study Domain</span>
+<span class="text-outline/80">Code &amp; Study</span>
 </div>
-<h4 class="text-base text-white font-medium">OS Memory Deep Study</h4>
-<p class="text-xs text-outline mt-1 leading-relaxed">Virtual memory paging &amp; TLBs.</p>
+<h4 class="text-base text-white font-medium">LeetCode Python 150 Sprint</h4>
+<p class="text-xs text-outline mt-1 leading-relaxed">Solve 3 Binary Tree DFS &amp; BFS problems.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
-<span class="text-xs font-mono text-outline">30m remaining</span>
+<span class="text-xs font-mono text-outline">Progress: 48/150</span>
 <span class="text-primary-container text-xs font-mono font-medium hover:underline cursor-pointer flex items-center gap-1" onclick="openDomainPage('study')">
             Open Domain →
           </span>
@@ -444,13 +444,13 @@
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
 <span class="text-amber-400 font-semibold uppercase tracking-wider">PENDING CALL</span>
-<span class="text-outline/80">23:15 IST</span>
+<span class="text-outline/80">20:30 IST</span>
 </div>
-<h4 class="text-base text-white font-medium group-hover:text-amber-400 transition-colors">Mom's Birthday Call</h4>
-<p class="text-xs text-outline mt-1 leading-relaxed">Scheduled call slot before midnight.</p>
+<h4 class="text-base text-white font-medium group-hover:text-amber-400 transition-colors">Call Maa &amp; Papa</h4>
+<p class="text-xs text-outline mt-1 leading-relaxed">Daily family check-in and blessings.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
-<span class="text-xs font-mono text-amber-400 font-medium">High priority</span>
+<span class="text-xs font-mono text-amber-400 font-medium">Daily Non-Negotiable</span>
 <span class="text-white hover:text-amber-400 text-xs font-mono cursor-pointer flex items-center gap-1" onclick="openDomainPage('relationships'); event.stopPropagation();">
             Open Domain →
           </span>
@@ -460,14 +460,14 @@
 <div class="glass-surface glass-surface-hover rounded-2xl p-5 border-l-4 border-secondary flex flex-col justify-between cursor-pointer group" onclick="openDomainPage('tasks')">
 <div>
 <div class="flex items-center justify-between text-outline text-xs font-mono mb-2">
-<span class="text-secondary font-semibold uppercase tracking-wider">DUE TOMORROW</span>
-<span class="text-outline/80">Academics</span>
+<span class="text-secondary font-semibold uppercase tracking-wider">UPCOMING</span>
+<span class="text-outline/80">Leadership &amp; NSS</span>
 </div>
-<h4 class="text-base text-white font-medium group-hover:text-secondary transition-colors">Submit OS Assignment 3</h4>
-<p class="text-xs text-outline mt-1 leading-relaxed">Draft ready in GitHub repo; verify tests.</p>
+<h4 class="text-base text-white font-medium group-hover:text-secondary transition-colors">NSS Core Committee Meeting</h4>
+<p class="text-xs text-outline mt-1 leading-relaxed">Finalize Blood Donation Camp volunteer roster.</p>
 </div>
 <div class="mt-4 pt-3 border-t border-outline-variant/15 flex items-center justify-between">
-<span class="text-xs font-mono text-outline">Due 14:00</span>
+<span class="text-xs font-mono text-outline">At 16:30 IST</span>
 <span class="text-secondary text-xs font-mono hover:underline cursor-pointer flex items-center gap-1" onclick="openDomainPage('tasks'); event.stopPropagation();">
             Tasks Domain →
           </span>
@@ -522,12 +522,12 @@
 </div>
 <div class="glass-surface p-4 rounded-xl border-primary-container/30 cyan-glow">
 <div class="flex items-center justify-between">
-<span class="text-[11px] text-primary-container font-semibold font-mono">CURRENT ACTIVE EVENT</span>
-<span class="text-xs text-outline font-mono">22:00 - 23:15</span>
+<span class="text-[11px] text-primary-container font-semibold font-mono">CURRENT ACTIVE FOCUS</span>
+<span class="text-xs text-outline font-mono">18:00 - 19:30</span>
 </div>
-<h4 class="text-base text-white font-medium mt-2">OS Memory Deep Study</h4>
+<h4 class="text-base text-white font-medium mt-2">LeetCode Python 150 &amp; AI Lab</h4>
 <p class="text-xs text-outline mt-1 leading-relaxed">
-                  Virtual memory paging, translation lookaside buffers, and memory mapping mechanics.
+                  Solve 3 Binary Tree DFS problems in Python and test A* search heuristics.
                 </p>
 <div class="flex items-center justify-between mt-4 pt-3 border-t border-outline-variant/10">
 <div class="flex items-center gap-1.5 text-outline text-xs font-mono">
@@ -711,16 +711,20 @@
       <div class="space-y-1.5 pt-2 border-t border-outline-variant/10">
         <span class="text-[10px] font-mono uppercase text-outline tracking-wider block font-semibold">Quick Commands:</span>
         <div class="flex flex-col gap-1.5">
-          <button onclick="populatePrompt('Find free time today and schedule study block')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
-            <span>📅 Find Free Time</span>
+          <button onclick="populatePrompt('intro')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>💡 TADASHI Intro &amp; Full Form</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('Review OS Assignment 3 tests before submission')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
-            <span>📚 OS Exam Prep (6d)</span>
+          <button onclick="populatePrompt('summary')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>⚡ Daily Executive Summary</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('Summarize pending actions across all 23 domains')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
-            <span>⚡ 23 Domains Synthesis</span>
+          <button onclick="populatePrompt('Show my LeetCode Python 150 progress and study roadmap')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>🐍 Python &amp; LeetCode 150</span>
+            <span class="text-outline text-[10px]">→</span>
+          </button>
+          <button onclick="populatePrompt('NSS meeting schedule and Maa Papa call reminder')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+            <span>🤝 NSS &amp; Family Sync</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
         </div>
@@ -768,17 +772,20 @@
 <span class="text-outline">22:40 IST</span>
 </div>
 <p class="text-sm text-on-surface leading-relaxed">
-              Good evening, Krishna. You are currently 45 minutes into your OS Memory Deep Study session. You have the Mom Birthday Call at 23:15, and 1 assignment pending submission tomorrow.
+              Good day, Krishna! All 23 LifeOS domains are synchronized. You have your **Artificial Intelligence** lab and **LeetCode Python 150** practice queued, the **NSS Core Committee** meeting at 16:30, and your daily call to **Maa &amp; Papa at 20:30 IST**.
             </p>
 <div class="mt-3 flex flex-wrap gap-2">
-<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Review OS Assignment 3 tests before submission')">
-                → Review OS Assignment 3
+<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('intro')">
+                → intro
               </button>
-<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Optimize tomorrow schedule for 3 hours study')">
-                → Rebalance tomorrow's schedule
+<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('summary')">
+                → summary
               </button>
-<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Summarize pending actions across all 23 domains')">
-                → Summarize 23 Domains status
+<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('Show my LeetCode Python 150 progress and study roadmap')">
+                → LeetCode 150 Roadmap
+              </button>
+<button class="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 hover:border-primary-container/40 text-on-surface transition-all" onclick="populatePrompt('NSS meeting schedule and Maa Papa call reminder')">
+                → NSS &amp; Family Call
               </button>
 </div>
 </div>
@@ -1219,9 +1226,9 @@
             Evening Synthesis Transcript
           </h3>
 <div class="glass-surface p-5 rounded-xl space-y-3 text-sm text-on-surface leading-relaxed border border-outline-variant/15">
-<p class=""><strong class="text-white">Core Highlight:</strong> You have completed 4 out of 5 planned focus blocks today, including your Zone 2 aerobic run. Cognitive load was high between 17:00 and 19:00.</p>
-<p class=""><strong class="text-white">Active Requirement:</strong> OS Memory Deep Study session finishes at 23:15. Mom's call is queued right after.</p>
-<p class=""><strong class="text-white">Recovery Recommendation:</strong> Switch phone to grayscale and stop screen exposure by 23:30 to preserve REM sleep cycle.</p>
+<p class=""><strong class="text-white">Core Highlight:</strong> You have completed your Push Day workout (Bench Press 82.5kg PR) and high-protein nutrition target. Cognitive focus peak scheduled for LeetCode Python 150.</p>
+<p class=""><strong class="text-white">Active Requirement:</strong> NSS Core Committee meeting at 16:30. Call Maa &amp; Papa is queued at 20:30 IST.</p>
+<p class=""><strong class="text-white">Recovery Recommendation:</strong> Switch phone to grayscale and stop screen exposure by 22:30 to preserve REM sleep cycle.</p>
 </div>
 </div>
 <!-- Tomorrow's Agenda & Risks -->
@@ -1233,19 +1240,19 @@
 <div class="space-y-3">
 <div class="glass-surface p-4 rounded-xl border-l-4 border-amber-400">
 <div class="flex items-center justify-between text-xs font-mono text-amber-400">
-<span class="">RISK 1: DEADLINE</span>
-<span class="">14:00 IST</span>
+<span class="">UPCOMING DEADLINE</span>
+<span class="">23:59 IST</span>
 </div>
-<h4 class="text-sm text-white font-medium mt-1">OS Assignment 3 Submission</h4>
-<p class="text-xs text-outline mt-0.5">Tests pass locally, but submission portal requires code walkthrough.</p>
+<h4 class="text-sm text-white font-medium mt-1">AI Lab: A* Search in Python</h4>
+<p class="text-xs text-outline mt-0.5">Heuristics implemented; verify test cases before submission portal closes.</p>
 </div>
 <div class="glass-surface p-4 rounded-xl border-l-4 border-primary-container">
 <div class="flex items-center justify-between text-xs font-mono text-primary-container">
 <span class="">MORNING BLOCK</span>
 <span class="">08:30 IST</span>
 </div>
-<h4 class="text-sm text-white font-medium mt-1">Cognitive Warm-up &amp; Distributed Systems</h4>
-<p class="text-xs text-outline mt-0.5">2-hour uninterrupted block scheduled before lunch.</p>
+<h4 class="text-sm text-white font-medium mt-1">Computer Networks &amp; Socket Programming</h4>
+<p class="text-xs text-outline mt-0.5">Client-server packet inspection block scheduled.</p>
 </div>
 </div>
 </div>
@@ -1343,7 +1350,7 @@
       <div class="mt-auto">
         <p class="text-[11px] font-mono text-outline uppercase tracking-wider mb-2">Tell AI what to do</p>
         <div class="flex flex-col gap-2">
-          <textarea id="cal-ai-input" rows="2" placeholder="e.g. 'Schedule 2h OS study every morning this week' or 'Block Sunday evenings for family'" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-xl px-3 py-2.5 text-on-surface placeholder:text-outline/45 focus:border-primary-container focus:ring-1 focus:ring-primary-container text-xs resize-none font-mono"></textarea>
+          <textarea id="cal-ai-input" rows="2" placeholder="e.g. 'Schedule 2h AI &amp; LeetCode study every morning' or 'Block evenings for family call'" class="w-full bg-surface-container/60 border border-outline-variant/30 rounded-xl px-3 py-2.5 text-on-surface placeholder:text-outline/45 focus:border-primary-container focus:ring-1 focus:ring-primary-container text-xs resize-none font-mono"></textarea>
           <button onclick="calAISend()" class="px-4 py-2 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint cyan-glow active:scale-95 transition-colors flex items-center justify-center gap-2">
             <span class="material-symbols-outlined text-[16px]">send</span>
             Send to AI
@@ -1401,10 +1408,10 @@
             <span class="material-symbols-outlined text-primary-container animate-pulse text-[20px]">radio_button_checked</span>
             <div>
               <div class="flex items-center gap-2 font-mono mb-0.5">
-                <span class="text-[11px] text-primary-container font-semibold">22:00 - 23:15</span>
+                <span class="text-[11px] text-primary-container font-semibold">18:00 - 19:30</span>
                 <span class="text-[9px] px-2 py-0.5 rounded bg-primary-container/20 text-primary-container">ACTIVE</span>
               </div>
-              <p class="text-sm text-white font-medium">OS Memory Deep Study</p>
+              <p class="text-sm text-white font-medium">LeetCode Python 150 Sprint</p>
             </div>
           </div>
           <button onclick="markTaskComplete(this)" class="px-3 py-1.5 rounded-lg bg-primary-container text-surface-container-lowest text-[11px] font-mono font-bold hover:bg-surface-tint active:scale-95">Done</button>
@@ -1415,10 +1422,10 @@
             <span class="material-symbols-outlined text-amber-400 text-[20px]">schedule</span>
             <div>
               <div class="flex items-center gap-2 font-mono mb-0.5">
-                <span class="text-[11px] text-outline">23:15 - 23:30</span>
+                <span class="text-[11px] text-outline">20:30 - 21:00</span>
                 <span class="text-[9px] px-2 py-0.5 rounded bg-amber-400/15 text-amber-400">NEXT</span>
               </div>
-              <p class="text-sm text-white font-medium">Mom's Birthday Call</p>
+              <p class="text-sm text-white font-medium">Call Maa &amp; Papa</p>
             </div>
           </div>
           <button class="px-3 py-1.5 rounded-lg glass-surface text-outline hover:text-white text-[11px] font-mono">Dial</button>
@@ -1581,7 +1588,7 @@
 </h1>
 <!-- Subtext -->
 <p class="mt-1.5 text-xs text-slate-300 leading-relaxed">
-        OS Deep Study wrap-up scheduled for 23:15, followed by family call and evening neuro-reset before 23:30.
+        AI Deep Study &amp; LeetCode 150 wrap-up scheduled, followed by NSS briefing and Call Maa &amp; Papa at 20:30.
       </p>
 <!-- Action Buttons -->
 <div class="mt-4 flex items-center space-x-2.5">
@@ -1626,14 +1633,14 @@
 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
 <span>CURRENT FOCUS</span>
 </span>
-<span class="text-slate-400">Study Domain</span>
+<span class="text-slate-400">LeetCode &amp; Python</span>
 </div>
-<h3 class="text-sm font-bold text-white mt-1.5">OS Memory Deep Study</h3>
-<p class="text-xs text-slate-300 mt-0.5">Virtual memory paging &amp; TLBs.</p>
+<h3 class="text-sm font-bold text-white mt-1.5">LeetCode Python 150 Sprint</h3>
+<p class="text-xs text-slate-300 mt-0.5">Solve 3 Tree DFS problems; test A* search.</p>
 <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
 <span class="text-slate-400 font-mono text-[11px] flex items-center space-x-1">
 <span>⏳</span>
-<span>30m remaining</span>
+<span>Progress: 48/150</span>
 </span>
 <a class="inline-flex items-center space-x-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300" href="#">
 <span>Resume</span>
@@ -1645,14 +1652,14 @@
 <article class="p-3.5 rounded-xl glass-panel border border-amber-500/40 bg-gradient-to-br from-amber-950/15 to-slate-900/90 shadow-glowAmber" data-purpose="pending-call-card">
 <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
 <span class="text-amber-400 font-bold">PENDING CALL</span>
-<span class="text-slate-400 font-mono">23:15 IST</span>
+<span class="text-slate-400 font-mono">20:30 IST</span>
 </div>
-<h3 class="text-sm font-bold text-white mt-1.5">Mom's Birthday Call</h3>
-<p class="text-xs text-slate-300 mt-0.5">Scheduled call slot before midnight.</p>
+<h3 class="text-sm font-bold text-white mt-1.5">Call Maa &amp; Papa</h3>
+<p class="text-xs text-slate-300 mt-0.5">Daily family check-in and blessings.</p>
 <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
 <span class="text-amber-400 font-mono text-[11px] font-medium flex items-center space-x-1">
 <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-<span>High priority</span>
+<span>Daily Non-Negotiable</span>
 </span>
 <button class="inline-flex items-center space-x-1 text-xs font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 px-2.5 py-1 rounded-md border border-amber-600/40">
 <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewbox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"></path></svg>
@@ -1663,15 +1670,15 @@
 <!-- Card 3: DUE TOMORROW (Academics) -->
 <article class="p-3.5 rounded-xl glass-panel border border-purple-500/30 bg-gradient-to-br from-purple-950/15 to-slate-900/90 shadow-glowPurple" data-purpose="due-tomorrow-card">
 <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
-<span class="text-purple-400 font-bold">DUE TOMORROW</span>
-<span class="text-slate-400">Academics</span>
+<span class="text-purple-400 font-bold">UPCOMING</span>
+<span class="text-slate-400">Leadership &amp; NSS</span>
 </div>
-<h3 class="text-sm font-bold text-white mt-1.5">Submit OS Assignment 3</h3>
-<p class="text-xs text-slate-300 mt-0.5">Draft ready in GitHub repo; verify tests.</p>
+<h3 class="text-sm font-bold text-white mt-1.5">NSS Core Committee Meeting</h3>
+<p class="text-xs text-slate-300 mt-0.5">Finalize Blood Donation Camp volunteer roster.</p>
 <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
-<span class="text-slate-400 font-mono text-[11px]">Due 14:00</span>
+<span class="text-slate-400 font-mono text-[11px]">At 16:30 IST</span>
 <a class="inline-flex items-center space-x-1 text-xs font-semibold text-purple-300 hover:text-purple-200" href="#">
-<span>Review Code</span>
+<span>Details</span>
 <span>→</span>
 </a>
 </div>
@@ -1732,16 +1739,16 @@
 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
 <span>CURRENT ACTIVE EVENT</span>
 </span>
-<span class="text-slate-400">22:00 — 23:15</span>
+<span class="text-slate-400">18:00 — 19:30</span>
 </div>
-<h4 class="text-sm font-bold text-white">OS Memory Deep Study</h4>
+<h4 class="text-sm font-bold text-white">LeetCode Python 150 Sprint</h4>
 <p class="text-xs text-slate-300 leading-relaxed">
-              Virtual memory paging, translation lookaside buffers, and memory mapping mechanics.
+              Solve 3 Binary Tree DFS problems; verify A* search Python implementation.
             </p>
 <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
 <div class="flex items-center space-x-1.5 text-slate-400 font-mono text-[11px]">
 <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<span>30m remaining</span>
+<span>Progress: 48/150</span>
 </div>
 <button class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors">
 <span>Resume Direct</span>
@@ -1754,21 +1761,21 @@
 <div class="relative group" data-purpose="timeline-event-upnext">
 <span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full border-2 border-amber-500/60 bg-slate-900"></span>
 <div class="flex items-baseline justify-between text-[11px] font-mono">
-<span class="text-slate-400">23:15 — 23:30</span>
+<span class="text-slate-400">20:30 — 21:00</span>
 <span class="text-amber-400 font-semibold">Up Next</span>
 </div>
-<h4 class="text-xs font-semibold text-slate-200 mt-0.5">Mom's Birthday Call</h4>
-<p class="text-[11px] text-slate-400 mt-0.5">Family check-in &amp; celebration wishes.</p>
+<h4 class="text-xs font-semibold text-slate-200 mt-0.5">Call Maa &amp; Papa</h4>
+<p class="text-[11px] text-slate-400 mt-0.5">Daily family check-in and blessings.</p>
 </div>
 <!-- Timeline Item 4: Routine -->
 <div class="relative group" data-purpose="timeline-event-routine">
 <span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-slate-900"></span>
 <div class="flex items-baseline justify-between text-[11px] font-mono">
-<span class="text-slate-400">23:30 — 00:00</span>
+<span class="text-slate-400">22:30 — 23:00</span>
 <span class="text-slate-500 font-medium">Routine</span>
 </div>
-<h4 class="text-xs font-semibold text-slate-200 mt-0.5">Wind-Down &amp; Neuro-Reset</h4>
-<p class="text-[11px] text-slate-400 mt-0.5">Blue-light elimination, magnesium intake &amp; journal.</p>
+<h4 class="text-xs font-semibold text-slate-200 mt-0.5">TADASHI Evening Synthesis</h4>
+<p class="text-[11px] text-slate-400 mt-0.5">LeetCode streak review, habit check &amp; reflection.</p>
 </div>
 </div>
 </section>
@@ -1784,7 +1791,7 @@
 <h2 class="text-sm font-bold text-white tracking-wide">Pending Domain Updates</h2>
 </div>
 <a class="text-[11px] text-cyan-400 font-medium hover:underline flex items-center space-x-0.5 font-mono" href="#">
-<span>View All 22</span>
+<span>View All 23</span>
 <span>→</span>
 </a>
 </div>
@@ -1802,11 +1809,11 @@
             </span>
 </div>
 <p class="text-xs text-slate-400">
-            Operating Systems Exam prep &amp; Virtual Memory problem set.
+            Artificial Intelligence (A* Heuristics) &amp; LeetCode 150 Python practice.
           </p>
 <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 font-mono">
 <span class="text-slate-400 text-[11px]">Target: <strong class="text-slate-200">24.5 / 30h</strong></span>
-<a class="text-cyan-400 font-semibold text-xs hover:underline flex items-center cursor-pointer" onclick="openMobileCopilot('Help with OS Memory Virtual Memory problem set'); return false;" href="#">
+<a class="text-cyan-400 font-semibold text-xs hover:underline flex items-center cursor-pointer" onclick="openMobileCopilot('Help with LeetCode Python 150 and AI heuristics'); return false;" href="#">
 <span>Ask TADASHI</span>
 <span class="ml-0.5">→</span>
 </a>
@@ -1985,7 +1992,7 @@
 
       <!-- Live Transcript Card -->
       <div class="p-3.5 rounded-2xl bg-surface-container-lowest border border-outline-variant/25 text-xs text-on-surface font-mono mb-6 text-left max-h-36 overflow-y-auto custom-scrollbar" id="voice-modal-transcript">
-        <span class="text-outline">TADASHI:</span> "I am connected to all 22 life domains. Ask me anything about your schedule, OS Exam prep, or Mom's Birthday call."
+        <span class="text-outline">TADASHI:</span> "I am connected to all 23 life domains. Ask me anything about your schedule, AI lab, LeetCode 150 roadmap, NSS meetings, or Maa &amp; Papa call."
       </div>
 
       <!-- Controls -->
@@ -2333,16 +2340,19 @@
       var key = function(d) { return y+'-'+pad(m+1)+'-'+pad(d); };
       var today = now.getDate(); var ev = {};
       ev[key(today)] = [
-        { time:'19:30', title:'Zone 2 Aerobic Run', color:'#6af7ba', domain:'Fitness' },
-        { time:'22:00', title:'OS Memory Deep Study', color:'#00d4ff', domain:'Study' },
-        { time:'23:15', title:"Mom's Birthday Call", color:'#f59e0b', domain:'Relationships' },
-        { time:'23:30', title:'Wind-Down & Neuro-Reset', color:'#d0bcff', domain:'Routine' }
+        { time:'07:00', title:'Gym — Push Day (Bench & Triceps)', color:'#6af7ba', domain:'Fitness' },
+        { time:'09:30', title:'Artificial Intelligence Lecture (A*)', color:'#00d4ff', domain:'Study' },
+        { time:'16:30', title:'NSS Core Committee Meeting', color:'#f59e0b', domain:'Leadership' },
+        { time:'18:00', title:'LeetCode Python 150 Sprint', color:'#00d4ff', domain:'Dev' },
+        { time:'20:30', title:'Call Maa & Papa (Family Check-in)', color:'#f43f5e', domain:'Relationships' },
+        { time:'22:30', title:'TADASHI Evening Synthesis', color:'#d0bcff', domain:'Routine' }
       ];
       var d2 = Math.min(today+1, 28);
       ev[key(d2)] = [
-        { time:'08:30', title:'Cognitive Warm-up', color:'#00d4ff', domain:'Study' },
-        { time:'14:00', title:'OS Assignment 3 Submission', color:'#f43f5e', domain:'Deadline' },
-        { time:'20:00', title:'Strength Training', color:'#6af7ba', domain:'Fitness' }
+        { time:'08:30', title:'Computer Networks & Subnetting', color:'#00d4ff', domain:'Study' },
+        { time:'14:00', title:'Software Engineering Agile Demo', color:'#f43f5e', domain:'Deadline' },
+        { time:'17:30', title:'Pull Day Strength Training', color:'#6af7ba', domain:'Fitness' },
+        { time:'20:30', title:'Call Maa & Papa', color:'#f43f5e', domain:'Relationships' }
       ];
       var d3 = Math.min(today+2, 28);
       ev[key(d3)] = [
@@ -2843,7 +2853,7 @@
         if (playIcon) playIcon.innerText = 'pause';
         if (audioTitle) audioTitle.innerText = 'Playing: Evening Debrief — Oct 24';
 
-        const briefingScript = "Good evening Krishna. This is your TADASHI synthesis update for October 24th. You have two urgent priorities detected: your Operating Systems Memory deep study wrap-up is scheduled for 23:15, focusing on virtual memory paging and translation lookaside buffers. Next, your high-priority call for Mom's Birthday is queued at 23:15. Earlier today, your Zone 2 aerobic conditioning was completed with 68 milliseconds HRV. Tomorrow, OS Assignment 3 is due at 14:00. All 23 life domains are operating at optimal sync.";
+        const briefingScript = "Good day Krishna. This is your TADASHI synthesis update. You have three key priorities detected: your Artificial Intelligence deep study and LeetCode Python 150 session, the NSS Core Committee meeting at 16:30, and your daily call to Maa and Papa at 20:30. Earlier today, your Push Day gym workout was logged with 142 grams of protein tracked. All 23 life domains are operating at optimal sync.";
 
         let progressVal = 35;
         const progressTimer = setInterval(() => {
@@ -3328,7 +3338,7 @@
       btn.disabled = true;
       btn.classList.replace('bg-primary-container', 'bg-tertiary/20');
       btn.classList.add('text-tertiary', 'cursor-default');
-      showToast('OS Memory Study marked complete! 🎉');
+      showToast('Focus session marked complete! 🎉');
     }
 
     // --- Quick Add Task Handler (legacy, keep for compat) ---

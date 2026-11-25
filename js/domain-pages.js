@@ -347,7 +347,7 @@
       'calendar': 'Energy-aligned time blocking, conflict avoidance, dynamic scheduling, and event agenda.',
       'tasks': 'Prioritized commitment pipeline, project hierarchies, sprint velocity, and task completion.',
       'goals': 'Quarterly objectives, measurable key results (OKRs), milestone tracking, and completion telemetry.',
-      'study': 'Operating Systems exam countdown, formula drills, assignment tracking, and active retention.',
+      'study': 'Artificial Intelligence, Expert Systems, Software Engineering, Computer Networks, and Python LeetCode 150 roadmap.',
       'fitness': 'HEAVY workout tracker: live log sets x reps x kg, rest timer, Big 4 PRs, 1RM calculator & routine splits.',
       'nutrition': 'Caloric & macronutrient balance, clean hydration tracking, meal timing, and dietary planning.',
       'finance': 'Monthly budget allocations, liquid net balance, transaction categorization, and savings goals.',
@@ -400,7 +400,7 @@
   function getDomainAIActionButtons(id) {
     const actionsMap = {
       'home': [
-        { label: '⚡ AI: Re-prioritize Daily Matrix', prompt: 'Re-prioritize my tasks for today based on high energy in the morning and OS exam readiness.' },
+        { label: '⚡ AI: Re-prioritize Daily Matrix', prompt: 'Re-prioritize my tasks for today based on high energy in the morning, LeetCode 150 practice, and AI project milestones.' },
         { label: '⚡ AI: Generate Life Debrief', prompt: 'Give me an executive debrief of my LifeOS across all active domains.' },
         { label: '⚡ AI: Optimize Cognitive Load', prompt: 'Analyze my current schedule and reduce context switching.' }
       ],
@@ -410,13 +410,13 @@
         { label: '⚡ AI: Proactive Replanning', prompt: 'Review my upcoming deadlines and propose proactive schedule adjustments.' }
       ],
       'calendar': [
-        { label: '⚡ AI: Auto-Block 2h Focus Time', prompt: 'Find the optimal 2-hour free block today and schedule an OS Deep Study block.' },
+        { label: '⚡ AI: Auto-Block 2h Focus Time', prompt: 'Find the optimal 2-hour free block today and schedule an AI & LeetCode 150 Deep Focus block.' },
         { label: '⚡ AI: Resolve Schedule Collisions', prompt: 'Detect any overlapping events or tight buffers in my schedule and resolve them.' },
         { label: '⚡ AI: Align Schedule with Energy', prompt: 'Adjust my time blocks so heavy cognitive work happens during my peak energy hours.' }
       ],
       'tasks': [
         { label: '⚡ AI: Prioritize Backlog by Urgency', prompt: 'Reorder all pending tasks by urgency and impact for my upcoming exam and commitments.' },
-        { label: '⚡ AI: Break Down OS Project', prompt: 'Break down the Operating Systems Assignment into 4 actionable subtasks.' },
+        { label: '⚡ AI: LeetCode 150 Sprint Breakdown', prompt: 'Break down my LeetCode Python 150 practice into 3 actionable problems today.' },
         { label: '⚡ AI: Auto-Complete Finished Tasks', prompt: 'Review completed items and mark verified tasks as done.' }
       ],
       'goals': [
@@ -425,9 +425,9 @@
         { label: '⚡ AI: Accelerate Lagging Goal', prompt: 'Identify the goal with the lowest progress and propose immediate catch-up actions.' }
       ],
       'study': [
-        { label: '⚡ AI: 6-Day OS Exam Plan', prompt: 'Generate a day-by-day 6-day revision schedule for my Operating Systems exam covering Memory Management, Scheduling, and Deadlocks.' },
-        { label: '⚡ AI: Generate 5 Rapid Flashcards', prompt: 'Create 5 quick flashcard questions and answers on Virtual Memory and Paging.' },
-        { label: '⚡ AI: Log 45m Focus Session', prompt: 'Record a completed 45-minute deep focus study block on Operating Systems.' }
+        { label: '⚡ AI: 7-Day AI & Expert Systems Plan', prompt: 'Generate a day-by-day revision schedule for Artificial Intelligence and Expert Systems covering Heuristics, Forward/Backward Chaining, and Knowledge Bases.' },
+        { label: '⚡ AI: 5 LeetCode & Python Cards', prompt: 'Create 5 quick flashcard questions and answers on Python collections, Tree traversals, and Two-Pointer patterns.' },
+        { label: '⚡ AI: Log 45m Focus Session', prompt: 'Record a completed 45-minute deep focus study block on Artificial Intelligence and Python LeetCode 150.' }
       ],
       'fitness': [
         { label: '⚡ AI: Progressive Overload Plan', prompt: 'Calculate the next weight targets for Bench Press and Squats using progressive overload.' },
@@ -595,7 +595,7 @@
     } else if (domainId === 'shopping') {
       db.shopping.addGrocery('Greek Yogurt & Oats (AI)');
     } else if (domainId === 'study') {
-      db.study.logSession({ subject: 'Operating Systems', duration: 45, topic: 'Memory Paging' });
+      db.study.logSession({ subject: 'Artificial Intelligence', duration: 45, topic: 'A* Heuristic Search' });
     } else if (domainId === 'routines') {
       db.routines.markDone('morning', 'Hydrate 500ml');
       db.routines.markDone('morning', 'Sunlight exposure');
@@ -1358,26 +1358,28 @@
   function renderStudyDomain(s) {
     const study = s.study || {};
     const subjects = study.subjects || [
-      { name: 'Operating Systems', code: 'CS-401', progress: 58, examDate: '6 Days Remaining' },
-      { name: 'Distributed Systems', code: 'CS-402', progress: 40, examDate: '18 Days' },
-      { name: 'Machine Learning', code: 'CS-405', progress: 75, examDate: '24 Days' }
+      { name: 'Artificial Intelligence', code: 'CS-501', progress: 68, examDate: '15 Days Remaining' },
+      { name: 'Expert Systems', code: 'CS-502', progress: 52, examDate: '19 Days Remaining' },
+      { name: 'Software Engineering', code: 'CS-503', progress: 72, examDate: '23 Days Remaining' },
+      { name: 'Computer Networks', code: 'CS-504', progress: 45, examDate: '27 Days Remaining' },
+      { name: 'Python Essentials & LeetCode 150', code: 'CS-505', progress: 32, examDate: '48 / 150 Solved' }
     ];
 
     return `
       <!-- Exam Urgent Banner -->
-      <div class="glass-surface p-5 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-surface-container-lowest to-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="glass-surface p-5 rounded-2xl border border-primary-container/30 bg-gradient-to-r from-primary-container/10 via-surface-container-lowest to-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-2xl font-bold font-mono">
-            6d
+          <div class="w-12 h-12 rounded-xl bg-primary-container/20 text-primary-container flex items-center justify-center text-xl font-bold font-mono">
+            AI
           </div>
           <div>
-            <span class="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-bold">PRIMARY IMMINENT DEADLINE</span>
-            <h3 class="text-base font-bold text-white">Operating Systems Semester Exam</h3>
-            <p class="text-xs text-outline font-mono">Virtual Memory, Page Replacement, &amp; Deadlock Prevention focus needed.</p>
+            <span class="text-[10px] font-mono text-primary-container uppercase tracking-widest font-bold">ACTIVE SEMESTER FOCUS</span>
+            <h3 class="text-base font-bold text-white">Artificial Intelligence &amp; LeetCode 150</h3>
+            <p class="text-xs text-outline font-mono">A* Search Lab, Expert Systems forward chaining, &amp; 3 Binary Tree DFS problems.</p>
           </div>
         </div>
-        <button onclick="executeDomainAIAction('study', 'Generate a 6-day intensive OS revision syllabus')" class="px-4 py-2 rounded-xl bg-amber-400 text-black font-mono text-xs font-bold hover:bg-amber-300 transition-colors shrink-0">
-          ⚡ AI 6-Day Study Plan
+        <button onclick="executeDomainAIAction('study', 'Review my LeetCode Python 150 progress and suggest the next 3 optimal problems')" class="px-4 py-2 rounded-xl bg-primary-container text-black font-mono text-xs font-bold hover:bg-surface-tint cyan-glow transition-colors shrink-0">
+          ⚡ AI LeetCode &amp; AI Sprint
         </button>
       </div>
 
@@ -2856,7 +2858,7 @@
         phone: '+91 96543 21098',
         whatsapp: '919654321098',
         instagram: '@priya_codes',
-        howIKnow: 'Operating Systems study partner and lead teammate for CS final year capstone project.',
+        howIKnow: 'AI lab partner and Software Engineering sprint teammate for capstone project.',
         cadence: 'Weekly',
         lastContact: '3 days ago'
       }
@@ -3344,8 +3346,8 @@
   // --- 18. KNOWLEDGE ---
   function renderKnowledgeDomain(s) {
     const notes = [
-      { title: 'Operating Systems: Virtual Memory & Thrashing', tags: '#cs #os #memory' },
-      { title: 'Distributed Systems: Consensus & Raft Protocol', tags: '#cs #distributed #raft' },
+      { title: 'Python & LeetCode 150: Sliding Window & Tree DFS Patterns', tags: '#python #dsa #leetcode' },
+      { title: 'Artificial Intelligence: A* Heuristics & Adversarial Minimax', tags: '#cs #ai #algorithms' },
       { title: 'Progressive Overload & Hypertrophy Rep Ranges', tags: '#fitness #science' }
     ];
 
@@ -3476,9 +3478,9 @@
           <span class="text-xs font-mono text-tertiary font-bold">Optimal Balance</span>
         </div>
         <p class="text-xs text-outline font-mono leading-relaxed">
-          System analytics aggregates live invariant telemetry across all 22 life domains. 
+          System analytics aggregates live invariant telemetry across all 23 life domains. 
           Current strength: Physical Vitality (91%) &amp; Routines (95%). 
-          Focus area: Operating Systems Exam syllabus gap (42% remaining).
+          Active Focus: LeetCode Python 150 Sprint (48 solved) &amp; Artificial Intelligence Lab.
         </p>
       </div>
     `;

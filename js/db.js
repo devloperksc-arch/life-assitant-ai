@@ -52,6 +52,51 @@ const DB = (() => {
         _state.shopping.pantryStock = _clone(DATA.shopping.pantryStock);
         changed = true;
       }
+      // Academic curriculum migration: update from legacy OS/DBMS to AI, Expert Systems, SE, Networks, Python LeetCode 150
+      if (_state.study && Array.isArray(_state.study.subjects)) {
+        const hasLegacyOS = _state.study.subjects.some(s => s.name === 'Operating Systems' || s.code === 'CS401');
+        if (hasLegacyOS) {
+          _state.study.subjects = _clone(DATA.study.subjects);
+          changed = true;
+        }
+      }
+      // Migrate legacy tasks referencing deprecated OS/DBMS
+      if (Array.isArray(_state.tasks)) {
+        const hasLegacyTasks = _state.tasks.some(t => t.title && (t.title.includes('OS assignment') || t.title.includes('Read DBMS')));
+        if (hasLegacyTasks) {
+          _state.tasks = _clone(DATA.tasks);
+          changed = true;
+        }
+      }
+      // Migrate legacy calendar events to synchronized morning/evening flow
+      if (Array.isArray(_state.calendarEvents)) {
+        const hasLegacyEvents = _state.calendarEvents.some(e => e.title && (e.title.includes('OS ') || e.title.includes('CS101')));
+        if (hasLegacyEvents) {
+          _state.calendarEvents = _clone(DATA.calendarEvents);
+          changed = true;
+        }
+      }
+      // Migrate legacy goals
+      if (Array.isArray(_state.goals)) {
+        const hasLegacyGoals = _state.goals.some(g => g.milestones && g.milestones.some(m => m.title && m.title.includes('OS syllabus')));
+        if (hasLegacyGoals) {
+          _state.goals = _clone(DATA.goals);
+          changed = true;
+        }
+      }
+      // Ensure Maa & Papa and NSS exist in relationships
+      if (Array.isArray(_state.relationships)) {
+        const hasLegacyRel = _state.relationships.some(r => r.name === 'Mom' || (r.notes && r.notes.includes('Operating Systems')));
+        if (hasLegacyRel) {
+          _state.relationships = _clone(DATA.relationships);
+          changed = true;
+        }
+      }
+      // Ensure synchronized routines
+      if (_state.routines && _state.routines.night && !_state.routines.night.some(r => r.task && r.task.includes('Maa & Papa'))) {
+        _state.routines = _clone(DATA.routines);
+        changed = true;
+      }
       if (changed) _save();
     }
   }
