@@ -335,40 +335,41 @@
       const opt = options || {};
       const size = opt.size || 150;
       const showControls = opt.showControls !== false;
+      const isCompact = opt.compact || size <= 120;
 
       containerEl.innerHTML = `
-        <div class="arc-reactor-widget reactor-state-${currentState} flex flex-col items-center justify-center p-4 rounded-3xl bg-surface-container-lowest/80 border border-outline-variant/20 shadow-2xl relative overflow-hidden transition-all duration-300">
+        <div class="arc-reactor-widget reactor-state-${currentState} flex flex-col items-center justify-center ${isCompact ? 'p-3 rounded-2xl' : 'p-4 rounded-3xl'} bg-surface-container-lowest/80 border border-outline-variant/20 shadow-2xl relative overflow-hidden transition-all duration-300">
           <!-- Background Ambient Ray -->
           <div class="absolute inset-0 bg-gradient-to-b from-primary-container/10 via-transparent to-transparent pointer-events-none"></div>
 
           <!-- Central Reactor Core SVG -->
-          <div class="relative flex items-center justify-center my-2 cursor-pointer group" onclick="window.ReactorUI.interruptSpeech()" title="Tap to interrupt / toggle state">
+          <div class="relative flex items-center justify-center ${isCompact ? 'my-1' : 'my-2'} cursor-pointer group" onclick="window.ReactorUI.interruptSpeech()" title="Tap to interrupt / toggle state">
             ${renderReactorSVG(size)}
             <div class="absolute inset-0 flex items-center justify-center">
-              <span class="material-symbols-outlined reactor-state-icon text-primary-container text-2xl transition-all duration-300">neurology</span>
+              <span class="material-symbols-outlined reactor-state-icon text-primary-container ${isCompact ? 'text-xl' : 'text-2xl'} transition-all duration-300">neurology</span>
             </div>
           </div>
 
           <!-- Reactor Telemetry Header -->
-          <div class="text-center mt-2 space-y-1 relative z-10">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider reactor-state-badge border border-primary-container/30 bg-primary-container/10 text-primary-container">
+          <div class="text-center ${isCompact ? 'mt-1 space-y-0.5' : 'mt-2 space-y-1'} relative z-10">
+            <div class="inline-flex items-center gap-1.5 ${isCompact ? 'px-2.5 py-0.5 text-[11px]' : 'px-3 py-1 text-xs'} font-mono font-bold tracking-wider reactor-state-badge border border-primary-container/30 bg-primary-container/10 text-primary-container">
               <span class="w-1.5 h-1.5 rounded-full bg-current animate-ping"></span>
               <span class="reactor-state-label uppercase">READY</span>
             </div>
-            <p class="reactor-state-desc text-xs font-mono text-outline/80 max-w-xs truncate">
+            <p class="reactor-state-desc ${isCompact ? 'text-[11px]' : 'text-xs'} font-mono text-outline/80 max-w-xs truncate">
               Standing by · All systems nominal
             </p>
           </div>
 
           ${showControls ? `
             <!-- Fast Voice Controls Strip -->
-            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-outline-variant/15 w-full justify-center">
-              <button onclick="window.toggleVoiceMic()" title="Push to talk" class="px-3.5 py-1.5 rounded-xl bg-primary-container/20 hover:bg-primary-container/30 text-primary text-xs font-mono flex items-center gap-1.5 border border-primary-container/30 transition-all active:scale-95">
-                <span class="material-symbols-outlined text-[16px]">mic</span>
+            <div class="flex items-center gap-2 ${isCompact ? 'mt-2 pt-2' : 'mt-3 pt-3'} border-t border-outline-variant/15 w-full justify-center">
+              <button onclick="window.toggleVoiceMic()" title="Push to talk" class="${isCompact ? 'px-3 py-1 text-[11px]' : 'px-3.5 py-1.5 text-xs'} rounded-xl bg-primary-container/20 hover:bg-primary-container/30 text-primary font-mono flex items-center gap-1.5 border border-primary-container/30 transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[15px]">mic</span>
                 <span>Push to Talk</span>
               </button>
-              <button onclick="window.ReactorUI.interruptSpeech()" title="Stop speaking" class="p-1.5 rounded-xl glass-surface hover:bg-rose-500/20 text-outline hover:text-rose-400 border border-outline-variant/20 transition-all" aria-label="Stop audio">
-                <span class="material-symbols-outlined text-[16px]">stop_circle</span>
+              <button onclick="window.ReactorUI.interruptSpeech()" title="Stop speaking" class="${isCompact ? 'p-1' : 'p-1.5'} rounded-xl glass-surface hover:bg-rose-500/20 text-outline hover:text-rose-400 border border-outline-variant/20 transition-all" aria-label="Stop audio">
+                <span class="material-symbols-outlined text-[15px]">stop_circle</span>
               </button>
             </div>
           ` : ''}

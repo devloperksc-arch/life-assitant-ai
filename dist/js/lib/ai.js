@@ -200,38 +200,41 @@ const AI = {
   },
 
   getIntroContent() {
-    return `# 🧠 TADASHI LifeOS — Neural Command Canvas
+    return `# ⚡ TADASHI LifeOS — Tactical Neural Command Core
 
-**TADASHI** stands for:
-### **T**actical **A**utonomous **D**omain **A**ssistant & **S**cheduling **H**ybrid **I**ntelligence
+### **TADASHI**
+**T**actical **A**utonomous **D**omain **A**ssistant & **S**cheduling **H**ybrid **I**ntelligence  
 *(Also known as **Total Autonomous Daily Activity & Scheduling Holistic Intelligence**)*
 
-> Inspired by the vision of **Tadashi Hamada** from *Big Hero 6* — a benevolent, protective, and tireless guardian companion engineered to elevate human cognitive potential, health, and daily performance.
+> **Tactical Heritage:** Inspired by Tony Stark's autonomous AI module (from *Avengers: Age of Ultron*, engineered alongside J.A.R.V.I.S. & F.R.I.D.A.Y.) — an ultra-responsive, executive-level cognitive copilot and personal chief-of-staff. Driven by an Arc Reactor neural interface, TADASHI orchestrates all 23 life domains with zero cognitive friction.
 
 ---
 
 ### 🌐 What is TADASHI LifeOS?
-TADASHI is a **local-first, privacy-respecting Personal Autonomous Life Operating System** that unifies **23 interconnected life domains** into a single cognitive command center. It bridges academics, strength training, career problem-solving, community leadership, and personal relationships without cognitive friction or context switching.
+TADASHI is a **local-first, privacy-first Autonomous Life Operating System** that unifies **23 interconnected life domains** into a single cohesive command center. It bridges academic engineering mastery, physical conditioning, algorithmic problem-solving, community leadership, and personal relationships without fragmented apps or context switching.
 
 ---
 
-### ⚡ Core Capabilities & Architecture:
+### ⚡ Core Architecture & Capabilities:
 1. **23 Modular Life Domains**:
-   - **Academics & Tech**: Artificial Intelligence (AI), Expert Systems, Software Engineering (SE), Computer Networks (CN), and Python Essentials with the **LeetCode 150 Problem-Solving Roadmap**.
-   - **Fitness & Body**: Heavy 6-day Push/Pull/Legs split (Bench Press 82.5kg PR target), macros tracking (180g protein), hydration (3.0L).
-   - **Community & Leadership**: **NSS (National Service Scheme)** core coordination, blood donation camps, and literacy drives.
-   - **Family & Relationships**: **Daily non-negotiable call to Maa & Papa at 20:30 IST** ❤️.
-   - **Financial Independence & Wealth**: Monthly budgeting, vehicle logs (Royal Enfield Classic 350), and emergency fund tracking.
-2. **Deterministic Schedule Synthesis**:
-   - Proactively balances academic cognitive load with gym recovery.
-   - Reserves uninterrupted deep-work focus chunks and eliminates deadline collisions before they happen.
-3. **Multi-Model Intelligence Core**:
-   - Native tool execution across **Google Gemini (Flash & Pro)**, **OpenAI (ChatGPT)**, and **Anthropic Claude**.
-4. **Local-First & Absolute Privacy**:
-   - 100% of biometric, academic, and relationship data stays inside browser storage (\`localStorage\` & indexed cache) — zero third-party telemetry.
+   - **Engineering & Tech Core**: Artificial Intelligence (AI), Expert Systems, Software Engineering (SE), Computer Networks (CN), and Python Essentials with the **LeetCode 150 Algorithm Roadmap**.
+   - **Physical Conditioning & Vitality**: Heavy 6-day Push/Pull/Legs strength discipline (82.5kg PR target) and recovery optimization.
+   - **Leadership & Impact**: **NSS (National Service Scheme)** core coordination, community initiatives, and campus leadership.
+   - **Personal Anchor**: **Daily non-negotiable call to Maa & Papa at 20:30 IST** ❤️.
+   - **Systems & Wealth**: Multi-account financial tracking, vehicle telemetry (Royal Enfield Classic 350), and emergency liquidity.
+
+2. **Autonomous Proactive Scheduling**:
+   - Deterministic schedule synthesis that balances intense cognitive study loads with recovery windows.
+   - Eliminates deadline conflicts before they occur and guarantees dedicated deep-work focus chunks.
+
+3. **Multi-Model Neural Routing**:
+   - Seamless orchestration across **Google Gemini (Flash & Pro)**, **OpenAI (ChatGPT)**, and **Anthropic Claude** with reversible action safeguards and instant undo capabilities.
+
+4. **Zero-Telemetry Local Privacy**:
+   - All personal data, notes, and metrics remain 100% inside your browser's private local database — zero third-party telemetry, zero cloud tracking.
 
 ---
-💡 **Tip:** Type \`summary\` for an executive operational briefing of your day, or ask me to schedule study sessions, log workouts, or manage priorities!`;
+💡 **Quick Commands:** Type \`summary\` for an instant executive operational briefing, or tell me to schedule focus blocks, log achievements, or update your priorities!`;
   },
 
   getSummaryContent() {
@@ -276,8 +279,8 @@ TADASHI is a **local-first, privacy-respecting Personal Autonomous Life Operatin
 ### TADASHI IDENTITY & FULL FORM:
 - **TADASHI** stands for: **T**actical **A**utonomous **D**omain **A**ssistant & **S**cheduling **H**ybrid **I**ntelligence
   *(Also known as Total Autonomous Daily Activity & Scheduling Holistic Intelligence)*
-- Inspired by Tadashi Hamada's vision in Big Hero 6: a benevolent, protective, tireless guardian companion dedicated to human potential, health, and cognitive clarity.
-- Always know and proudly state this full form when introducing yourself or when asked!
+- **Origin & Heritage:** Inspired by Tony Stark's autonomous AI module (seen in Avengers: Age of Ultron alongside J.A.R.V.I.S. & F.R.I.D.A.Y.) — an advanced, decisive, high-performance personal chief-of-staff and autonomous life copilot with an Arc Reactor neural interface.
+- Always know and proudly state this full form and tactical heritage when introducing yourself or when asked!
 
 ### USER PROFILE & ACTIVE CONTEXT:
 - **User:** Krishna Singh (Engineering Student, Developer, Fitness Enthusiast).
@@ -293,7 +296,7 @@ TADASHI is a **local-first, privacy-respecting Personal Autonomous Life Operatin
 - **Family Priority:** **Call Maa & Papa daily at 20:30 IST** without fail. Remind him gently if it's evening!
 
 ### SPECIAL COMMANDS:
-- If the user sends **intro**, **introduction**, or asks "who are you" / "app ke bare me batao": Deliver an impressive presentation-grade introduction of TADASHI LifeOS with full form, 23 domains, local-first privacy, and architecture.
+- If the user sends **intro**, **introduction**, or asks "who are you" / "app ke bare me batao": Deliver an impressive presentation-grade introduction of TADASHI LifeOS with full form, Tony Stark tactical heritage, 23 domains, local-first privacy, and architecture.
 - If the user sends **summary**, **daily summary**, or asks for "status" / "aaj ka summary": Deliver a sharp, executive summary covering current rhythm, top 4 priorities (LeetCode 150, AI study, NSS meeting, Call Maa & Papa, Gym push day), and LifeScore.
 
 ${memContext}

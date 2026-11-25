@@ -123,6 +123,45 @@
       #desktop-app { display: block; }
       #mobile-app  { display: none; }
     }
+    /* TADASHI Copilot Full-Height Viewport Pinning: anchors input bar inside viewport, zero outer window scroll */
+    @media (min-width: 1024px) {
+      body.copilot-active {
+        overflow: hidden !important;
+      }
+      .copilot-active #desktop-app {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+      }
+      .copilot-active #main-content {
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        padding-top: 5.25rem !important; /* 84px: cleanly clears floating dock without overlap */
+        padding-bottom: 0.75rem !important; /* 12px clean bottom margin */
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .copilot-active #hud-subbar {
+        margin-bottom: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        flex-shrink: 0 !important;
+      }
+      .copilot-active #view-tadashi {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+      }
+      .copilot-active #view-tadashi > .grid {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+      }
+    }
     /* Accessibility: visible focus ring */
     :focus-visible { outline: 2px solid #00d4ff; outline-offset: 2px; border-radius: 6px; }
     /* Screen-reader-only utility */
@@ -668,39 +707,39 @@
 <!-- ========================================== -->
 <!-- VIEW 2: TADASHI AI (Copilot & Query Engine) -->
 <!-- ========================================== -->
-<div class="view-panel panel-hidden space-y-6" id="view-tadashi">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[82vh]">
+<div class="view-panel panel-hidden" id="view-tadashi">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 h-full min-h-0">
 
   <!-- LEFT: Arc Reactor Autonomous Intelligence Core (4 cols) -->
-  <aside class="lg:col-span-4 flex flex-col gap-4 h-full">
+  <aside class="lg:col-span-4 flex flex-col gap-2.5 h-full min-h-0 overflow-hidden">
     <div id="tadashi-reactor-mount" class="flex-none">
       <!-- Injected via ReactorUI.mountWidget -->
     </div>
 
     <!-- Telemetry & Intelligence Status Card -->
-    <div class="flex-1 glass-surface p-4 rounded-2xl border border-outline-variant/20 flex flex-col justify-between space-y-3 overflow-hidden">
+    <div class="flex-1 min-h-0 glass-surface p-3 sm:p-3.5 rounded-2xl border border-outline-variant/20 flex flex-col justify-between space-y-1.5 overflow-y-auto no-scrollbar">
       <div>
-        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/10 text-xs font-mono">
+        <div class="flex items-center justify-between pb-1.5 border-b border-outline-variant/10 text-xs font-mono">
           <span class="text-primary-container font-semibold uppercase tracking-wider flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
             NEURAL TELEMETRY
           </span>
           <span class="text-outline/70">OPTIMAL</span>
         </div>
-        <div class="grid grid-cols-2 gap-2 mt-3 text-xs font-mono">
-          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+        <div class="grid grid-cols-2 gap-2 mt-2 text-xs font-mono">
+          <div class="p-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Model Route</span>
             <span class="text-white font-bold text-xs" id="reactor-model-badge">Gemini Flash Lite</span>
           </div>
-          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+          <div class="p-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Memory Cores</span>
             <span class="text-tertiary font-bold text-xs">23 Domains</span>
           </div>
-          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+          <div class="p-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Execution</span>
             <span class="text-primary-container font-bold text-xs">Reversible</span>
           </div>
-          <div class="p-2.5 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
+          <div class="p-2 rounded-xl bg-surface-container-lowest/60 border border-outline-variant/15">
             <span class="text-[10px] text-outline block">Device Core</span>
             <span class="text-secondary font-bold text-xs">Local First</span>
           </div>
@@ -708,22 +747,22 @@
       </div>
 
       <!-- Quick Command Shortcuts -->
-      <div class="space-y-1.5 pt-2 border-t border-outline-variant/10">
+      <div class="space-y-1 pt-1.5 border-t border-outline-variant/10">
         <span class="text-[10px] font-mono uppercase text-outline tracking-wider block font-semibold">Quick Commands:</span>
-        <div class="flex flex-col gap-1.5">
-          <button onclick="populatePrompt('intro')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+        <div class="flex flex-col gap-1">
+          <button onclick="populatePrompt('intro')" class="text-left px-2.5 py-1.5 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
             <span>💡 TADASHI Intro &amp; Full Form</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('summary')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+          <button onclick="populatePrompt('summary')" class="text-left px-2.5 py-1.5 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
             <span>⚡ Daily Executive Summary</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('Show my LeetCode Python 150 progress and study roadmap')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+          <button onclick="populatePrompt('Show my LeetCode Python 150 progress and study roadmap')" class="text-left px-2.5 py-1.5 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
             <span>🐍 Python &amp; LeetCode 150</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
-          <button onclick="populatePrompt('NSS meeting schedule and Maa Papa call reminder')" class="text-left px-3 py-2 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
+          <button onclick="populatePrompt('NSS meeting schedule and Maa Papa call reminder')" class="text-left px-2.5 py-1.5 rounded-xl bg-surface-container-lowest/80 hover:bg-primary-container/15 hover:border-primary-container/40 border border-outline-variant/20 text-xs font-mono text-on-surface hover:text-primary-container transition-all flex items-center justify-between">
             <span>🤝 NSS &amp; Family Sync</span>
             <span class="text-outline text-[10px]">→</span>
           </button>
@@ -733,9 +772,9 @@
   </aside>
 
   <!-- RIGHT: Full Conversation & Tool Action Feed (8 cols) -->
-  <div class="lg:col-span-8 glass-surface rounded-2xl p-6 sm:p-7 flex flex-col h-full border border-outline-variant/20 shadow-2xl overflow-hidden">
+  <div class="lg:col-span-8 glass-surface rounded-2xl p-4 sm:p-5 flex flex-col h-full min-h-0 border border-outline-variant/20 shadow-2xl overflow-hidden">
 <!-- Copilot Header -->
-<div class="flex items-center justify-between pb-4 border-b border-outline-variant/10">
+<div class="flex-none flex items-center justify-between pb-2.5 border-b border-outline-variant/10">
 <div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-xl bg-primary-container/15 border border-primary-container/40 flex items-center justify-center text-primary-container shadow-[0_0_14px_rgba(0,212,255,0.25)]">
 <span class="material-symbols-outlined text-primary-container text-[22px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
@@ -749,9 +788,9 @@
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button class="px-3 py-1.5 rounded-lg glass-surface hover:bg-surface-container/60 text-outline hover:text-white text-xs font-mono flex items-center gap-1.5">
+<button onclick="startNewSession()" class="px-3 py-1.5 rounded-lg glass-surface hover:bg-surface-container/60 text-outline hover:text-white text-xs font-mono flex items-center gap-1.5" title="Start clean session">
 <span class="material-symbols-outlined text-[16px]">refresh</span>
-<span class="">Reset Context</span>
+<span class="">New Session</span>
 </button>
 <button class="px-3 py-1.5 rounded-lg bg-primary-container/20 text-primary border border-primary-container/35 text-xs font-mono flex items-center gap-1.5">
 <span class="material-symbols-outlined text-[16px]">mic</span>
@@ -760,7 +799,7 @@
 </div>
 </div>
 <!-- Chat Messages Feed -->
-<div class="flex-1 overflow-y-auto py-5 space-y-4 custom-scrollbar pr-2">
+<div id="tadashi-chat-feed" data-role="chat-feed" class="flex-1 min-h-0 overflow-y-auto py-2.5 space-y-3.5 custom-scrollbar pr-2">
 <!-- AI message -->
 <div class="flex gap-3 max-w-3xl">
 <div class="w-8 h-8 rounded-full bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container shrink-0 mt-0.5">
@@ -816,23 +855,23 @@
 <span class="text-outline">22:43 IST</span>
 </div>
 <p class="text-sm text-on-surface leading-relaxed">
-              Finish the remaining 2 problems on Virtual Memory TLB Hit rates (approx 15 mins). Then close your study screen by 23:10 so you can shift mindsets before calling Mom at 23:15. I will handle logging your completed study cycle automatically.
+              Finish your 3 problems on LeetCode Python 150 Trees (approx 20 mins). Then prepare for the daily call to Maa &amp; Papa at 20:30 IST. I will handle tracking your completed study cycle automatically.
             </p>
 <div class="mt-3 flex items-center gap-2">
-<button class="px-3 py-1 rounded-lg bg-primary-container text-surface-container-lowest font-mono text-xs font-semibold hover:bg-surface-tint">Set Timer 15m</button>
-<button class="px-3 py-1 rounded-lg glass-surface hover:bg-surface-container text-outline hover:text-white font-mono text-xs">Remind call in 30m</button>
+<button onclick="populatePrompt('intro')" class="px-3 py-1 rounded-lg bg-primary-container text-surface-container-lowest font-mono text-xs font-semibold hover:bg-surface-tint">💡 Intro</button>
+<button onclick="populatePrompt('summary')" class="px-3 py-1 rounded-lg glass-surface hover:bg-surface-container text-outline hover:text-white font-mono text-xs">⚡ Daily Summary</button>
 </div>
 </div>
 </div>
 </div>
 <!-- Chat Input Box -->
-<div class="pt-4 border-t border-outline-variant/10">
+<div class="flex-none pt-2.5 border-t border-outline-variant/10">
 <div class="relative flex items-center gap-2">
-<input class="flex-1 bg-surface-container/60 border border-outline-variant/30 rounded-xl px-4 py-3.5 pr-4 text-on-surface placeholder:text-outline/50 focus:border-primary-container focus:ring-1 focus:ring-primary-container text-sm" id="tadashi-chat-input" placeholder="Ask TADASHI anything — add tasks, log meals, update goals, delete subscriptions..." type="text">
-<button onclick="undoLastAction()" title="Undo last action" class="flex-none p-2.5 rounded-xl bg-surface-container text-outline hover:text-amber-400 hover:bg-amber-400/10 border border-outline-variant/20 transition-colors" id="undo-btn">
+<input class="flex-1 bg-surface-container/60 border border-outline-variant/30 rounded-xl px-4 py-2.5 pr-4 text-on-surface placeholder:text-outline/50 focus:border-primary-container focus:ring-1 focus:ring-primary-container text-sm" id="tadashi-chat-input" placeholder="Ask TADASHI anything — add tasks, log meals, update goals, delete subscriptions..." type="text">
+<button onclick="undoLastAction()" title="Undo last action" class="flex-none p-2 rounded-xl bg-surface-container text-outline hover:text-amber-400 hover:bg-amber-400/10 border border-outline-variant/20 transition-colors" id="undo-btn">
   <span class="material-symbols-outlined text-[18px]">undo</span>
 </button>
-<button onclick="sendTadashiMessage()" class="flex-none px-4 py-2.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint transition-colors cyan-glow active:scale-95">
+<button onclick="sendTadashiMessage()" class="flex-none px-5 py-2.5 rounded-xl bg-primary-container text-surface-container-lowest font-mono text-xs font-bold hover:bg-surface-tint transition-colors cyan-glow active:scale-95 shadow-[0_0_12px_rgba(0,212,255,0.3)]">
   Send
 </button>
 </div>
@@ -2255,11 +2294,16 @@
       } catch(e) {}
     }
 
+    function getChatFeed() {
+      return document.getElementById('tadashi-chat-feed') || document.querySelector('#view-tadashi [data-role="chat-feed"]') || getChatFeed();
+    }
+    window.getChatFeed = getChatFeed;
+
     function clearChatHistory() {
       chatHistory = [];
       window.chatHistory = [];
       try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch(e) {}
-      const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+      const chatFeed = getChatFeed();
       if (chatFeed) {
         chatFeed.innerHTML = `
           <div class="flex gap-3 max-w-3xl">
@@ -2282,7 +2326,7 @@
 
     function restoreChatFeedUI() {
       if (!chatHistory.length) return;
-      const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+      const chatFeed = getChatFeed();
       if (!chatFeed) return;
       chatFeed.innerHTML = '';
       chatHistory.forEach(item => {
@@ -2704,6 +2748,21 @@
       const hud = document.getElementById('hud-subbar');
       if (hud) hud.style.display = (viewId === 'view-domain-page') ? 'none' : 'flex';
 
+      // TADASHI Copilot Viewport Pinning: lock window scroll and anchor chat input bar
+      if (viewId === 'view-tadashi') {
+        document.body.classList.add('copilot-active');
+        const feed = getChatFeed();
+        if (feed) {
+          setTimeout(() => { feed.scrollTop = feed.scrollHeight; }, 60);
+        }
+        const input = document.getElementById('tadashi-chat-input');
+        if (input) {
+          setTimeout(() => { input.focus(); }, 120);
+        }
+      } else {
+        document.body.classList.remove('copilot-active');
+      }
+
       // Push history state if not triggered by browser popstate
       if (pushHistory && viewId !== 'view-domain-page') {
         const hash = '#' + viewId.replace('view-', '');
@@ -2974,7 +3033,7 @@
           const prov = AI.getActiveProvider();
           const provName = (AI.PROVIDERS[prov] && AI.PROVIDERS[prov].name) || 'Gemini';
           const masked = userText.slice(0, 7) + '...' + userText.slice(-4);
-          const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+          const chatFeed = getChatFeed();
           if (chatFeed) {
             const confirmDiv = document.createElement('div');
             confirmDiv.className = 'flex gap-3 max-w-3xl';
@@ -3005,7 +3064,7 @@
 
       if (window.ReactorUI) window.ReactorUI.setState('thinking', 'TADASHI reasoning across 23 domains...');
 
-      const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+      const chatFeed = getChatFeed();
       if (!chatFeed) { input.disabled = false; return; }
 
       // User bubble
@@ -3313,7 +3372,7 @@
       if (window.ReactorUI) {
         const mount = document.getElementById('tadashi-reactor-mount');
         if (mount) {
-          window.ReactorUI.mountWidget(mount, { size: 160, showControls: true });
+          window.ReactorUI.mountWidget(mount, { size: 105, showControls: true, compact: true });
         }
         const modalSvg = document.getElementById('voice-modal-reactor-svg');
         if (modalSvg) {
@@ -3428,7 +3487,7 @@
             const aiReply = await AI.chat(finalText, chatHistory, {
               onApprovalRequest: (proposal) => {
                 return new Promise((resolve) => {
-                  const chatFeed = document.querySelector('#view-tadashi .custom-scrollbar');
+                  const chatFeed = getChatFeed();
                   if (chatFeed && window.ReactorUI && typeof window.ReactorUI.renderProposalCard === 'function') {
                     window.ReactorUI.setState('awaiting_approval', 'Awaiting approval: ' + (proposal.title || proposal.tool));
                     window.ReactorUI.renderProposalCard(chatFeed, proposal, (approved) => {

@@ -3,7 +3,7 @@
 // Network-first for HTML, Cache-first for versioned assets
 // ============================================================
 
-const BUILD_ID = 'af7a6d2';
+const BUILD_ID = 'a3abb7e';
 const CACHE_NAME = `tadashi-shell-${BUILD_ID}`;
 
 const PRECACHE_ASSETS = [
